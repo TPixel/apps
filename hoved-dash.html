@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hoved Dash">
+<meta name="theme-color" content="#0C0C12">
+<title>Hoved · Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0C0C12;color:#fff;font-family:'Tahoma',sans-serif;font-weight:bold;min-height:100dvh;padding:16px 16px calc(24px + env(safe-area-inset-bottom));max-width:1100px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.logo{font-size:12px;color:#555;letter-spacing:1px;text-transform:uppercase}
+h1{font-size:26px;margin-top:2px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lnk{color:#E8820A;font-size:13px;text-decoration:none;padding:8px 10px;background:#1a1a24;border-radius:10px;border:none;font-family:inherit;font-weight:bold;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:12px}
+.stat{background:#1a1a24;border-radius:12px;padding:10px 12px}
+.stat .n{font-size:24px}.stat .l{font-size:11px;color:#777;text-transform:uppercase;letter-spacing:.5px}
+.stat.red .n{color:#f87171}.stat.yel .n{color:#FBBF24}.stat.org .n{color:#E8820A}
+.search{width:100%;padding:12px 14px;border-radius:12px;border:none;background:#1a1a24;color:#fff;font-size:16px;font-family:inherit;font-weight:bold;margin-bottom:8px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:7px 12px;border-radius:20px;background:#1a1a24;color:#aaa;font-size:13px;border:1.5px solid transparent;cursor:pointer;white-space:nowrap}
+.chip.on{background:#E8820A;color:#fff;border-color:#E8820A}
+.chip .c{opacity:.6;font-size:11px;margin-left:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:8px}
+.col{background:#13131b;border-radius:14px;padding:10px}
+.col h2{font-size:14px;color:#E8820A;text-transform:uppercase;letter-spacing:1px;margin:2px 4px 10px;display:flex;justify-content:space-between}
+.col h2 span{color:#666;font-size:12px}
+.card{background:#1a1a24;border-radius:12px;padding:10px 12px;border-left:4px solid #333;font-size:14px;margin-bottom:8px;cursor:pointer}
+.card.p1{border-left-color:#f87171}.card.p3{border-left-color:#2a2a38}
+.card.over{border-left-color:#f87171;background:#241818}
+.card.done{opacity:.4;text-decoration:line-through}
+.card .t{font-size:15px;display:flex;justify-content:space-between;gap:8px}
+.card .t .ok{background:none;border:none;color:#4ade80;font-size:20px;cursor:pointer;line-height:1;padding:0 0 0 6px}
+.card .raw{font-size:12px;color:#888;margin-top:3px;font-weight:normal;line-height:1.35}
+.card .m{font-size:11px;color:#777;margin-top:6px;font-weight:normal;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.b{display:inline-block;background:#2a2a38;color:#bbb;border-radius:6px;padding:1px 6px;font-size:11px}
+.b.d{color:#FBBF24}.b.d.over{color:#f87171}.b.ai{color:#4ade80;background:#16321f}.b.reg{color:#aaa}.b.man{color:#E8820A}
+.empty{color:#555;font-size:14px;padding:30px 0;text-align:center;grid-column:1/-1}
+/* sheet */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.ov.show{display:flex}
+.sheet{background:#16161f;width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92dvh;overflow-y:auto}
+.sheet h3{font-size:18px;margin-bottom:12px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:12px;color:#888;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;padding:11px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold}
+.field textarea{min-height:70px;resize:vertical}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.btn{width:100%;padding:14px;border-radius:12px;border:none;font-family:inherit;font-weight:bold;font-size:16px;color:#fff;cursor:pointer;margin-top:6px}
+.btn.save{background:#E8820A}.btn.done{background:#16321f;color:#4ade80}.btn.del{background:transparent;color:#f87171}.btn.ghost{background:transparent;color:#888}
+.why{font-size:12px;color:#8fd9a5;background:#16321f;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-weight:normal;line-height:1.4}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16321f;color:#4ade80;border-radius:12px;padding:10px 16px;font-size:14px;display:none;z-index:30}
+.toast.show{display:block}
+</style>
+</head>
+<body>
+<div class="top">
+  <div><div class="logo">Ditzel &amp; Co</div><h1>🧠 Hoved · Dashboard</h1></div>
+  <div class="tools">
+    <button class="lnk" id="view">Vis: kategori</button>
+    <button class="lnk" id="sortBtn">🤖 Sortér usorterede</button>
+    <button class="lnk" id="share">🔗 Del</button>
+    <a class="lnk" href="hoved.html">+ Ny tanke</a>
+  </div>
+</div>
+
+<div class="stats" id="stats"></div>
+<input class="search" id="q" type="search" placeholder="Søg…">
+<div class="chips" id="katChips"></div>
+<div class="chips" id="projChips"></div>
+<div class="chips" id="statusChips">
+  <div class="chip on" data-s="aaben">Åbne</div><div class="chip" data-s="udfoert">Udførte</div><div class="chip" data-s="alle">Alle</div>
+</div>
+<div class="grid" id="grid"><div class="empty">Henter…</div></div>
+
+<div class="ov" id="ov" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://lightcrew-api.thomas-5c5.workers.dev';
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const idag = new Date().toISOString().slice(0, 10);
+let CFG = { kategorier: [], handlinger: [], projekter: [] }, ROWS = [];
+const F = { status: 'aaben', kategori: '', projekt: '', q: '', view: 'kategori' };
+const params = new URLSearchParams(location.search);
+['status', 'kategori', 'projekt', 'view'].forEach(k => { if (params.get(k)) F[k] = params.get(k); });
+
+async function loadCfg() { try { CFG = await (await fetch(API + '/api/hoved/config')).json(); } catch (e) {} }
+async function load() {
+  const p = new URLSearchParams({ status: F.status, limit: 1000 });
+  try { ROWS = await (await fetch(API + '/api/hoved?' + p)).json(); } catch (e) { ROWS = []; }
+  render();
+}
+function filtered() {
+  const q = F.q.toLowerCase();
+  return ROWS.filter(r => (!F.kategori || (F.kategori === '—' ? !r.kategori : r.kategori === F.kategori)) && (!F.projekt || r.projekt === F.projekt) && (!q || (r.tekst + ' ' + r.titel + ' ' + r.tags).toLowerCase().includes(q)));
+}
+function render() {
+  // stats
+  const open = ROWS.filter(r => r.status === 'aaben');
+  const nu = open.filter(r => r.prioritet === 1).length;
+  const over = open.filter(r => r.deadline && r.deadline < idag).length;
+  const idagN = open.filter(r => r.deadline === idag).length;
+  const uso = open.filter(r => !r.sorteret_af || r.sorteret_af === 'regel').length;
+  $('stats').innerHTML = `<div class="stat"><div class="n">${open.length}</div><div class="l">åbne</div></div>
+    <div class="stat red"><div class="n">${nu}</div><div class="l">🔴 nu</div></div>
+    <div class="stat red"><div class="n">${over}</div><div class="l">overskredet</div></div>
+    <div class="stat yel"><div class="n">${idagN}</div><div class="l">frist i dag</div></div>
+    <div class="stat org"><div class="n">${uso}</div><div class="l">venter på AI</div></div>`;
+  // chips
+  const cnt = k => ROWS.filter(r => r[k.f] === k.v).length;
+  const kats = [...CFG.kategorier, ...ROWS.map(r => r.kategori)].filter(Boolean); const uk = [...new Set(kats)];
+  $('katChips').innerHTML = `<div class="chip${!F.kategori ? ' on' : ''}" onclick="setF('kategori','')">Alle</div>` +
+    uk.map(k => `<div class="chip${F.kategori === k ? ' on' : ''}" onclick="setF('kategori','${esc(k)}')">${esc(k)}<span class="c">${cnt({ f: 'kategori', v: k })}</span></div>`).join('') +
+    `<div class="chip${F.kategori === '—' ? ' on' : ''}" onclick="setF('kategori','—')">Usorteret<span class="c">${ROWS.filter(r => !r.kategori).length}</span></div>`;
+  const projs = [...new Set(ROWS.map(r => r.projekt).filter(Boolean))].sort();
+  $('projChips').innerHTML = `<div class="chip${!F.projekt ? ' on' : ''}" onclick="setF('projekt','')">Alle projekter</div>` +
+    projs.map(p => `<div class="chip${F.projekt === p ? ' on' : ''}" onclick="setF('projekt','${esc(p)}')">${esc(p)}<span class="c">${cnt({ f: 'projekt', v: p })}</span></div>`).join('');
+  document.querySelectorAll('#statusChips .chip').forEach(c => c.classList.toggle('on', c.dataset.s === F.status));
+  $('view').textContent = 'Vis: ' + F.view;
+  // grid
+  const rows = filtered();
+  if (!rows.length) { $('grid').innerHTML = '<div class="empty">Ingenting her</div>'; return; }
+  const groups = {};
+  const keyOf = r => F.view === 'projekt' ? (r.projekt || 'Uden projekt') : F.view === 'handling' ? (r.handling || 'ingen handling') : (r.kategori || 'Usorteret');
+  // "I dag"-gruppe først
+  const today = rows.filter(r => r.status === 'aaben' && (r.prioritet === 1 || (r.deadline && r.deadline <= idag)));
+  if (today.length && F.status !== 'udfoert') groups['🔥 I dag / haster'] = today;
+  for (const r of rows) { const k = keyOf(r); (groups[k] = groups[k] || []).push(r); }
+  const order = Object.keys(groups).sort((a, b) => a.startsWith('🔥') ? -1 : b.startsWith('🔥') ? 1 : (a === 'Usorteret' ? 1 : b === 'Usorteret' ? -1 : a.localeCompare(b, 'da')));
+  $('grid').innerHTML = order.map(k => `<div class="col"><h2>${esc(k)}<span>${groups[k].length}</span></h2>${groups[k].map(card).join('')}</div>`).join('');
+  history.replaceState(null, '', '?' + new URLSearchParams(Object.fromEntries(Object.entries(F).filter(([k, v]) => v && k !== 'q'))));
+}
+function card(r) {
+  const over = r.deadline && r.deadline < idag && r.status === 'aaben';
+  return `<div class="card p${r.prioritet}${over ? ' over' : ''}${r.status === 'udfoert' ? ' done' : ''}" onclick="openSheet(${r.id})">
+    <div class="t"><span>${esc(r.titel || r.tekst)}</span>${r.status === 'aaben' ? `<button class="ok" onclick="event.stopPropagation();udfoert(${r.id})" title="Udført">✓</button>` : ''}</div>
+    ${r.titel && r.titel !== r.tekst && !r.tekst.startsWith(r.titel) ? `<div class="raw">${esc(r.tekst)}</div>` : ''}
+    <div class="m">${r.handling ? `<span class="b">${esc(r.handling)}</span>` : ''}${r.projekt && F.view !== 'projekt' ? `<span class="b">${esc(r.projekt)}</span>` : ''}${r.kategori && F.view !== 'kategori' ? `<span class="b">${esc(r.kategori)}</span>` : ''}${r.deadline ? `<span class="b d${over ? ' over' : ''}">📅 ${esc(r.deadline)}</span>` : ''}${r.prioritet === 1 ? '<span class="b" style="color:#f87171">NU</span>' : ''}<span class="b ${r.sorteret_af === 'ai' || r.sorteret_af === 'claude' ? 'ai' : r.sorteret_af === 'manuel' ? 'man' : 'reg'}">${r.sorteret_af || 'usorteret'}</span><span>${esc(r.kilde)} · ${esc((r.oprettet || '').slice(5, 16))}</span></div>
+  </div>`;
+}
+function setF(k, v) { F[k] = v; render(); }
+$('q').oninput = e => { F.q = e.target.value; render(); };
+document.querySelectorAll('#statusChips .chip').forEach(c => c.onclick = () => { F.status = c.dataset.s; load(); });
+$('view').onclick = () => { F.view = F.view === 'kategori' ? 'projekt' : F.view === 'projekt' ? 'handling' : 'kategori'; render(); };
+$('share').onclick = async () => { try { await navigator.clipboard.writeText(location.href); toast('🔗 Link kopieret — del det'); } catch (e) { prompt('Kopiér link:', location.href); } };
+$('sortBtn').onclick = async () => {
+  $('sortBtn').textContent = '⏳ Sorterer…';
+  try { const r = await (await fetch(API + '/api/hoved/sorter', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })).json();
+    toast(r.ai ? `🤖 ${r.antal} sorteret med AI` : `⚠️ Ingen AI-nøgle på serveren — ${r.antal} regel-sorteret. Kør /hoved i Claude for finsortering.`); }
+  catch (e) { toast('Fejl: ' + e.message); }
+  $('sortBtn').textContent = '🤖 Sortér usorterede'; load();
+};
+async function patch(id, body) { return (await fetch(API + '/api/hoved/' + id, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).json(); }
+async function udfoert(id) { await patch(id, { status: 'udfoert' }); toast('✅ Udført'); load(); }
+let toastT; function toast(m) { $('toast').textContent = m; $('toast').classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.remove('show'), 3500); }
+
+// ---- Redigér ----
+function opts(list, cur) { const all = [...new Set(['', ...list, cur].filter((x, i) => i === 0 || x))]; return all.map(o => `<option value="${esc(o)}"${o === cur ? ' selected' : ''}>${o || '—'}</option>`).join(''); }
+function openSheet(id) {
+  const r = ROWS.find(x => x.id === id); if (!r) return;
+  const projs = [...new Set([...CFG.projekter, ...ROWS.map(x => x.projekt)])].filter(Boolean);
+  $('sheet').innerHTML = `<h3>#${r.id} · ${esc(r.kategori || 'Usorteret')}</h3>
+    ${r.begrundelse ? `<div class="why">🤖 ${esc(r.begrundelse)}</div>` : ''}
+    <div class="field"><label>Titel</label><input id="e_titel" value="${esc(r.titel)}"></div>
+    <div class="field"><label>Original tekst</label><textarea id="e_tekst">${esc(r.tekst)}</textarea></div>
+    <div class="row"><div class="field"><label>Kategori</label><select id="e_kategori">${opts(CFG.kategorier, r.kategori)}</select></div>
+    <div class="field"><label>Handling</label><select id="e_handling">${opts(CFG.handlinger, r.handling)}</select></div></div>
+    <div class="row"><div class="field"><label>Projekt</label><input id="e_projekt" list="projList" value="${esc(r.projekt)}"><datalist id="projList">${projs.map(p => `<option value="${esc(p)}">`).join('')}</datalist></div>
+    <div class="field"><label>Prioritet</label><select id="e_prio"><option value="1"${r.prioritet === 1 ? ' selected' : ''}>1 · Nu</option><option value="2"${r.prioritet === 2 ? ' selected' : ''}>2 · Normal</option><option value="3"${r.prioritet === 3 ? ' selected' : ''}>3 · Engang</option></select></div></div>
+    <div class="field"><label>Deadline</label><input id="e_deadline" type="date" value="${esc(r.deadline)}"></div>
+    <button class="btn save" onclick="save(${r.id})">Gem</button>
+    ${r.status === 'aaben' ? `<button class="btn done" onclick="udfoert(${r.id});closeSheet()">✓ Markér udført</button>` : `<button class="btn ghost" onclick="patch(${r.id},{status:'aaben'}).then(()=>{closeSheet();load()})">↩ Genåbn</button>`}
+    <button class="btn del" onclick="slet(${r.id})">Slet</button>
+    <button class="btn ghost" onclick="closeSheet()">Luk</button>
+    <div style="font-size:11px;color:#555;margin-top:8px;font-weight:normal">Tags: ${esc(r.tags || '—')} · Kilde: ${esc(r.kilde)} · Oprettet ${esc(r.oprettet)}${r.udfoert_dato ? ' · Udført ' + esc(r.udfoert_dato) : ''}</div>`;
+  $('ov').classList.add('show');
+}
+function closeSheet() { $('ov').classList.remove('show'); }
+async function save(id) {
+  await patch(id, { titel: $('e_titel').value, tekst: $('e_tekst').value, kategori: $('e_kategori').value, handling: $('e_handling').value, projekt: $('e_projekt').value, prioritet: parseInt($('e_prio').value), deadline: $('e_deadline').value });
+  closeSheet(); toast('Gemt'); load();
+}
+async function slet(id) { if (!confirm('Slet denne note?')) return; await fetch(API + '/api/hoved/' + id, { method: 'DELETE' }); closeSheet(); load(); }
+
+loadCfg().then(load);
+setInterval(load, 60000);
+</script>
+</body>
+</html>
