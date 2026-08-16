@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fryseren">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0C0C12">
+<title>Fryseren — Ditzel & Co</title>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0C0C12;color:#fff;font-family:'Tahoma',sans-serif;font-weight:bold;min-height:100dvh;padding:16px 16px calc(96px + env(safe-area-inset-bottom));max-width:520px;margin:0 auto}
+.logo{font-size:12px;color:#555;letter-spacing:1px;text-transform:uppercase}
+h1{font-size:26px;margin:2px 0 14px;display:flex;align-items:center;gap:8px}
+.count{font-size:13px;color:#777;font-weight:bold}
+.search{width:100%;padding:12px 14px;border-radius:12px;border:none;background:#1a1a24;color:#fff;font-size:16px;font-family:inherit;font-weight:bold;margin-bottom:10px}
+.search::placeholder{color:#555}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:7px 12px;border-radius:20px;background:#1a1a24;color:#aaa;font-size:13px;border:1.5px solid transparent;cursor:pointer;white-space:nowrap}
+.chip.on{background:#E8820A;color:#fff;border-color:#E8820A}
+.banner{background:#3a2a12;color:#FBBF24;border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:12px;display:none}
+.banner.show{display:block}
+.list{display:flex;flex-direction:column;gap:8px}
+.card{display:flex;align-items:center;gap:12px;background:#1a1a24;border-radius:14px;padding:12px 14px;cursor:pointer;border-left:4px solid #333}
+.card.warn{border-left-color:#FBBF24}
+.card.exp{border-left-color:#f87171}
+.card .emoji{font-size:26px;line-height:1}
+.card .info{flex:1;min-width:0}
+.card .navn{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .sub{font-size:12px;color:#888;margin-top:2px}
+.card .badge{display:inline-block;background:#2a2a38;color:#aaa;border-radius:6px;padding:1px 6px;font-size:11px;margin-right:6px}
+.card .days{font-size:13px;text-align:right;white-space:nowrap}
+.days.ok{color:#4ade80}.days.warn{color:#FBBF24}.days.exp{color:#f87171}
+.empty{text-align:center;color:#555;font-size:15px;padding:50px 0}
+.actionbar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,#0C0C12 24px);max-width:520px;margin:0 auto}
+.btn{flex:1;padding:16px;border-radius:14px;border:none;font-family:inherit;font-weight:bold;font-size:16px;color:#fff;cursor:pointer}
+.btn:active{transform:scale(.97)}
+.btn.add{background:#E8820A}
+.btn.take{background:#2a2a38}
+input[type=file]{display:none}
+/* overlay */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:flex-end;z-index:20}
+.ov.show{display:flex}
+.sheet{background:#16161f;width:100%;max-width:520px;margin:0 auto;border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92dvh;overflow-y:auto}
+.sheet h2{font-size:20px;margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:#888;margin-bottom:5px}
+.field input,.field select{width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold}
+.thumb{width:100%;max-height:180px;object-fit:cover;border-radius:12px;margin-bottom:12px;background:#0C0C12}
+.qrline{font-size:12px;color:#666;margin-bottom:12px;word-break:break-all}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.sheet .btn{width:100%;margin-top:6px}
+.ghost{background:transparent;color:#888;padding:14px;font-size:15px}
+.status{font-size:14px;text-align:center;min-height:20px;margin:6px 0;color:#FBBF24}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid #444;border-top-color:#E8820A;border-radius:50%;animation:s .7s linear infinite;vertical-align:-3px;margin-right:6px}
+@keyframes s{to{transform:rotate(360deg)}}
+.dtitle{font-size:22px;margin-bottom:6px}
+.dmeta{font-size:14px;color:#aaa;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="logo">Ditzel &amp; Co</div>
+<h1>🧊 Fryseren</h1>
+<div class="count" id="count"></div>
+<div style="height:12px"></div>
+<input class="search" id="search" type="search" inputmode="search" placeholder="Søg efter vare…">
+<div class="chips" id="chips"></div>
+<div class="banner" id="banner"></div>
+<div class="list" id="list"></div>
+
+<div class="actionbar">
+  <button class="btn add" onclick="startAdd()">➕ Læg i fryser</button>
+  <button class="btn take" onclick="startTake()">📤 Tag ud</button>
+</div>
+
+<input type="file" id="addCam" accept="image/*" capture="environment" onchange="onAddPhoto(this)">
+<input type="file" id="qrCam" accept="image/*" capture="environment" onchange="onQrClose(this)">
+<input type="file" id="takeCam" accept="image/*" capture="environment" onchange="onTakePhoto(this)">
+
+<!-- Tilføj-ark -->
+<div class="ov" id="addOv">
+  <div class="sheet">
+    <h2>Ny frostvare</h2>
+    <div class="status" id="addStatus"></div>
+    <img class="thumb" id="addThumb" alt="">
+    <div class="qrline" id="addQr"></div>
+    <div class="field"><label>Hvad er det?</label><input id="fNavn" placeholder="fx Hakket oksekød"></div>
+    <div class="field"><label>Type</label><select id="fType" onchange="recalcUdloeb()"></select></div>
+    <div class="row">
+      <div class="field"><label>Vægt</label><input id="fVaegt" placeholder="fx 500 g"></div>
+      <div class="field"><label>Indfrosset</label><input id="fInd" type="date"></div>
+    </div>
+    <div class="field"><label>Bedst før (i fryser)</label><input id="fUd" type="date"></div>
+    <div class="field"><label>Note</label><input id="fNote" placeholder="fx 4 stk / Netto"></div>
+    <button class="btn add" onclick="saveAdd()">Gem i fryseren</button>
+    <button class="btn ghost" onclick="closeAdd()">Fortryd</button>
+  </div>
+</div>
+
+<!-- Udtag/detalje-ark -->
+<div class="ov" id="takeOv">
+  <div class="sheet">
+    <div class="status" id="takeStatus"></div>
+    <img class="thumb" id="takeThumb" alt="" style="display:none">
+    <div class="dtitle" id="takeNavn"></div>
+    <div class="dmeta" id="takeMeta"></div>
+    <div class="dmeta" id="takeNote"></div>
+    <button class="btn add" id="takeConfirm" style="display:none" onclick="confirmTake()">📤 Tag ud af fryseren</button>
+    <button class="btn ghost" onclick="closeTake()">Luk</button>
+  </div>
+</div>
+
+<script>
+var API='https://lightcrew-api.thomas-5c5.workers.dev';
+var TYPES=[
+  ['Kød','🥩',6],['Fisk','🐟',3],['Fjerkræ','🍗',9],['Grønsager','🥦',12],
+  ['Frugt','🍓',10],['Brød','🍞',3],['Dessert','🍰',4],['Færdigret','🍲',3],['Andet','📦',6]
+];
+var emojiOf={},monthsOf={};
+TYPES.forEach(function(t){emojiOf[t[0]]=t[1];monthsOf[t[0]]=t[2];});
+var filterType='',pendingFoto='',pendingQr='',takeQr='';
+
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function addMonthsISO(iso,m){var d=iso?new Date(iso):new Date();d.setMonth(d.getMonth()+m);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function daysUntil(iso){if(!iso)return null;var d=new Date(iso+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);return Math.round((d-n)/86400000);}
+function fmtDK(iso){if(!iso)return'';var p=iso.split('-');return p.length===3?p[2]+'/'+p[1]:iso;}
+
+// --- Byg type-chips ---
+(function(){
+  var c=document.getElementById('chips');
+  var all=document.createElement('div');all.className='chip on';all.textContent='Alle';all.onclick=function(){setFilter('',all);};c.appendChild(all);
+  TYPES.forEach(function(t){var el=document.createElement('div');el.className='chip';el.textContent=t[1]+' '+t[0];el.onclick=function(){setFilter(t[0],el);};c.appendChild(el);});
+  var sel=document.getElementById('fType');
+  TYPES.forEach(function(t){var o=document.createElement('option');o.value=t[0];o.textContent=t[1]+' '+t[0];sel.appendChild(o);});
+})();
+function setFilter(t,el){filterType=t;document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});el.classList.add('on');load();}
+var st;document.getElementById('search').addEventListener('input',function(){clearTimeout(st);st=setTimeout(load,250);});
+
+// --- Hent liste ---
+function load(){
+  var q=document.getElementById('search').value.trim();
+  var u=API+'/api/fryser?';if(q)u+='q='+encodeURIComponent(q)+'&';if(filterType)u+='type='+encodeURIComponent(filterType);
+  fetch(u).then(function(r){return r.json();}).then(render).catch(function(){document.getElementById('list').innerHTML='<div class="empty">Offline — prøv igen</div>';});
+}
+function render(items){
+  if(!Array.isArray(items))items=[];
+  document.getElementById('count').textContent=items.length?items.length+' vare'+(items.length===1?'':'r')+' i fryseren':'';
+  var soon=items.filter(function(i){var d=daysUntil(i.udloeb);return d!==null&&d<=14;}).length;
+  var b=document.getElementById('banner');
+  if(soon){b.textContent='⚠️ '+soon+' vare'+(soon===1?'':'r')+' udløber snart';b.classList.add('show');}else{b.classList.remove('show');}
+  var l=document.getElementById('list');l.innerHTML='';
+  if(!items.length){l.innerHTML='<div class="empty">Ingen varer her endnu.<br>Tryk “Læg i fryser”.</div>';return;}
+  items.forEach(function(i){
+    var d=daysUntil(i.udloeb),cls='ok',lbl='',cardc='';
+    if(d!==null){if(d<0){cls='exp';lbl='Udløbet';cardc='exp';}else if(d<=14){cls='warn';lbl=d+' dg';cardc='warn';}else{lbl=d+' dg';}}
+    var el=document.createElement('div');el.className='card '+cardc;
+    el.innerHTML='<div class="emoji">'+(emojiOf[i.type]||'📦')+'</div>'+
+      '<div class="info"><div class="navn">'+esc(i.navn||'(uden navn)')+'</div>'+
+      '<div class="sub"><span class="badge">'+esc(i.type||'?')+'</span>'+(i.vaegt?esc(i.vaegt)+' · ':'')+(i.udloeb?'bedst før '+fmtDK(i.udloeb):'ingen dato')+'</div></div>'+
+      '<div class="days '+cls+'">'+lbl+'</div>';
+    el.onclick=function(){openDetail(i);};
+    l.appendChild(el);
+  });
+}
+function esc(s){return(s||'').replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+
+// --- Billedbehandling + QR ---
+function processFile(file){
+  return new Promise(function(res,rej){
+    var img=new Image();img.onload=function(){
+      var max=1280,w=img.width,h=img.height;
+      if(w>h&&w>max){h=Math.round(h*max/w);w=max;}else if(h>=w&&h>max){w=Math.round(w*max/h);h=max;}
+      var cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      var cx=cv.getContext('2d');cx.drawImage(img,0,0,w,h);
+      var dataUrl=cv.toDataURL('image/jpeg',0.72);
+      var qr=null;
+      try{var id=cx.getImageData(0,0,w,h);var code=window.jsQR?jsQR(id.data,w,h):null;if(code&&code.data)qr=code.data.trim();}catch(e){}
+      res({dataUrl:dataUrl,b64:dataUrl.split(',')[1],qr:qr});
+    };img.onerror=rej;img.src=URL.createObjectURL(file);
+  });
+}
+
+// --- Tilføj-flow ---
+function startAdd(){document.getElementById('addCam').click();}
+function onAddPhoto(input){
+  if(!input.files[0])return;var file=input.files[0];input.value='';
+  processFile(file).then(function(r){
+    pendingFoto=r.b64;pendingQr=r.qr||'';
+    document.getElementById('addThumb').src=r.dataUrl;
+    openAdd();
+    var s=document.getElementById('addStatus');
+    if(!pendingQr){s.textContent='Kunne ikke læse QR — tag et nærbillede af QR-koden';document.getElementById('addQr').textContent='';setTimeout(function(){document.getElementById('qrCam').click();},400);}
+    else{document.getElementById('addQr').textContent='QR: '+pendingQr;}
+    // AI-aflæsning
+    s.innerHTML='<span class="spin"></span>Aflæser label…';
+    fetch(API+'/api/fryser/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({foto:pendingFoto})})
+      .then(function(x){return x.json();}).then(function(d){
+        s.textContent='';
+        var f=(d&&d.felter)||{};
+        if(f.navn)document.getElementById('fNavn').value=f.navn;
+        if(f.type)document.getElementById('fType').value=f.type;
+        if(f.vaegt)document.getElementById('fVaegt').value=f.vaegt;
+        if(f.note)document.getElementById('fNote').value=f.note;
+        recalcUdloeb();
+      }).catch(function(){s.textContent='Kunne ikke aflæse label — tast selv';});
+  });
+}
+function onQrClose(input){
+  if(!input.files[0])return;var file=input.files[0];input.value='';
+  processFile(file).then(function(r){
+    if(r.qr){pendingQr=r.qr;document.getElementById('addQr').textContent='QR: '+pendingQr;document.getElementById('addStatus').textContent='';}
+    else{document.getElementById('addStatus').textContent='Kunne stadig ikke læse QR — prøv igen';}
+  });
+}
+function openAdd(){
+  document.getElementById('fInd').value=todayISO();
+  document.getElementById('addOv').classList.add('show');
+}
+function recalcUdloeb(){
+  var t=document.getElementById('fType').value;var ind=document.getElementById('fInd').value||todayISO();
+  document.getElementById('fUd').value=addMonthsISO(ind,monthsOf[t]||6);
+}
+document.getElementById('fInd').addEventListener('change',recalcUdloeb);
+function closeAdd(){document.getElementById('addOv').classList.remove('show');clearAdd();}
+function clearAdd(){pendingFoto='';pendingQr='';['fNavn','fVaegt','fNote'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('addQr').textContent='';document.getElementById('addStatus').textContent='';}
+function saveAdd(){
+  if(!pendingQr){document.getElementById('addStatus').textContent='Mangler QR — tag et nærbillede af koden';document.getElementById('qrCam').click();return;}
+  var body={qr:pendingQr,navn:document.getElementById('fNavn').value.trim(),type:document.getElementById('fType').value,
+    vaegt:document.getElementById('fVaegt').value.trim(),indfrossen:document.getElementById('fInd').value,
+    udloeb:document.getElementById('fUd').value,note:document.getElementById('fNote').value.trim(),foto:pendingFoto};
+  var s=document.getElementById('addStatus');s.innerHTML='<span class="spin"></span>Gemmer…';
+  fetch(API+'/api/fryser',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json();}).then(function(d){
+      if(d.ok){closeAdd();load();}else{s.textContent='Fejl: '+(d.error||'ukendt');}
+    }).catch(function(){s.textContent='Offline — prøv igen';});
+}
+
+// --- Tag ud-flow (scan QR) ---
+function startTake(){document.getElementById('takeCam').click();}
+function onTakePhoto(input){
+  if(!input.files[0])return;var file=input.files[0];input.value='';
+  processFile(file).then(function(r){
+    if(!r.qr){alert('Kunne ikke læse QR-koden — prøv igen med et tydeligt billede af koden.');return;}
+    lookup(r.qr);
+  });
+}
+function lookup(qr){
+  fetch(API+'/api/fryser/qr/'+encodeURIComponent(qr)).then(function(r){
+    if(r.status===404){alert('Den QR-kode findes ikke i fryseren.');return null;}
+    return r.json();
+  }).then(function(i){if(i)openDetail(i);});
+}
+
+// --- Detalje / udtag ---
+function openDetail(i){
+  takeQr=i.qr;
+  var d=daysUntil(i.udloeb),dtxt=i.udloeb?('bedst før '+fmtDK(i.udloeb)+(d!==null?(d<0?' (udløbet)':' ('+d+' dage)'):'')):'ingen dato';
+  document.getElementById('takeNavn').textContent=(emojiOf[i.type]||'📦')+' '+(i.navn||'(uden navn)');
+  document.getElementById('takeMeta').textContent=(i.type||'')+(i.vaegt?' · '+i.vaegt:'')+' · '+dtxt+(i.indfrossen?' · indfrosset '+fmtDK(i.indfrossen):'');
+  document.getElementById('takeNote').textContent=i.note||'';
+  var th=document.getElementById('takeThumb');
+  if(i.foto){th.src='data:image/jpeg;base64,'+i.foto;th.style.display='';}else{th.style.display='none';}
+  document.getElementById('takeStatus').textContent='';
+  document.getElementById('takeConfirm').style.display='';
+  document.getElementById('takeOv').classList.add('show');
+}
+function confirmTake(){
+  var s=document.getElementById('takeStatus');s.innerHTML='<span class="spin"></span>Tager ud…';
+  fetch(API+'/api/fryser/hent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({qr:takeQr})})
+    .then(function(r){return r.json();}).then(function(d){
+      if(d.ok){closeTake();load();}else{s.textContent='Fejl: '+(d.error||'ukendt');}
+    }).catch(function(){s.textContent='Offline — prøv igen';});
+}
+function closeTake(){document.getElementById('takeOv').classList.remove('show');}
+
+load();
+</script>
+</body>
+</html>
