@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fryser-labels — print</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<style>
+/* ==== Justér her hvis dine label-ark har andre mål ==== */
+:root{
+  --cols:3; --rows:4;
+  --lw:63.5mm;   /* label bredde */
+  --lh:70mm;     /* label højde  */
+  --gap:2mm;     /* mellemrum    */
+  --mtop:6mm;    /* margen top   */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#e9e9ee;font-family:'Helvetica Neue',Arial,sans-serif;color:#111}
+.controls{position:sticky;top:0;z-index:10;background:#0C0C12;color:#fff;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.controls h1{font-size:16px;font-weight:bold;margin-right:auto}
+.controls .logo{font-size:11px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-right:8px}
+.btn{padding:9px 16px;border-radius:9px;border:none;font-weight:bold;font-size:14px;cursor:pointer;font-family:inherit}
+.btn.print{background:#E8820A;color:#fff}
+.btn.new{background:#2a2a38;color:#fff}
+.hint{width:100%;color:#999;font-size:12px}
+.wrap{display:flex;justify-content:center;padding:16px}
+.sheet{
+  width:210mm;height:297mm;background:#fff;
+  padding:var(--mtop) 0 0;
+  display:grid;grid-template-columns:repeat(var(--cols),var(--lw));
+  grid-auto-rows:var(--lh);gap:var(--gap);justify-content:center;align-content:start;
+  box-shadow:0 2px 14px rgba(0,0,0,.18);
+}
+.label{
+  width:var(--lw);height:var(--lh);border:1px dashed #bbb;border-radius:2mm;
+  padding:3mm 3.5mm;position:relative;overflow:hidden;display:flex;flex-direction:column;
+}
+.lhead{display:flex;align-items:flex-start;justify-content:space-between}
+.lbrand{font-size:8pt;font-weight:bold;letter-spacing:.5px}
+.lbrand small{display:block;font-weight:normal;color:#666;font-size:6pt;letter-spacing:0}
+.qr{width:18mm;height:18mm}
+.qr svg{width:100%;height:100%;display:block}
+.field{font-size:8pt;margin-top:1.8mm;color:#333}
+.line{border-bottom:1px solid #222;height:5mm}
+.line2{border-bottom:1px solid #222;height:5mm;margin-top:1mm}
+.types{font-size:7pt;margin-top:1.6mm;line-height:1.7;color:#222}
+.types .b{display:inline-block;width:2.6mm;height:2.6mm;border:1px solid #555;border-radius:.5mm;vertical-align:-.4mm;margin-right:1mm}
+.dates{margin-top:auto;font-size:7.5pt;color:#222}
+.dates div{display:flex;align-items:center;gap:1mm;margin-top:.8mm}
+.dates .dl{width:22mm;color:#444}
+.dates .dv{flex:1;border-bottom:1px solid #222;height:4mm}
+.code{position:absolute;right:3.5mm;bottom:2mm;font-size:6pt;color:#999;letter-spacing:.5px;font-family:monospace}
+@page{size:A4;margin:0}
+@media print{
+  body{background:#fff}
+  .controls,.hint{display:none}
+  .wrap{padding:0}
+  .sheet{box-shadow:none}
+  .label{border-color:#ccc}
+}
+</style>
+</head>
+<body>
+<div class="controls">
+  <span class="logo">Ditzel &amp; Co</span>
+  <h1>🧊 Fryser-labels</h1>
+  <button class="btn new" onclick="build()">🔄 Nyt ark (nye koder)</button>
+  <button class="btn print" onclick="window.print()">🖨️ Print</button>
+  <div class="hint">12 labels pr. A4 (63,5 × 70 mm). Hver har sin egen unikke QR-kode. Print → tag en label → skriv hvad det er → sæt på posen → scan med appen. Passer til plain papir (klip langs streger) eller 12-op selvklæbende A4-ark. Mål kan justeres øverst i filens CSS.</div>
+</div>
+<div class="wrap"><div class="sheet" id="sheet"></div></div>
+
+<script>
+function kode(){
+  var cs='ACDEFGHJKMNPQRTUVWXYZ2346789',out='';
+  var a=new Uint8Array(6);
+  if(window.crypto&&crypto.getRandomValues){crypto.getRandomValues(a);}
+  else{for(var j=0;j<6;j++)a[j]=Math.floor(Math.random()*256);}
+  for(var i=0;i<6;i++)out+=cs[a[i]%cs.length];
+  return out;
+}
+function qrSvg(txt){
+  var q=qrcode(0,'M');q.addData(txt);q.make();
+  return q.createSvgTag({cellSize:4,margin:0,scalable:true});
+}
+function build(){
+  var n=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols'))*
+        parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows'));
+  var sheet=document.getElementById('sheet');sheet.innerHTML='';
+  for(var i=0;i<n;i++){
+    var c=kode();
+    var el=document.createElement('div');el.className='label';
+    el.innerHTML=
+      '<div class="lhead"><div class="lbrand">FRYSER<small>ditzel &amp; co</small></div>'+
+      '<div class="qr">'+qrSvg(c)+'</div></div>'+
+      '<div class="field">Vare:</div><div class="line"></div><div class="line2"></div>'+
+      '<div class="types">'+
+        '<span class="b"></span>Kød &nbsp;<span class="b"></span>Fisk &nbsp;<span class="b"></span>Fjerkræ<br>'+
+        '<span class="b"></span>Grønt &nbsp;<span class="b"></span>Frugt &nbsp;<span class="b"></span>Andet</div>'+
+      '<div class="dates">'+
+        '<div><span class="dl">Indfrosset:</span><span class="dv"></span></div>'+
+        '<div><span class="dl">Bedst før:</span><span class="dv"></span></div></div>'+
+      '<div class="code">'+c+'</div>';
+    sheet.appendChild(el);
+  }
+}
+build();
+</script>
+</body>
+</html>
