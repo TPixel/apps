@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Düsseldorf — spisesteder nær Steigenberger Icon Parkhotel</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,Helvetica,Arial,sans-serif;background:#0C0C12;color:#fff;height:100dvh;display:flex;flex-direction:column}
+header{padding:10px 14px;font-weight:bold;font-size:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+header span{color:#E8820A}
+header small{color:#888;font-weight:normal;font-size:12px}
+main{flex:1;display:flex;min-height:0}
+#map{flex:1;min-height:320px}
+aside{width:320px;overflow-y:auto;background:#13131b;padding:8px;font-size:13px}
+.item{display:flex;gap:8px;padding:8px;border-radius:10px;cursor:pointer;align-items:flex-start}
+.item:hover{background:#1e1e2a}
+.n{flex:0 0 22px;height:22px;border-radius:50%;background:#E8820A;color:#fff;font-weight:bold;font-size:12px;display:flex;align-items:center;justify-content:center}
+.n.h{background:#4ade80;color:#0C0C12}
+.n.b{background:#c98b2b}.n.m{background:#E8820A}.n.j{background:#f87171}.n.c{background:#8ab4f8;color:#0C0C12}
+.t{font-weight:bold}.d{color:#aaa;font-size:12px;line-height:1.35}
+.grp{color:#777;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:10px 8px 2px}
+.leaflet-container{background:#e8e6df}
+.pin{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center}
+.pin b{transform:rotate(45deg);color:#fff;font-size:12px}
+.pin.h{width:34px;height:34px;background:#4ade80}.pin.h b{color:#0C0C12;font-size:16px}
+.pin.b{background:#c98b2b}.pin.m{background:#E8820A}.pin.j{background:#f87171}.pin.c{background:#8ab4f8}
+.leaflet-popup-content{font-size:13px}
+@media (max-width:760px){main{flex-direction:column}aside{width:100%;max-height:40%}}
+</style>
+</head>
+<body>
+<header><div>🍽 <span>Düsseldorf</span> — spisesteder nær Steigenberger Icon Parkhotel <small>· Königsallee 1a · gåtider fra hotellet</small></div><small>Klik på et sted i listen eller på kortet</small></header>
+<main>
+<div id="map"></div>
+<aside id="list"></aside>
+</main>
+<script>
+const HOTEL = {lat:51.2263, lng:6.7784, navn:'Steigenberger Icon Parkhotel', adr:'Königsallee 1a'};
+const STEDER = [
+ {n:1, k:'b', navn:'Uerige', adr:'Berger Str. 1', lat:51.2249, lng:6.7717, info:'Altstadt-brauhaus · altbier + rheinsk mad · € · 8 min', url:'https://uerige.de'},
+ {n:2, k:'b', navn:'Zum Schlüssel', adr:'Bolkerstr. 41–47', lat:51.2258, lng:6.7728, info:'Brauhaus siden 1850 · Sauerbraten/Schnitzel · € · 8 min', url:'https://zumschluessel.de'},
+ {n:3, k:'b', navn:'Füchschen', adr:'Ratinger Str. 28', lat:51.2287, lng:6.7736, info:'Livligt brauhaus · godt Alt · € · 10 min', url:'https://fuechschen.de'},
+ {n:4, k:'m', navn:'Münstermann Kontor', adr:'Hohe Str. 11', lat:51.2216, lng:6.7757, info:'Tysk-fransk bistro · uformel · €€ · 7 min', url:'https://muenstermann-kontor.de'},
+ {n:5, k:'m', navn:'Be-Lucca', adr:'Hohe Str. 49', lat:51.2205, lng:6.7746, info:'Italiensk · frisk pasta · baggård · €€ · 8 min', url:'https://be-lucca.de'},
+ {n:6, k:'j', navn:'Takumi', adr:'Immermannstr. 28 (Little Tokyo)', lat:51.2226, lng:6.7887, info:'Sapporo-ramen · € · 12 min', url:'https://takumi-duesseldorf.de'},
+ {n:7, k:'j', navn:'Naniwa', adr:'Oststr. 55 (Little Tokyo)', lat:51.2233, lng:6.7864, info:'Klassisk ramen · byens mest populære · € · 13 min', url:'https://naniwa.de'},
+ {n:8, k:'c', navn:'Copenhagen Coffee Lab', adr:'Carlsplatz 20–21', lat:51.2226, lng:6.7738, info:'Dansk kaffe/brunch ved markedet · € · 7 min', url:'https://copenhagencoffeelab.com'},
+];
+const map = L.map('map',{zoomControl:true}).setView([HOTEL.lat, HOTEL.lng+0.004], 15);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rada/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19}).addTo(map);
+const gm = (lat,lng,q)=>`https://www.google.com/maps/dir/?api=1&origin=${HOTEL.lat},${HOTEL.lng}&destination=${encodeURIComponent(q)}&travelmode=walking`;
+const icon = (cls, txt)=>L.divIcon({className:'', html:`<div class="pin ${cls}"><b>${txt}</b></div>`, iconSize:[26,26], iconAnchor:[13,26], popupAnchor:[0,-24]});
+const hm = L.marker([HOTEL.lat,HOTEL.lng],{icon:icon('h','🏨'),zIndexOffset:1000}).addTo(map).bindPopup(`<b>${HOTEL.navn}</b><br>${HOTEL.adr}`);
+L.circle([HOTEL.lat,HOTEL.lng],{radius:650,color:'#4ade80',weight:1,fill:false,dashArray:'4 6'}).addTo(map).bindTooltip('~8 min gang',{permanent:false});
+const markers = {};
+STEDER.forEach(s=>{
+  markers[s.n] = L.marker([s.lat,s.lng],{icon:icon(s.k, s.n)}).addTo(map)
+    .bindPopup(`<b>${s.n}. ${s.navn}</b><br>${s.adr}<br><span style="color:#666">${s.info}</span><br><a href="${s.url}" target="_blank">hjemmeside</a> · <a href="${gm(s.lat,s.lng,s.navn+' '+s.adr+' Düsseldorf')}" target="_blank">rute (Google Maps)</a>`);
+});
+const grp = {b:'Altstadt-brauhaus', m:'Moderne / hyggeligt (Carlstadt)', j:'Little Tokyo', c:'Brunch / kaffe'};
+let html = `<div class="item" onclick="map.setView([${HOTEL.lat},${HOTEL.lng}],16);hm.openPopup()"><div class="n h">🏨</div><div><div class="t">${HOTEL.navn}</div><div class="d">${HOTEL.adr} — udgangspunkt</div></div></div>`;
+let last='';
+STEDER.forEach(s=>{ if(s.k!==last){ html+=`<div class="grp">${grp[s.k]}</div>`; last=s.k; }
+  html += `<div class="item" onclick="map.setView([${s.lat},${s.lng}],17);markers[${s.n}].openPopup()"><div class="n ${s.k}">${s.n}</div><div><div class="t">${s.navn}</div><div class="d">${s.adr}<br>${s.info}</div></div></div>`; });
+document.getElementById('list').innerHTML = html;
+</script>
+</body>
+</html>
