@@ -143,7 +143,7 @@ function card(r) {
   return `<div class="card p${r.prioritet}${over ? ' over' : ''}${r.status === 'udfoert' ? ' done' : ''}" onclick="openSheet(${r.id})">
     <div class="t"><span>${esc(r.titel || r.tekst)}</span>${r.status === 'aaben' ? `<button class="ok" onclick="event.stopPropagation();udfoert(${r.id})" title="Udført">✓</button>` : ''}</div>
     ${r.titel && r.titel !== r.tekst && !r.tekst.startsWith(r.titel) ? `<div class="raw">${esc(r.tekst)}</div>` : ''}
-    <div class="m">${r.handling ? `<span class="b">${esc(r.handling)}</span>` : ''}${r.projekt && F.view !== 'projekt' ? `<span class="b">${esc(r.projekt)}</span>` : ''}${r.kategori && F.view !== 'kategori' ? `<span class="b">${esc(r.kategori)}</span>` : ''}${r.deadline ? `<span class="b d${over ? ' over' : ''}">📅 ${esc(r.deadline)}</span>` : ''}${r.prioritet === 1 ? '<span class="b" style="color:#f87171">NU</span>' : ''}<span class="b ${r.sorteret_af === 'ai' || r.sorteret_af === 'claude' ? 'ai' : r.sorteret_af === 'manuel' ? 'man' : 'reg'}">${r.sorteret_af || 'usorteret'}</span><span>${esc(r.kilde)} · ${esc((r.oprettet || '').slice(5, 16))}</span></div>
+    <div class="m">${r.handling ? `<span class="b">${esc(r.handling)}</span>` : ''}${r.projekt && F.view !== 'projekt' ? `<span class="b">${esc(r.projekt)}</span>` : ''}${r.kategori && F.view !== 'kategori' ? `<span class="b">${esc(r.kategori)}</span>` : ''}${r.deadline ? `<span class="b d${over ? ' over' : ''}">📅 ${esc(r.deadline)}</span>` : ''}${r.prioritet === 1 ? '<span class="b" style="color:#f87171">NU</span>' : ''}${r.kode ? '<span class="b" style="color:#8ab4f8">kode</span>' : ''}${r.github_issue ? `<a class="b" style="color:#8ab4f8;text-decoration:none" href="${esc(r.github_issue.replace('#lukket',''))}" target="_blank" onclick="event.stopPropagation()">🐙 issue${r.github_issue.endsWith('#lukket') ? ' ✓' : ''}</a>` : ''}<span class="b ${r.sorteret_af === 'ai' || r.sorteret_af === 'claude' ? 'ai' : r.sorteret_af === 'manuel' ? 'man' : 'reg'}">${r.sorteret_af || 'usorteret'}</span><span>${esc(r.kilde)} · ${esc((r.oprettet || '').slice(5, 16))}</span></div>
   </div>`;
 }
 function setF(k, v) { F[k] = v; render(); }
@@ -175,7 +175,9 @@ function openSheet(id) {
     <div class="field"><label>Handling</label><select id="e_handling">${opts(CFG.handlinger, r.handling)}</select></div></div>
     <div class="row"><div class="field"><label>Projekt</label><input id="e_projekt" list="projList" value="${esc(r.projekt)}"><datalist id="projList">${projs.map(p => `<option value="${esc(p)}">`).join('')}</datalist></div>
     <div class="field"><label>Prioritet</label><select id="e_prio"><option value="1"${r.prioritet === 1 ? ' selected' : ''}>1 · Nu</option><option value="2"${r.prioritet === 2 ? ' selected' : ''}>2 · Normal</option><option value="3"${r.prioritet === 3 ? ' selected' : ''}>3 · Engang</option></select></div></div>
-    <div class="field"><label>Deadline</label><input id="e_deadline" type="date" value="${esc(r.deadline)}"></div>
+    <div class="row"><div class="field"><label>Deadline</label><input id="e_deadline" type="date" value="${esc(r.deadline)}"></div>
+    <div class="field"><label>Kode-opgave (→ GitHub issue)</label><select id="e_kode"><option value="0"${!r.kode ? ' selected' : ''}>Nej</option><option value="1"${r.kode ? ' selected' : ''}>Ja${CFG.repos && CFG.repos[r.projekt] ? ' → ' + CFG.repos[r.projekt] : ''}</option></select></div></div>
+    ${r.github_issue ? `<div class="why" style="background:#1a2333;color:#8ab4f8">🐙 <a style="color:#8ab4f8" href="${esc(r.github_issue.replace('#lukket',''))}" target="_blank">${esc(r.github_issue.replace('#lukket',''))}</a>${r.github_issue.endsWith('#lukket') ? ' (lukket)' : ''}</div>` : ''}
     <button class="btn save" onclick="save(${r.id})">Gem</button>
     ${r.status === 'aaben' ? `<button class="btn done" onclick="udfoert(${r.id});closeSheet()">✓ Markér udført</button>` : `<button class="btn ghost" onclick="patch(${r.id},{status:'aaben'}).then(()=>{closeSheet();load()})">↩ Genåbn</button>`}
     <button class="btn del" onclick="slet(${r.id})">Slet</button>
@@ -185,7 +187,7 @@ function openSheet(id) {
 }
 function closeSheet() { $('ov').classList.remove('show'); }
 async function save(id) {
-  await patch(id, { titel: $('e_titel').value, tekst: $('e_tekst').value, kategori: $('e_kategori').value, handling: $('e_handling').value, projekt: $('e_projekt').value, prioritet: parseInt($('e_prio').value), deadline: $('e_deadline').value });
+  await patch(id, { titel: $('e_titel').value, tekst: $('e_tekst').value, kategori: $('e_kategori').value, handling: $('e_handling').value, projekt: $('e_projekt').value, prioritet: parseInt($('e_prio').value), deadline: $('e_deadline').value, kode: parseInt($('e_kode').value) });
   closeSheet(); toast('Gemt'); load();
 }
 async function slet(id) { if (!confirm('Slet denne note?')) return; await fetch(API + '/api/hoved/' + id, { method: 'DELETE' }); closeSheet(); load(); }
