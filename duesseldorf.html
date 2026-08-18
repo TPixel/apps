@@ -19,14 +19,14 @@ aside{width:320px;overflow-y:auto;background:#13131b;padding:8px;font-size:13px}
 .item:hover{background:#1e1e2a}
 .n{flex:0 0 22px;height:22px;border-radius:50%;background:#E8820A;color:#fff;font-weight:bold;font-size:12px;display:flex;align-items:center;justify-content:center}
 .n.h{background:#4ade80;color:#0C0C12}
-.n.b{background:#c98b2b}.n.m{background:#E8820A}.n.j{background:#f87171}.n.c{background:#8ab4f8;color:#0C0C12}
+.n.b{background:#c98b2b}.n.m{background:#E8820A}.n.j{background:#f87171}.n.c{background:#8ab4f8;color:#0C0C12}.n.r{background:#38bdf8;color:#0C0C12}
 .t{font-weight:bold}.d{color:#aaa;font-size:12px;line-height:1.35}
 .grp{color:#777;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:10px 8px 2px}
 .leaflet-container{background:#e8e6df}
 .pin{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center}
 .pin b{transform:rotate(45deg);color:#fff;font-size:12px}
 .pin.h{width:34px;height:34px;background:#4ade80}.pin.h b{color:#0C0C12;font-size:16px}
-.pin.b{background:#c98b2b}.pin.m{background:#E8820A}.pin.j{background:#f87171}.pin.c{background:#8ab4f8}
+.pin.b{background:#c98b2b}.pin.m{background:#E8820A}.pin.j{background:#f87171}.pin.c{background:#8ab4f8}.pin.r{background:#38bdf8}
 .leaflet-popup-content{font-size:13px}
 @media (max-width:760px){main{flex-direction:column}aside{width:100%;max-height:40%}}
 </style>
@@ -48,8 +48,14 @@ const STEDER = [
  {n:6, k:'j', navn:'Takumi', adr:'Immermannstr. 28 (Little Tokyo)', lat:51.2226, lng:6.7887, info:'Sapporo-ramen · € · 12 min', url:'https://takumi-duesseldorf.de'},
  {n:7, k:'j', navn:'Naniwa', adr:'Oststr. 55 (Little Tokyo)', lat:51.2233, lng:6.7864, info:'Klassisk ramen · byens mest populære · € · 13 min', url:'https://naniwa.de'},
  {n:8, k:'c', navn:'Copenhagen Coffee Lab', adr:'Carlsplatz 20–21', lat:51.2226, lng:6.7738, info:'Dansk kaffe/brunch ved markedet · € · 7 min', url:'https://copenhagencoffeelab.com'},
+ {n:9, k:'r', navn:'d-town Restaurant & Bar', adr:'Burgplatz 28', lat:51.2278, lng:6.7714, info:'Rheinsk/tysk · stor terrasse direkte ud til Rhinen ved Schlossturm · €€ · 12 min', url:'https://d-town.de'},
+ {n:10, k:'r', navn:'Frankenheim Bistro (Kasematten)', adr:'Rheinwerft 16', lat:51.2258, lng:6.7710, info:'Altbier-bistro på kajen · borde ved vandet, udsigt til Rheinturm · € · 14 min', url:'https://kasematten-duesseldorf.de'},
+ {n:11, k:'r', navn:'Café Bató (Kasematten)', adr:'Rheinwerft', lat:51.2265, lng:6.7712, info:'Café/bar · flammkuchen, cocktails, Rhin-udsigt · €–€€ · 14 min', url:'https://zumschluessel.de'},
+ {n:12, k:'r', navn:'Riva', adr:'Kaistraße 16a (Medienhafen)', lat:51.2172, lng:6.7515, info:'Italiensk/middelhav · byens flotteste havneterrasse · €€ · 30 min / taxa', url:'https://riva-duesseldorf.com'},
+ {n:13, k:'r', navn:'Lido Hafen', adr:'Am Handelshafen 15 (Medienhafen)', lat:51.2160, lng:6.7492, info:'Fransk-nordisk, Michelin-anbefalet · glaskube over vandet · €€€ · 30 min / taxa', url:'https://lido-hafen.de'},
+ {n:14, k:'r', navn:'The View Skylounge / Mia', adr:'Speditionstraße 9 (Medienhafen)', lat:51.2168, lng:6.7548, info:'Tapas + cocktails i 60 m højde · panorama over havn og Rhin · €€ · 30 min / taxa', url:'https://www.melia.com'},
 ];
-const map = L.map('map',{zoomControl:true}).setView([HOTEL.lat, HOTEL.lng+0.004], 15);
+const map = L.map('map',{zoomControl:true}).setView([HOTEL.lat-0.003, HOTEL.lng-0.006], 14);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19}).addTo(map);
 const gm = (lat,lng,q)=>`https://www.google.com/maps/dir/?api=1&origin=${HOTEL.lat},${HOTEL.lng}&destination=${encodeURIComponent(q)}&travelmode=walking`;
 const icon = (cls, txt)=>L.divIcon({className:'', html:`<div class="pin ${cls}"><b>${txt}</b></div>`, iconSize:[26,26], iconAnchor:[13,26], popupAnchor:[0,-24]});
@@ -60,7 +66,7 @@ STEDER.forEach(s=>{
   markers[s.n] = L.marker([s.lat,s.lng],{icon:icon(s.k, s.n)}).addTo(map)
     .bindPopup(`<b>${s.n}. ${s.navn}</b><br>${s.adr}<br><span style="color:#666">${s.info}</span><br><a href="${s.url}" target="_blank">hjemmeside</a> · <a href="${gm(s.lat,s.lng,s.navn+' '+s.adr+' Düsseldorf')}" target="_blank">rute (Google Maps)</a>`);
 });
-const grp = {b:'Altstadt-brauhaus', m:'Moderne / hyggeligt (Carlstadt)', j:'Little Tokyo', c:'Brunch / kaffe'};
+const grp = {b:'Altstadt-brauhaus', m:'Moderne / hyggeligt (Carlstadt)', j:'Little Tokyo', c:'Brunch / kaffe', r:'🌊 Ud til Rhinen (Altstadt-kaj 12–14 min · Medienhafen 30 min)'};
 let html = `<div class="item" onclick="map.setView([${HOTEL.lat},${HOTEL.lng}],16);hm.openPopup()"><div class="n h">🏨</div><div><div class="t">${HOTEL.navn}</div><div class="d">${HOTEL.adr} — udgangspunkt</div></div></div>`;
 let last='';
 STEDER.forEach(s=>{ if(s.k!==last){ html+=`<div class="grp">${grp[s.k]}</div>`; last=s.k; }
