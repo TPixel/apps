@@ -50,7 +50,7 @@ const STEDER = [
  {n:8, k:'c', navn:'Copenhagen Coffee Lab', adr:'Carlsplatz 20–21', lat:51.2226, lng:6.7738, info:'Dansk kaffe/brunch ved markedet · € · 7 min', url:'https://copenhagencoffeelab.com'},
 ];
 const map = L.map('map',{zoomControl:true}).setView([HOTEL.lat, HOTEL.lng+0.004], 15);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rada/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19}).addTo(map);
 const gm = (lat,lng,q)=>`https://www.google.com/maps/dir/?api=1&origin=${HOTEL.lat},${HOTEL.lng}&destination=${encodeURIComponent(q)}&travelmode=walking`;
 const icon = (cls, txt)=>L.divIcon({className:'', html:`<div class="pin ${cls}"><b>${txt}</b></div>`, iconSize:[26,26], iconAnchor:[13,26], popupAnchor:[0,-24]});
 const hm = L.marker([HOTEL.lat,HOTEL.lng],{icon:icon('h','🏨'),zIndexOffset:1000}).addTo(map).bindPopup(`<b>${HOTEL.navn}</b><br>${HOTEL.adr}`);
