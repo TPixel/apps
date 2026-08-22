@@ -69,6 +69,7 @@ input[type=file]{display:none}
 <div style="height:12px"></div>
 <input class="search" id="search" type="search" inputmode="search" placeholder="Søg efter vare…">
 <div class="chips" id="chips"></div>
+<select class="search" id="hyldeFilter" onchange="load()" style="margin-bottom:10px"></select>
 <div class="banner" id="banner"></div>
 <div class="list" id="list"></div>
 
@@ -96,6 +97,7 @@ input[type=file]{display:none}
     </div>
     <div class="field"><label>Bedst før (i fryser)</label><input id="fUd" type="date"></div>
     <div class="field"><label>Note</label><input id="fNote" placeholder="fx 4 stk / Netto"></div>
+    <div class="field"><label>Placering</label><select id="fHylde"></select></div>
     <button class="btn add" onclick="saveAdd()">Gem i fryseren</button>
     <button class="btn ghost" onclick="closeAdd()">Fortryd</button>
   </div>
@@ -120,9 +122,14 @@ var TYPES=[
   ['Kød','🥩',6],['Fisk','🐟',3],['Fjerkræ','🍗',9],['Grønsager','🥦',12],
   ['Frugt','🍓',10],['Brød','🍞',3],['Dessert','🍰',4],['Færdigret','🍲',3],['Andet','📦',6]
 ];
+var HYLDER=[
+  ['Fryser 1', ['Skuffe 1','Skuffe 2','Skuffe 3','Skuffe 4','Skuffe 5','Skuffe 6','Skuffe 7']],
+  ['Fryser 2', ['Hylde 1','Hylde 2','Hylde 3','Skuffe 1','Skuffe 2','Skuffe 3','Skuffe 4','Skuffe 5']]
+];
 var emojiOf={},monthsOf={};
 TYPES.forEach(function(t){emojiOf[t[0]]=t[1];monthsOf[t[0]]=t[2];});
 var filterType='',pendingFoto='',pendingQr='',takeQr='';
+function kortHylde(h){return h?('📍 '+h.replace('Fryser ','F').replace(' · ',' ').replace('Skuffe ','Sk').replace('Hylde ','Hy')):'';}
 
 function todayISO(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function addMonthsISO(iso,m){var d=iso?new Date(iso):new Date();d.setMonth(d.getMonth()+m);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
@@ -136,6 +143,18 @@ function fmtDK(iso){if(!iso)return'';var p=iso.split('-');return p.length===3?p[
   TYPES.forEach(function(t){var el=document.createElement('div');el.className='chip';el.textContent=t[1]+' '+t[0];el.onclick=function(){setFilter(t[0],el);};c.appendChild(el);});
   var sel=document.getElementById('fType');
   TYPES.forEach(function(t){var o=document.createElement('option');o.value=t[0];o.textContent=t[1]+' '+t[0];sel.appendChild(o);});
+  var fh=document.getElementById('fHylde'),ff=document.getElementById('hyldeFilter');
+  fh.innerHTML='<option value="">— vælg placering —</option>';
+  ff.innerHTML='<option value="">📍 Alle placeringer</option>';
+  HYLDER.forEach(function(g){
+    var og1=document.createElement('optgroup');og1.label=g[0];
+    var og2=document.createElement('optgroup');og2.label=g[0];
+    g[1].forEach(function(it){var v=g[0]+' · '+it;
+      var a=document.createElement('option');a.value=v;a.textContent=it;og1.appendChild(a);
+      var b=document.createElement('option');b.value=v;b.textContent=it;og2.appendChild(b);
+    });
+    fh.appendChild(og1);ff.appendChild(og2);
+  });
 })();
 function setFilter(t,el){filterType=t;document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});el.classList.add('on');load();}
 var st;document.getElementById('search').addEventListener('input',function(){clearTimeout(st);st=setTimeout(load,250);});
@@ -143,7 +162,8 @@ var st;document.getElementById('search').addEventListener('input',function(){cle
 // --- Hent liste ---
 function load(){
   var q=document.getElementById('search').value.trim();
-  var u=API+'/api/fryser?';if(q)u+='q='+encodeURIComponent(q)+'&';if(filterType)u+='type='+encodeURIComponent(filterType);
+  var h=document.getElementById('hyldeFilter').value;
+  var u=API+'/api/fryser?';if(q)u+='q='+encodeURIComponent(q)+'&';if(filterType)u+='type='+encodeURIComponent(filterType)+'&';if(h)u+='hylde='+encodeURIComponent(h);
   fetch(u).then(function(r){return r.json();}).then(render).catch(function(){document.getElementById('list').innerHTML='<div class="empty">Offline — prøv igen</div>';});
 }
 function render(items){
@@ -160,7 +180,7 @@ function render(items){
     var el=document.createElement('div');el.className='card '+cardc;
     el.innerHTML='<div class="emoji">'+(emojiOf[i.type]||'📦')+'</div>'+
       '<div class="info"><div class="navn">'+esc(i.navn||'(uden navn)')+'</div>'+
-      '<div class="sub"><span class="badge">'+esc(i.type||'?')+'</span>'+(i.vaegt?esc(i.vaegt)+' · ':'')+(i.udloeb?'bedst før '+fmtDK(i.udloeb):'ingen dato')+'</div></div>'+
+      '<div class="sub"><span class="badge">'+esc(i.type||'?')+'</span>'+(i.vaegt?esc(i.vaegt)+' · ':'')+(i.udloeb?'bedst før '+fmtDK(i.udloeb):'ingen dato')+(i.hylde?' · '+esc(kortHylde(i.hylde)):'')+'</div></div>'+
       '<div class="days '+cls+'">'+lbl+'</div>';
     el.onclick=function(){openDetail(i);};
     l.appendChild(el);
@@ -226,12 +246,13 @@ function recalcUdloeb(){
 }
 document.getElementById('fInd').addEventListener('change',recalcUdloeb);
 function closeAdd(){document.getElementById('addOv').classList.remove('show');clearAdd();}
-function clearAdd(){pendingFoto='';pendingQr='';['fNavn','fVaegt','fNote'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('addQr').textContent='';document.getElementById('addStatus').textContent='';}
+function clearAdd(){pendingFoto='';pendingQr='';['fNavn','fVaegt','fNote'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('fHylde').value='';document.getElementById('addQr').textContent='';document.getElementById('addStatus').textContent='';}
 function saveAdd(){
   if(!pendingQr){document.getElementById('addStatus').textContent='Mangler QR — tag et nærbillede af koden';document.getElementById('qrCam').click();return;}
   var body={qr:pendingQr,navn:document.getElementById('fNavn').value.trim(),type:document.getElementById('fType').value,
     vaegt:document.getElementById('fVaegt').value.trim(),indfrossen:document.getElementById('fInd').value,
-    udloeb:document.getElementById('fUd').value,note:document.getElementById('fNote').value.trim(),foto:pendingFoto};
+    udloeb:document.getElementById('fUd').value,note:document.getElementById('fNote').value.trim(),
+    hylde:document.getElementById('fHylde').value,foto:pendingFoto};
   var s=document.getElementById('addStatus');s.innerHTML='<span class="spin"></span>Gemmer…';
   fetch(API+'/api/fryser',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json();}).then(function(d){
@@ -260,7 +281,7 @@ function openDetail(i){
   takeQr=i.qr;
   var d=daysUntil(i.udloeb),dtxt=i.udloeb?('bedst før '+fmtDK(i.udloeb)+(d!==null?(d<0?' (udløbet)':' ('+d+' dage)'):'')):'ingen dato';
   document.getElementById('takeNavn').textContent=(emojiOf[i.type]||'📦')+' '+(i.navn||'(uden navn)');
-  document.getElementById('takeMeta').textContent=(i.type||'')+(i.vaegt?' · '+i.vaegt:'')+' · '+dtxt+(i.indfrossen?' · indfrosset '+fmtDK(i.indfrossen):'');
+  document.getElementById('takeMeta').textContent=(i.type||'')+(i.vaegt?' · '+i.vaegt:'')+' · '+dtxt+(i.indfrossen?' · indfrosset '+fmtDK(i.indfrossen):'')+(i.hylde?' · 📍 '+i.hylde:'');
   document.getElementById('takeNote').textContent=i.note||'';
   var th=document.getElementById('takeThumb');
   if(i.foto){th.src='data:image/jpeg;base64,'+i.foto;th.style.display='';}else{th.style.display='none';}
