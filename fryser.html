@@ -111,6 +111,8 @@ input[type=file]{display:none}
     <div class="dtitle" id="takeNavn"></div>
     <div class="dmeta" id="takeMeta"></div>
     <div class="dmeta" id="takeNote"></div>
+    <div class="field" style="margin-top:12px"><label>📍 Placering</label><select id="takeHylde" onchange="saveHylde()"></select></div>
+    <div id="takeHyldeStatus" style="font-size:12px;color:#4ade80;min-height:16px;margin-bottom:6px"></div>
     <button class="btn add" id="takeConfirm" style="display:none" onclick="confirmTake()">📤 Tag ud af fryseren</button>
     <button class="btn ghost" onclick="closeTake()">Luk</button>
   </div>
@@ -130,6 +132,7 @@ var emojiOf={},monthsOf={};
 TYPES.forEach(function(t){emojiOf[t[0]]=t[1];monthsOf[t[0]]=t[2];});
 var filterType='',pendingFoto='',pendingQr='',takeQr='';
 function kortHylde(h){return h?('📍 '+h.replace('Fryser ','F').replace(' · ',' ').replace('Skuffe ','Sk').replace('Hylde ','Hy')):'';}
+function fyldHylder(sel,foerste){sel.innerHTML='<option value="">'+foerste+'</option>';HYLDER.forEach(function(g){var og=document.createElement('optgroup');og.label=g[0];g[1].forEach(function(it){var o=document.createElement('option');o.value=g[0]+' · '+it;o.textContent=it;og.appendChild(o);});sel.appendChild(og);});}
 
 function todayISO(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function addMonthsISO(iso,m){var d=iso?new Date(iso):new Date();d.setMonth(d.getMonth()+m);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
@@ -143,18 +146,9 @@ function fmtDK(iso){if(!iso)return'';var p=iso.split('-');return p.length===3?p[
   TYPES.forEach(function(t){var el=document.createElement('div');el.className='chip';el.textContent=t[1]+' '+t[0];el.onclick=function(){setFilter(t[0],el);};c.appendChild(el);});
   var sel=document.getElementById('fType');
   TYPES.forEach(function(t){var o=document.createElement('option');o.value=t[0];o.textContent=t[1]+' '+t[0];sel.appendChild(o);});
-  var fh=document.getElementById('fHylde'),ff=document.getElementById('hyldeFilter');
-  fh.innerHTML='<option value="">— vælg placering —</option>';
-  ff.innerHTML='<option value="">📍 Alle placeringer</option>';
-  HYLDER.forEach(function(g){
-    var og1=document.createElement('optgroup');og1.label=g[0];
-    var og2=document.createElement('optgroup');og2.label=g[0];
-    g[1].forEach(function(it){var v=g[0]+' · '+it;
-      var a=document.createElement('option');a.value=v;a.textContent=it;og1.appendChild(a);
-      var b=document.createElement('option');b.value=v;b.textContent=it;og2.appendChild(b);
-    });
-    fh.appendChild(og1);ff.appendChild(og2);
-  });
+  fyldHylder(document.getElementById('fHylde'),'— vælg placering —');
+  fyldHylder(document.getElementById('hyldeFilter'),'📍 Alle placeringer');
+  fyldHylder(document.getElementById('takeHylde'),'— sæt placering —');
 })();
 function setFilter(t,el){filterType=t;document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});el.classList.add('on');load();}
 var st;document.getElementById('search').addEventListener('input',function(){clearTimeout(st);st=setTimeout(load,250);});
@@ -281,13 +275,24 @@ function openDetail(i){
   takeQr=i.qr;
   var d=daysUntil(i.udloeb),dtxt=i.udloeb?('bedst før '+fmtDK(i.udloeb)+(d!==null?(d<0?' (udløbet)':' ('+d+' dage)'):'')):'ingen dato';
   document.getElementById('takeNavn').textContent=(emojiOf[i.type]||'📦')+' '+(i.navn||'(uden navn)');
-  document.getElementById('takeMeta').textContent=(i.type||'')+(i.vaegt?' · '+i.vaegt:'')+' · '+dtxt+(i.indfrossen?' · indfrosset '+fmtDK(i.indfrossen):'')+(i.hylde?' · 📍 '+i.hylde:'');
+  document.getElementById('takeMeta').textContent=(i.type||'')+(i.vaegt?' · '+i.vaegt:'')+' · '+dtxt+(i.indfrossen?' · indfrosset '+fmtDK(i.indfrossen):'');
   document.getElementById('takeNote').textContent=i.note||'';
+  document.getElementById('takeHylde').value=i.hylde||'';
+  document.getElementById('takeHyldeStatus').textContent='';
   var th=document.getElementById('takeThumb');
   if(i.foto){th.src='data:image/jpeg;base64,'+i.foto;th.style.display='';}else{th.style.display='none';}
   document.getElementById('takeStatus').textContent='';
   document.getElementById('takeConfirm').style.display='';
   document.getElementById('takeOv').classList.add('show');
+}
+function saveHylde(){
+  var v=document.getElementById('takeHylde').value;
+  var s=document.getElementById('takeHyldeStatus');s.style.color='#FBBF24';s.textContent='Gemmer…';
+  fetch(API+'/api/fryser/hylde',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({qr:takeQr,hylde:v})})
+    .then(function(r){return r.json();}).then(function(d){
+      if(d.ok){s.style.color='#4ade80';s.textContent='Placering gemt ✓';load();}
+      else{s.style.color='#f87171';s.textContent='Fejl: '+(d.error||'ukendt');}
+    }).catch(function(){s.style.color='#f87171';s.textContent='Offline — prøv igen';});
 }
 function confirmTake(){
   var s=document.getElementById('takeStatus');s.innerHTML='<span class="spin"></span>Tager ud…';
