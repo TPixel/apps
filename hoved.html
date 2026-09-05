@@ -74,6 +74,7 @@ h2{font-size:13px;color:#666;text-transform:uppercase;letter-spacing:1px;margin:
   <button class="btn send" id="send">Send</button>
 </div>
 <div class="queue" id="queue"></div>
+<button id="kick" style="background:transparent;border:none;color:#E8820A;font-family:inherit;font-weight:bold;font-size:14px;padding:12px 0 0;cursor:pointer">▶️ Bed Claude behandle nu</button>
 <div class="toast" id="toast"></div>
 
 <h2>Seneste</h2>
@@ -204,6 +205,19 @@ async function udfoert(id) {
   await fetch(API + '/api/hoved/' + id, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ status: 'udfoert' }) });
   load();
 }
+
+// ---- Kør Claude nu ----
+$('kick').onclick = async () => {
+  const b = $('kick'); b.disabled = true; b.textContent = '⏳ Starter Claude…';
+  try {
+    const r = await fetch(API + '/api/hoved/kick', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok !== false) { showToast('🚀 Claude behandler nu — se resultatet på dashboardet om et par minutter'); setTimeout(load, 90000); }
+    else if (r.status === 404) showToast('⚠️ Workeren mangler /api/hoved/kick — bed Claude på Mac’en tilføje den', true);
+    else showToast('Fejl: ' + (d.error || 'HTTP ' + r.status), true);
+  } catch (e) { showToast('Offline — prøv igen', true); }
+  b.disabled = false; b.textContent = '▶️ Bed Claude behandle nu';
+};
 
 // ---- Init ----
 const params = new URLSearchParams(location.search);

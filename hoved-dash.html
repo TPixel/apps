@@ -61,6 +61,7 @@ h1{font-size:26px;margin-top:2px}
 <div class="top">
   <div><div class="logo">Ditzel &amp; Co</div><h1>🧠 Hoved · Dashboard</h1></div>
   <div class="tools">
+    <button class="lnk" id="kickBtn" style="background:#E8820A;color:#fff">▶️ Kør Claude nu</button>
     <button class="lnk" id="view">Vis: kategori</button>
     <button class="lnk" id="sortBtn">🤖 Sortér usorterede</button>
     <button class="lnk" id="share">🔗 Del</button>
@@ -153,6 +154,17 @@ $('q').oninput = e => { F.q = e.target.value; render(); };
 document.querySelectorAll('#statusChips .chip').forEach(c => c.onclick = () => { F.status = c.dataset.s; load(); });
 $('view').onclick = () => { F.view = F.view === 'kategori' ? 'projekt' : F.view === 'projekt' ? 'handling' : 'kategori'; render(); };
 $('share').onclick = async () => { try { await navigator.clipboard.writeText(location.href); toast('🔗 Link kopieret — del det'); } catch (e) { prompt('Kopiér link:', location.href); } };
+$('kickBtn').onclick = async () => {
+  const b = $('kickBtn'); b.disabled = true; b.textContent = '⏳ Starter Claude…';
+  try {
+    const r = await fetch(API + '/api/hoved/kick', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok !== false) { toast('🚀 Claude behandler nu — resultater lander om et par minutter'); setTimeout(load, 90000); setTimeout(load, 180000); }
+    else if (r.status === 404) toast('⚠️ Workeren mangler /api/hoved/kick — bed Claude på Mac’en tilføje den');
+    else toast('Fejl: ' + (d.error || 'HTTP ' + r.status));
+  } catch (e) { toast('Offline — prøv igen'); }
+  b.disabled = false; b.textContent = '▶️ Kør Claude nu';
+};
 $('sortBtn').onclick = async () => {
   $('sortBtn').textContent = '⏳ Sorterer…';
   try { const r = await (await fetch(API + '/api/hoved/sorter', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })).json();
