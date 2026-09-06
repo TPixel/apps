@@ -317,6 +317,28 @@ function confirmTake(){
 }
 function closeTake(){document.getElementById('takeOv').classList.remove('show');}
 
+// --- Auto-opdatering: henter nyeste version og genindlæser hvis filen er ændret ---
+(function(){
+  var SELF=location.pathname.split('?')[0];
+  function h32(s){var h=5381,i=s.length;while(i){h=(h*33)^s.charCodeAt(--i);}return (h>>>0).toString(36);}
+  function tjek(){
+    fetch(SELF+'?_='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.ok?r.text():null;})
+      .then(function(t){
+        if(!t||t.length<800)return;
+        var ny=h32(t),gemt=null;
+        try{gemt=localStorage.getItem('fryser-ver');}catch(e){}
+        if(ny!==gemt){
+          try{localStorage.setItem('fryser-ver',ny);}catch(e){}
+          if(location.search.indexOf('v='+ny)===-1)location.replace(SELF+'?v='+ny);
+        }
+      }).catch(function(){});
+  }
+  setTimeout(tjek,1500);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)tjek();});
+  setInterval(tjek,300000);
+})();
+
 load();
 </script>
 </body>
