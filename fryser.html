@@ -27,21 +27,21 @@ h1{font-size:34px;margin:2px 0 14px;display:flex;align-items:center;gap:10px}
 .banner{background:#3a2a12;color:#FBBF24;border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:12px;display:none}
 .banner.show{display:block}
 .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:stretch}
-.card{display:flex;align-items:center;gap:16px;background:#1a1a24;border-radius:16px;padding:18px 20px;cursor:pointer;border-left:6px solid #333}
+.card{display:flex;align-items:stretch;gap:16px;background:#1a1a24;border-radius:16px;padding:18px 20px;cursor:pointer;border-left:6px solid #333}
 .card:hover{background:#20202c}
 .card.warn{border-left-color:#FBBF24}
 .card.exp{border-left-color:#f87171}
-.card .emoji{font-size:38px;line-height:1}
-.card .thumb-mini{width:54px;height:54px;border-radius:11px;object-fit:cover;flex:0 0 auto;background:#0C0C12}
+.card .emoji{font-size:38px;line-height:1;display:flex;align-items:center;justify-content:center;width:62px;flex:0 0 auto}
+.card .thumb-mini{width:62px;align-self:stretch;min-height:58px;border-radius:11px;object-fit:cover;flex:0 0 auto;background:#0C0C12}
 .card .info{flex:1;min-width:0}
-.card .navn{font-size:21px;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card .navn{font-size:20px;line-height:1.18;overflow:hidden;overflow-wrap:break-word;hyphens:auto;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .card .sub{font-size:15px;color:#9a9aa5;margin-top:5px}
 .card .badge{display:inline-block;background:#2a2a38;color:#cfcfda;border-radius:7px;padding:2px 8px;font-size:13px;margin-right:7px}
 .place{display:inline-block;margin-top:6px;font-size:11.5px;font-weight:bold;padding:2px 8px;border-radius:7px;white-space:nowrap;opacity:.92}
 .place.f1{background:#15272d;color:#6fb3c2}
 .place.f2{background:#2b2214;color:#c39a5c}
 .place.none{background:#1b1b22;color:#585866}
-.card .days{font-size:18px;text-align:right;white-space:nowrap}
+.card .days{font-size:18px;white-space:nowrap;display:flex;align-items:center;flex:0 0 auto}
 .days.ok{color:#4ade80}.days.warn{color:#FBBF24}.days.exp{color:#f87171}
 .empty{text-align:center;color:#555;font-size:15px;padding:50px 0}
 .actionbar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,#0C0C12 24px);max-width:1180px;margin:0 auto}
