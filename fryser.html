@@ -61,6 +61,9 @@ input[type=file]{display:none}
 .flyt-h{font-size:14px;color:#8fb0e0;margin-bottom:10px;font-weight:bold}
 .flytbox select{width:100%;padding:14px;border-radius:11px;border:none;background:#0C0C12;color:#fff;font-size:17px;font-family:inherit;font-weight:bold}
 .flyt-status{font-size:13px;min-height:18px;margin-top:8px}
+.hyldeRow{display:flex;align-items:center;gap:10px;margin:12px 0 0;flex-wrap:wrap}
+.miniflyt{background:#20202c;color:#9fb4d6;border:1px solid #2e3a52;border-radius:9px;padding:7px 13px;font-family:inherit;font-weight:bold;font-size:13px;cursor:pointer}
+.miniflyt:active{transform:scale(.96)}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:12px;color:#888;margin-bottom:5px}
 .field input,.field select{width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold}
@@ -126,9 +129,11 @@ input[type=file]{display:none}
     <div class="dtitle" id="takeNavn"></div>
     <div class="dmeta" id="takeMeta"></div>
     <div class="dmeta" id="takeNote"></div>
-    <div id="takeHyldePill" style="margin:10px 0 2px"></div>
-    <div class="flytbox">
-      <div class="flyt-h">📍 Flyt til skuffe / hylde</div>
+    <div class="hyldeRow">
+      <span id="takeHyldePill"></span>
+      <button type="button" class="miniflyt" onclick="toggleFlyt()">Flyt ›</button>
+    </div>
+    <div class="flytbox" id="flytbox" hidden>
       <select id="takeHylde" onchange="saveHylde()"></select>
       <div id="takeHyldeStatus" class="flyt-status"></div>
     </div>
@@ -302,21 +307,26 @@ function openDetail(i){
   document.getElementById('takeNote').textContent=i.note||'';
   document.getElementById('takeHylde').value=i.hylde||'';
   document.getElementById('takeHyldeStatus').textContent='';
-  var pill=document.getElementById('takeHyldePill');
-  if(i.hylde){pill.innerHTML='<span class="place big '+(i.hylde.indexOf('Fryser 1')===0?'f1':'f2')+'">📍 '+esc(i.hylde)+'</span>';}
-  else{pill.innerHTML='<span class="place big none">📍 Ingen placering endnu</span>';}
+  visHyldePill(i.hylde);
+  document.getElementById('flytbox').hidden=true;
   var th=document.getElementById('takeThumb');
   if(i.foto){th.src='data:image/jpeg;base64,'+i.foto;th.style.display='';}else{th.style.display='none';}
   document.getElementById('takeStatus').textContent='';
   document.getElementById('takeConfirm').style.display='';
   document.getElementById('takeOv').classList.add('show');
 }
+function visHyldePill(hylde){
+  var pill=document.getElementById('takeHyldePill');
+  if(hylde){pill.innerHTML='<span class="place big '+(hylde.indexOf('Fryser 1')===0?'f1':'f2')+'">📍 '+esc(hylde)+'</span>';}
+  else{pill.innerHTML='<span class="place big none">📍 Ingen placering endnu</span>';}
+}
+function toggleFlyt(){var b=document.getElementById('flytbox');b.hidden=!b.hidden;}
 function saveHylde(){
   var v=document.getElementById('takeHylde').value;
   var s=document.getElementById('takeHyldeStatus');s.style.color='#FBBF24';s.textContent='Gemmer…';
   fetch(API+'/api/fryser/hylde',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({qr:takeQr,hylde:v})})
     .then(function(r){return r.json();}).then(function(d){
-      if(d.ok){s.style.color='#4ade80';s.textContent='Flyttet ✓';load();}
+      if(d.ok){s.style.color='#4ade80';s.textContent='Flyttet ✓';visHyldePill(document.getElementById('takeHylde').value);load();}
       else{s.style.color='#f87171';s.textContent='Fejl: '+(d.error||'ukendt');}
     }).catch(function(){s.style.color='#f87171';s.textContent='Offline — prøv igen';});
 }
