@@ -77,6 +77,10 @@ input[type=file]{display:none}
 @keyframes s{to{transform:rotate(360deg)}}
 .dtitle{font-size:22px;margin-bottom:6px}
 .dmeta{font-size:14px;color:#aaa;margin-bottom:4px}
+.detHead{display:flex;gap:14px;align-items:center;margin-bottom:8px}
+.detThumb{width:90px;height:90px;border-radius:12px;object-fit:cover;flex:0 0 auto;background:#0C0C12}
+.detHeadTxt{min-width:0}
+.detHeadTxt .dtitle{margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -125,9 +129,13 @@ input[type=file]{display:none}
 <div class="ov" id="takeOv">
   <div class="sheet">
     <div class="status" id="takeStatus"></div>
-    <img class="thumb" id="takeThumb" alt="" style="display:none">
-    <div class="dtitle" id="takeNavn"></div>
-    <div class="dmeta" id="takeMeta"></div>
+    <div class="detHead">
+      <img class="detThumb" id="takeThumb" alt="" style="display:none">
+      <div class="detHeadTxt">
+        <div class="dtitle" id="takeNavn"></div>
+        <div class="dmeta" id="takeMeta"></div>
+      </div>
+    </div>
     <div class="dmeta" id="takeNote"></div>
     <div class="hyldeRow">
       <span id="takeHyldePill"></span>
