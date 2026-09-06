@@ -64,6 +64,12 @@ input[type=file]{display:none}
 .hyldeRow{display:flex;align-items:center;gap:10px;margin:12px 0 0;flex-wrap:wrap}
 .miniflyt{background:#20202c;color:#9fb4d6;border:1px solid #2e3a52;border-radius:9px;padding:7px 13px;font-family:inherit;font-weight:bold;font-size:13px;cursor:pointer}
 .miniflyt:active{transform:scale(.96)}
+.detPlace{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px;border-radius:14px;margin:14px 0 8px;font-size:20px;font-weight:bold;cursor:pointer}
+.detPlace:active{transform:scale(.98)}
+.detPlace.f1{background:#123038;color:#63d1e6}
+.detPlace.f2{background:#3a2a12;color:#f2ab52}
+.detPlace.none{background:#20202a;color:#9a9aa8}
+.detPlace .flytlink{font-size:14px;font-weight:bold;opacity:.75;white-space:nowrap}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:12px;color:#888;margin-bottom:5px}
 .field input,.field select{width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold}
@@ -137,10 +143,7 @@ input[type=file]{display:none}
       </div>
     </div>
     <div class="dmeta" id="takeNote"></div>
-    <div class="hyldeRow">
-      <span id="takeHyldePill"></span>
-      <button type="button" class="miniflyt" onclick="toggleFlyt()">Flyt ›</button>
-    </div>
+    <div id="takeHyldePill" class="detPlace" onclick="toggleFlyt()"></div>
     <div class="flytbox" id="flytbox" hidden>
       <select id="takeHylde" onchange="saveHylde()"></select>
       <div id="takeHyldeStatus" class="flyt-status"></div>
@@ -325,8 +328,13 @@ function openDetail(i){
 }
 function visHyldePill(hylde){
   var pill=document.getElementById('takeHyldePill');
-  if(hylde){pill.innerHTML='<span class="place big '+(hylde.indexOf('Fryser 1')===0?'f1':'f2')+'">📍 '+esc(hylde)+'</span>';}
-  else{pill.innerHTML='<span class="place big none">📍 Ingen placering endnu</span>';}
+  if(hylde){
+    pill.className='detPlace '+(hylde.indexOf('Fryser 1')===0?'f1':'f2');
+    pill.innerHTML='<span>📍 '+esc(hylde)+'</span><span class="flytlink">Flyt&nbsp;›</span>';
+  }else{
+    pill.className='detPlace none';
+    pill.innerHTML='<span>📍 Ingen placering</span><span class="flytlink">Vælg&nbsp;›</span>';
+  }
 }
 function toggleFlyt(){var b=document.getElementById('flytbox');b.hidden=!b.hidden;}
 function saveHylde(){
