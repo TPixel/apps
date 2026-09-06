@@ -1,0 +1,13 @@
+{
+  "name": "Hoved",
+  "short_name": "Hoved",
+  "start_url": "./hoved.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0C0C12",
+  "theme_color": "#0C0C12",
+  "icons": [
+    { "src": "hoved-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "hoved-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
