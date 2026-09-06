@@ -87,6 +87,7 @@ input[type=file]{display:none}
 .detThumb{width:90px;height:90px;border-radius:12px;object-fit:cover;flex:0 0 auto;background:#0C0C12}
 .detHeadTxt{min-width:0}
 .detHeadTxt .dtitle{margin-bottom:4px}
+.detNote{font-size:18px;line-height:1.5;color:#ececf4;font-weight:bold;background:#14141d;border-radius:12px;padding:15px 17px;margin:12px 0 14px}
 </style>
 </head>
 <body>
@@ -142,7 +143,7 @@ input[type=file]{display:none}
         <div class="dmeta" id="takeMeta"></div>
       </div>
     </div>
-    <div class="dmeta" id="takeNote"></div>
+    <div class="detNote" id="takeNote"></div>
     <div id="takeHyldePill" class="detPlace" onclick="toggleFlyt()"></div>
     <div class="flytbox" id="flytbox" hidden>
       <select id="takeHylde" onchange="saveHylde()"></select>
@@ -315,7 +316,8 @@ function openDetail(i){
   var d=daysUntil(i.udloeb),dtxt=i.udloeb?('bedst før '+fmtDK(i.udloeb)+(d!==null?(d<0?' (udløbet)':' ('+d+' dage)'):'')):'ingen dato';
   document.getElementById('takeNavn').textContent=(emojiOf[i.type]||'📦')+' '+(i.navn||'(uden navn)');
   document.getElementById('takeMeta').textContent=(i.type||'')+(i.vaegt?' · '+i.vaegt:'')+' · '+dtxt+(i.indfrossen?' · indfrosset '+fmtDK(i.indfrossen):'');
-  document.getElementById('takeNote').textContent=i.note||'';
+  var noteEl=document.getElementById('takeNote');
+  if(i.note){noteEl.textContent=i.note;noteEl.style.display='';}else{noteEl.style.display='none';}
   document.getElementById('takeHylde').value=i.hylde||'';
   document.getElementById('takeHyldeStatus').textContent='';
   visHyldePill(i.hylde);
