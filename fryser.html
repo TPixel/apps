@@ -37,6 +37,11 @@ h1{font-size:34px;margin:2px 0 14px;display:flex;align-items:center;gap:10px}
 .card .navn{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .sub{font-size:15px;color:#9a9aa5;margin-top:5px}
 .card .badge{display:inline-block;background:#2a2a38;color:#cfcfda;border-radius:7px;padding:2px 8px;font-size:13px;margin-right:7px}
+.place{display:inline-block;margin-top:8px;font-size:13.5px;font-weight:bold;padding:4px 10px;border-radius:9px;white-space:nowrap}
+.place.f1{background:#123038;color:#63d1e6}
+.place.f2{background:#3a2a12;color:#f2ab52}
+.place.none{background:#20202a;color:#6a6a78}
+.place.big{font-size:16px;padding:7px 13px;margin-top:0}
 .card .days{font-size:18px;text-align:right;white-space:nowrap}
 .days.ok{color:#4ade80}.days.warn{color:#FBBF24}.days.exp{color:#f87171}
 .empty{text-align:center;color:#555;font-size:15px;padding:50px 0}
@@ -121,6 +126,7 @@ input[type=file]{display:none}
     <div class="dtitle" id="takeNavn"></div>
     <div class="dmeta" id="takeMeta"></div>
     <div class="dmeta" id="takeNote"></div>
+    <div id="takeHyldePill" style="margin:10px 0 2px"></div>
     <div class="flytbox">
       <div class="flyt-h">📍 Flyt til skuffe / hylde</div>
       <select id="takeHylde" onchange="saveHylde()"></select>
@@ -145,7 +151,7 @@ var emojiOf={},monthsOf={};
 TYPES.forEach(function(t){emojiOf[t[0]]=t[1];monthsOf[t[0]]=t[2];});
 var filterType='',pendingFoto='',pendingQr='',pendingThumb='',takeQr='';
 function kortHylde(h){return h?('📍 '+h.replace('Fryser ','F').replace(' · ',' ').replace('Skuffe ','Sk').replace('Hylde ','Hy')):'';}
-function fyldHylder(sel,foerste){sel.innerHTML='<option value="">'+foerste+'</option>';HYLDER.forEach(function(g){var og=document.createElement('optgroup');og.label=g[0];g[1].forEach(function(it){var o=document.createElement('option');o.value=g[0]+' · '+it;o.textContent=it;og.appendChild(o);});sel.appendChild(og);});}
+function fyldHylder(sel,foerste){sel.innerHTML='<option value="">'+foerste+'</option>';HYLDER.forEach(function(g){var og=document.createElement('optgroup');og.label=g[0];g[1].forEach(function(it){var o=document.createElement('option');o.value=g[0]+' · '+it;o.textContent=g[0]+' · '+it;og.appendChild(o);});sel.appendChild(og);});}
 
 function todayISO(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function addMonthsISO(iso,m){var d=iso?new Date(iso):new Date();d.setMonth(d.getMonth()+m);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
@@ -187,7 +193,7 @@ function render(items){
     var el=document.createElement('div');el.className='card '+cardc;
     el.innerHTML=(i.thumb?'<img class="thumb-mini" src="data:image/jpeg;base64,'+i.thumb+'" alt="">':'<div class="emoji">'+(emojiOf[i.type]||'📦')+'</div>')+
       '<div class="info"><div class="navn">'+esc(i.navn||'(uden navn)')+'</div>'+
-      '<div class="sub"><span class="badge">'+esc(i.type||'?')+'</span>'+(i.vaegt?esc(i.vaegt)+' · ':'')+(i.udloeb?'bedst før '+fmtDK(i.udloeb):'ingen dato')+(i.hylde?' · '+esc(kortHylde(i.hylde)):'')+'</div></div>'+
+      '<div class="sub"><span class="badge">'+esc(i.type||'?')+'</span>'+(i.vaegt?esc(i.vaegt)+' · ':'')+(i.udloeb?'bedst før '+fmtDK(i.udloeb):'ingen dato')+'</div>'+(i.hylde?'<div class="place '+(i.hylde.indexOf('Fryser 1')===0?'f1':'f2')+'">📍 '+esc(i.hylde)+'</div>':'<div class="place none">📍 ingen plads</div>')+'</div>'+
       '<div class="days '+cls+'">'+lbl+'</div>';
     el.onclick=function(){lookup(i.qr);};
     l.appendChild(el);
@@ -296,6 +302,9 @@ function openDetail(i){
   document.getElementById('takeNote').textContent=i.note||'';
   document.getElementById('takeHylde').value=i.hylde||'';
   document.getElementById('takeHyldeStatus').textContent='';
+  var pill=document.getElementById('takeHyldePill');
+  if(i.hylde){pill.innerHTML='<span class="place big '+(i.hylde.indexOf('Fryser 1')===0?'f1':'f2')+'">📍 '+esc(i.hylde)+'</span>';}
+  else{pill.innerHTML='<span class="place big none">📍 Ingen placering endnu</span>';}
   var th=document.getElementById('takeThumb');
   if(i.foto){th.src='data:image/jpeg;base64,'+i.foto;th.style.display='';}else{th.style.display='none';}
   document.getElementById('takeStatus').textContent='';
