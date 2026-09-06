@@ -48,6 +48,10 @@ input[type=file]{display:none}
 .ov.show{display:flex}
 .sheet{background:#16161f;width:100%;max-width:520px;margin:0 auto;border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92dvh;overflow-y:auto}
 .sheet h2{font-size:20px;margin-bottom:14px}
+.flytbox{background:#0f1420;border:1px solid #26324a;border-radius:14px;padding:14px 16px;margin:16px 0}
+.flyt-h{font-size:14px;color:#8fb0e0;margin-bottom:10px;font-weight:bold}
+.flytbox select{width:100%;padding:14px;border-radius:11px;border:none;background:#0C0C12;color:#fff;font-size:17px;font-family:inherit;font-weight:bold}
+.flyt-status{font-size:13px;min-height:18px;margin-top:8px}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:12px;color:#888;margin-bottom:5px}
 .field input,.field select{width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold}
@@ -113,8 +117,11 @@ input[type=file]{display:none}
     <div class="dtitle" id="takeNavn"></div>
     <div class="dmeta" id="takeMeta"></div>
     <div class="dmeta" id="takeNote"></div>
-    <div class="field" style="margin-top:12px"><label>📍 Placering</label><select id="takeHylde" onchange="saveHylde()"></select></div>
-    <div id="takeHyldeStatus" style="font-size:12px;color:#4ade80;min-height:16px;margin-bottom:6px"></div>
+    <div class="flytbox">
+      <div class="flyt-h">📍 Flyt til skuffe / hylde</div>
+      <select id="takeHylde" onchange="saveHylde()"></select>
+      <div id="takeHyldeStatus" class="flyt-status"></div>
+    </div>
     <button class="btn add" id="takeConfirm" style="display:none" onclick="confirmTake()">📤 Tag ud af fryseren</button>
     <button class="btn ghost" onclick="closeTake()">Luk</button>
   </div>
@@ -292,7 +299,7 @@ function saveHylde(){
   var s=document.getElementById('takeHyldeStatus');s.style.color='#FBBF24';s.textContent='Gemmer…';
   fetch(API+'/api/fryser/hylde',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({qr:takeQr,hylde:v})})
     .then(function(r){return r.json();}).then(function(d){
-      if(d.ok){s.style.color='#4ade80';s.textContent='Placering gemt ✓';load();}
+      if(d.ok){s.style.color='#4ade80';s.textContent='Flyttet ✓';load();}
       else{s.style.color='#f87171';s.textContent='Fejl: '+(d.error||'ukendt');}
     }).catch(function(){s.style.color='#f87171';s.textContent='Offline — prøv igen';});
 }
