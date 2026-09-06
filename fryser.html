@@ -29,6 +29,7 @@ h1{font-size:34px;margin:2px 0 14px;display:flex;align-items:center;gap:10px}
 .card.warn{border-left-color:#FBBF24}
 .card.exp{border-left-color:#f87171}
 .card .emoji{font-size:38px;line-height:1}
+.card .thumb-mini{width:54px;height:54px;border-radius:11px;object-fit:cover;flex:0 0 auto;background:#0C0C12}
 .card .info{flex:1;min-width:0}
 .card .navn{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .sub{font-size:15px;color:#9a9aa5;margin-top:5px}
@@ -139,7 +140,7 @@ var HYLDER=[
 ];
 var emojiOf={},monthsOf={};
 TYPES.forEach(function(t){emojiOf[t[0]]=t[1];monthsOf[t[0]]=t[2];});
-var filterType='',pendingFoto='',pendingQr='',takeQr='';
+var filterType='',pendingFoto='',pendingQr='',pendingThumb='',takeQr='';
 function kortHylde(h){return h?('📍 '+h.replace('Fryser ','F').replace(' · ',' ').replace('Skuffe ','Sk').replace('Hylde ','Hy')):'';}
 function fyldHylder(sel,foerste){sel.innerHTML='<option value="">'+foerste+'</option>';HYLDER.forEach(function(g){var og=document.createElement('optgroup');og.label=g[0];g[1].forEach(function(it){var o=document.createElement('option');o.value=g[0]+' · '+it;o.textContent=it;og.appendChild(o);});sel.appendChild(og);});}
 
@@ -181,11 +182,11 @@ function render(items){
     var d=daysUntil(i.udloeb),cls='ok',lbl='',cardc='';
     if(d!==null){if(d<0){cls='exp';lbl='Udløbet';cardc='exp';}else if(d<=14){cls='warn';lbl=d+' dg';cardc='warn';}else{lbl=d+' dg';}}
     var el=document.createElement('div');el.className='card '+cardc;
-    el.innerHTML='<div class="emoji">'+(emojiOf[i.type]||'📦')+'</div>'+
+    el.innerHTML=(i.thumb?'<img class="thumb-mini" src="data:image/jpeg;base64,'+i.thumb+'" alt="">':'<div class="emoji">'+(emojiOf[i.type]||'📦')+'</div>')+
       '<div class="info"><div class="navn">'+esc(i.navn||'(uden navn)')+'</div>'+
       '<div class="sub"><span class="badge">'+esc(i.type||'?')+'</span>'+(i.vaegt?esc(i.vaegt)+' · ':'')+(i.udloeb?'bedst før '+fmtDK(i.udloeb):'ingen dato')+(i.hylde?' · '+esc(kortHylde(i.hylde)):'')+'</div></div>'+
       '<div class="days '+cls+'">'+lbl+'</div>';
-    el.onclick=function(){openDetail(i);};
+    el.onclick=function(){lookup(i.qr);};
     l.appendChild(el);
   });
 }
@@ -202,7 +203,11 @@ function processFile(file){
       var dataUrl=cv.toDataURL('image/jpeg',0.72);
       var qr=null;
       try{var id=cx.getImageData(0,0,w,h);var code=window.jsQR?jsQR(id.data,w,h):null;if(code&&code.data)qr=code.data.trim();}catch(e){}
-      res({dataUrl:dataUrl,b64:dataUrl.split(',')[1],qr:qr});
+      var tmax=180,tw=w,th=h;
+      if(tw>th&&tw>tmax){th=Math.round(th*tmax/tw);tw=tmax;}else if(th>=tw&&th>tmax){tw=Math.round(tw*tmax/th);th=tmax;}
+      var tv=document.createElement('canvas');tv.width=tw;tv.height=th;tv.getContext('2d').drawImage(img,0,0,tw,th);
+      var thumb=tv.toDataURL('image/jpeg',0.6).split(',')[1];
+      res({dataUrl:dataUrl,b64:dataUrl.split(',')[1],qr:qr,thumb:thumb});
     };img.onerror=rej;img.src=URL.createObjectURL(file);
   });
 }
@@ -212,7 +217,7 @@ function startAdd(){document.getElementById('addCam').click();}
 function onAddPhoto(input){
   if(!input.files[0])return;var file=input.files[0];input.value='';
   processFile(file).then(function(r){
-    pendingFoto=r.b64;pendingQr=r.qr||'';
+    pendingFoto=r.b64;pendingQr=r.qr||'';pendingThumb=r.thumb||'';
     document.getElementById('addThumb').src=r.dataUrl;
     openAdd();
     var s=document.getElementById('addStatus');
@@ -249,13 +254,13 @@ function recalcUdloeb(){
 }
 document.getElementById('fInd').addEventListener('change',recalcUdloeb);
 function closeAdd(){document.getElementById('addOv').classList.remove('show');clearAdd();}
-function clearAdd(){pendingFoto='';pendingQr='';['fNavn','fVaegt','fNote'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('fHylde').value='';document.getElementById('addQr').textContent='';document.getElementById('addStatus').textContent='';}
+function clearAdd(){pendingFoto='';pendingQr='';pendingThumb='';['fNavn','fVaegt','fNote'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('fHylde').value='';document.getElementById('addQr').textContent='';document.getElementById('addStatus').textContent='';}
 function saveAdd(){
   if(!pendingQr){document.getElementById('addStatus').textContent='Mangler QR — tag et nærbillede af koden';document.getElementById('qrCam').click();return;}
   var body={qr:pendingQr,navn:document.getElementById('fNavn').value.trim(),type:document.getElementById('fType').value,
     vaegt:document.getElementById('fVaegt').value.trim(),indfrossen:document.getElementById('fInd').value,
     udloeb:document.getElementById('fUd').value,note:document.getElementById('fNote').value.trim(),
-    hylde:document.getElementById('fHylde').value,foto:pendingFoto};
+    hylde:document.getElementById('fHylde').value,foto:pendingFoto,thumb:pendingThumb};
   var s=document.getElementById('addStatus');s.innerHTML='<span class="spin"></span>Gemmer…';
   fetch(API+'/api/fryser',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json();}).then(function(d){
