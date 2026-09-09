@@ -20,6 +20,8 @@ h1{font-size:34px;margin:2px 0 14px;display:flex;align-items:center;gap:10px}
 .count{font-size:16px;color:#999;font-weight:bold}
 .search{width:100%;padding:12px 14px;border-radius:12px;border:none;background:#1a1a24;color:#fff;font-size:16px;font-family:inherit;font-weight:bold;margin-bottom:10px}
 .search::placeholder{color:#555}
+.filterRow{display:flex;gap:8px;margin-bottom:10px}
+.filterRow .search{margin-bottom:0;flex:1;min-width:0}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;padding:7px 12px;border-radius:20px;background:#1a1a24;color:#aaa;font-size:13px;border:1.5px solid transparent;cursor:pointer;white-space:nowrap}
@@ -97,7 +99,14 @@ input[type=file]{display:none}
 <div style="height:12px"></div>
 <input class="search" id="search" type="search" inputmode="search" placeholder="Søg efter vare…">
 <div class="chips" id="chips"></div>
-<select class="search" id="hyldeFilter" onchange="load()" style="margin-bottom:10px"></select>
+<div class="filterRow">
+  <select class="search" id="sortBy" onchange="load()">
+    <option value="udloeb">⏳ Skal først ud</option>
+    <option value="nyest">🆕 Senest lagt i</option>
+    <option value="aeldst">📆 Længst i fryser</option>
+  </select>
+  <select class="search" id="hyldeFilter" onchange="load()"></select>
+</div>
 <div class="banner" id="banner"></div>
 <div class="list" id="list"></div>
 
@@ -197,6 +206,10 @@ function load(){
 }
 function render(items){
   if(!Array.isArray(items))items=[];
+  var sort=(document.getElementById('sortBy')||{}).value||'udloeb';
+  if(sort==='nyest'){items.sort(function(a,b){return (b.indfrossen||'').localeCompare(a.indfrossen||'');});}
+  else if(sort==='aeldst'){items.sort(function(a,b){return (a.indfrossen||'￿').localeCompare(b.indfrossen||'￿');});}
+  else{items.sort(function(a,b){return (a.udloeb||'9999-99-99').localeCompare(b.udloeb||'9999-99-99');});}
   document.getElementById('count').textContent=items.length?items.length+' vare'+(items.length===1?'':'r')+' i fryseren':'';
   var soon=items.filter(function(i){var d=daysUntil(i.udloeb);return d!==null&&d<=14;}).length;
   var b=document.getElementById('banner');
