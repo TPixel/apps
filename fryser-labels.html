@@ -25,7 +25,7 @@ body{background:#e9e9ee;font-family:'Helvetica Neue',Arial,sans-serif;color:#111
 .hint{width:100%;color:#999;font-size:12px}
 .wrap{display:flex;justify-content:center;padding:16px}
 .sheet{
-  width:210mm;height:297mm;background:#fff;
+  width:210mm;background:#fff;overflow:hidden;
   padding:var(--mtop) var(--mside) 0;
   display:grid;grid-template-columns:repeat(2,var(--lw));column-gap:var(--colgap);row-gap:0;
   grid-auto-rows:var(--lh);justify-content:start;align-content:start;
@@ -34,6 +34,7 @@ body{background:#e9e9ee;font-family:'Helvetica Neue',Arial,sans-serif;color:#111
 .label{
   width:var(--lw);height:var(--lh);border:1px dashed #ccc;border-radius:3mm;
   padding:5mm 6mm;position:relative;overflow:hidden;display:flex;flex-direction:column;
+  break-inside:avoid;page-break-inside:avoid;
 }
 .lhead{display:flex;align-items:flex-start;justify-content:space-between}
 .accent{height:2.2mm;background:#E8820A;margin:-5mm -6mm 3.5mm;border-radius:3mm 3mm 0 0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -66,7 +67,7 @@ body{background:#e9e9ee;font-family:'Helvetica Neue',Arial,sans-serif;color:#111
   <h1>🧊 Fryser-labels · Avery 99×68</h1>
   <button class="btn new" onclick="build()">🔄 Nyt ark (nye koder)</button>
   <button class="btn print" onclick="window.print()">🖨️ Print</button>
-  <div class="hint">8 labels pr. A4 (99,1 × 67,7 mm — Avery L7165/J8165 m.fl.). Hver har sin egen unikke QR-kode. Print → tag en label → skriv hvad det er → sæt på pose/bøtte → scan med appen. VIGTIGT ved print: vælg <b>Faktisk størrelse / 100 %</b> (ikke "tilpas til side"), margener = ingen/none. Tag en prøvetryk på almindeligt papir og hold op mod Avery-arket først.</div>
+  <div class="hint">8 labels pr. A4 (99,1 × 67,7 mm — Avery L7165/J8165 m.fl.), hver med unik QR-kode. <b>For at alle 8 passer på ÉN side og rammer Avery-arket: sæt “Margener = Ingen/None” og “Skala = 100 %” (ikke “tilpas til side”) i print-dialogen.</b> Slå sidehoved/-fod fra. Tag et prøvetryk på alm. papir og hold op mod Avery-arket først.</div>
 </div>
 <div class="wrap"><div class="sheet" id="sheet"></div></div>
 
