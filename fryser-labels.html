@@ -36,18 +36,19 @@ body{background:#e9e9ee;font-family:'Helvetica Neue',Arial,sans-serif;color:#111
   padding:5mm 6mm;position:relative;overflow:hidden;display:flex;flex-direction:column;
 }
 .lhead{display:flex;align-items:flex-start;justify-content:space-between}
-.lbrand{font-size:10pt;font-weight:bold;letter-spacing:.5px}
+.accent{height:2.2mm;background:#E8820A;margin:-5mm -6mm 3.5mm;border-radius:3mm 3mm 0 0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.lbrand{font-size:10pt;font-weight:bold;letter-spacing:.5px;color:#E8820A}
 .lbrand small{display:block;font-weight:normal;color:#666;font-size:7pt;letter-spacing:0;margin-top:.5mm}
-.qr{width:26mm;height:26mm}
+.qr{width:23mm;height:23mm}
 .qr svg{width:100%;height:100%;display:block}
-.field{font-size:10pt;margin-top:3mm;color:#333}
-.line{border-bottom:1.4px solid #222;height:8mm}
-.line2{border-bottom:1.4px solid #222;height:8mm;margin-top:2mm}
-.types{font-size:8pt;margin-top:3.5mm;color:#222;white-space:nowrap;overflow:hidden}
-.types .b{display:inline-block;width:3mm;height:3mm;border:1.3px solid #555;border-radius:.6mm;vertical-align:-.4mm;margin-right:1mm}
-.frow2{margin-top:auto;display:flex;align-items:center;gap:2mm;font-size:9pt;color:#222}
-.frow2 .fl{color:#444;white-space:nowrap}
-.frow2 .fv{flex:1;border-bottom:1.3px solid #222;height:5mm;min-width:14mm}
+.field{font-size:10pt;margin-top:2.5mm;color:#E8820A;font-weight:bold}
+.line{border-bottom:1.4px solid #222;height:7mm}
+.line2{border-bottom:1.4px solid #222;height:7mm;margin-top:2mm}
+.types{font-size:8pt;margin-top:4mm;color:#222;white-space:nowrap;overflow:hidden}
+.types .b{display:inline-block;width:3mm;height:3mm;border:1.4px solid #E8820A;border-radius:.6mm;vertical-align:-.4mm;margin-right:1mm}
+.frow2{margin-top:4mm;display:flex;align-items:center;gap:2mm;font-size:9pt;color:#222}
+.frow2 .fl{color:#E8820A;font-weight:bold;white-space:nowrap}
+.frow2 .fv{flex:1;border-bottom:1.4px solid #222;height:5mm;min-width:14mm}
 .code{position:absolute;right:6mm;bottom:2.5mm;font-size:7pt;color:#aaa;letter-spacing:.5px;font-family:monospace}
 @page{size:A4;margin:0}
 @media print{
@@ -88,6 +89,7 @@ function build(){
     var c=kode();
     var el=document.createElement('div');el.className='label';
     el.innerHTML=
+      '<div class="accent"></div>'+
       '<div class="lhead"><div class="lbrand">FRYSER<small>ditzel &amp; co</small></div>'+
       '<div class="qr">'+qrSvg(c)+'</div></div>'+
       '<div class="field">Vare:</div><div class="line"></div><div class="line2"></div>'+
