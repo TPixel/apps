@@ -44,8 +44,9 @@ body{background:#e9e9ee;font-family:'Helvetica Neue',Arial,sans-serif;color:#111
 .qr svg{width:100%;height:100%;display:block}
 .field{font-size:10pt;margin-top:2.5mm;color:#E8820A;font-weight:bold}
 .line{border-bottom:1.4px solid #222;height:9mm}
-.types{font-size:7.5pt;margin-top:6mm;color:#222;white-space:nowrap}
-.types .b{display:inline-block;width:2.6mm;height:2.6mm;border:1.4px solid #E8820A;border-radius:.5mm;vertical-align:-.3mm;margin-right:.8mm}
+.types{display:flex;justify-content:space-between;align-items:center;font-size:8pt;margin-top:6mm;color:#222}
+.types .cat{white-space:nowrap}
+.types .b{display:inline-block;width:2.8mm;height:2.8mm;border:1.4px solid #E8820A;border-radius:.5mm;vertical-align:-.3mm;margin-right:1mm}
 .frow2{margin-top:8mm;display:flex;align-items:center;gap:2mm;font-size:9pt;color:#222}
 .frow2 .fl{color:#E8820A;font-weight:bold;white-space:nowrap}
 .frow2 .fv{flex:1;border-bottom:1.4px solid #222;height:5mm;min-width:14mm}
@@ -94,8 +95,12 @@ function build(){
       '<div class="qr">'+qrSvg(c)+'</div></div>'+
       '<div class="field">Vare:</div><div class="line"></div>'+
       '<div class="types">'+
-        '<span class="b"></span>Kød <span class="b"></span>Fisk <span class="b"></span>Fjerkræ '+
-        '<span class="b"></span>Grønt <span class="b"></span>Frugt <span class="b"></span>Andet</div>'+
+        '<span class="cat"><span class="b"></span>Kød</span>'+
+        '<span class="cat"><span class="b"></span>Fisk</span>'+
+        '<span class="cat"><span class="b"></span>Fjerkræ</span>'+
+        '<span class="cat"><span class="b"></span>Grønt</span>'+
+        '<span class="cat"><span class="b"></span>Frugt</span>'+
+        '<span class="cat"><span class="b"></span>Andet</span></div>'+
       '<div class="frow2">'+
         '<span class="fl">Vægt:</span><span class="fv"></span>'+
         '<span class="fl">Bedst før:</span><span class="fv"></span></div>'+
