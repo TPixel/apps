@@ -6,15 +6,15 @@
 <title>Fryser QR-labels — Avery L7120 (35×35, 35 pr. ark)</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
-/* ===== Avery L7120 / J8120 — 35 × 35 mm, 5 × 7 = 35 pr. A4 ===== */
+/* ===== Avery L7120 / J8120 — 35 × 35 mm, 5 × 7 = 35 pr. A4 =====
+   Geometri målt/kalibreret ud fra Thomas' fysiske Avery-ark (foto):
+   pitch 39,0 mm begge veje (4 mm mellemrum), top 14 mm, side 9,5 mm. */
 :root{
-  --lw:35mm;      /* label bredde */
-  --lh:35mm;      /* label højde  */
-  --mtop:20mm;    /* margen øverst/nederst */
-  --mside:13.5mm; /* margen i siden */
-  --colgap:2mm;   /* mellemrum mellem kolonner */
-  --rowgap:2mm;   /* mellemrum mellem rækker */
-  --qr:25mm;      /* QR-størrelse (centreret i cellen, ~5mm luft hele vejen rundt) */
+  --lw:35mm; --lh:35mm;
+  --mtop:14mm;      /* margen øverst/nederst */
+  --mside:9.5mm;    /* margen i siden */
+  --gap:4mm;        /* mellemrum mellem labels (begge veje) */
+  --qr:25mm;        /* QR centreret i 35mm-labelen (~5mm luft rundt) */
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:#e9e9ee;font-family:'Helvetica Neue',Arial,sans-serif;color:#111}
@@ -30,25 +30,20 @@ body{background:#e9e9ee;font-family:'Helvetica Neue',Arial,sans-serif;color:#111
   width:210mm;height:297mm;background:#fff;overflow:hidden;
   padding:var(--mtop) var(--mside);
   display:grid;grid-template-columns:repeat(5,var(--lw));
-  column-gap:var(--colgap);row-gap:var(--rowgap);
+  column-gap:var(--gap);row-gap:var(--gap);
   grid-auto-rows:var(--lh);justify-content:start;align-content:start;
   box-shadow:0 2px 14px rgba(0,0,0,.18);
 }
-.label{
-  width:var(--lw);height:var(--lh);border:1px dashed #ccc;border-radius:2mm;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  break-inside:avoid;page-break-inside:avoid;position:relative;
-}
-.qr{width:var(--qr);height:var(--qr)}
+.label{position:relative;width:var(--lw);height:var(--lh);break-inside:avoid;page-break-inside:avoid}
+.qr{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:var(--qr);height:var(--qr)}
 .qr svg{width:100%;height:100%;display:block}
-.code{font-size:6pt;color:#888;letter-spacing:.5px;font-family:monospace;margin-top:1mm}
+.code{position:absolute;left:0;right:0;bottom:1mm;text-align:center;font-size:6pt;color:#9a9a9a;letter-spacing:.5px;font-family:monospace}
 @page{size:A4;margin:0}
 @media print{
   body{background:#fff}
   .controls,.hint{display:none}
   .wrap{padding:0}
   .sheet{box-shadow:none}
-  .label{border:none}   /* rene labels — Averys stanselinjer er fysiske */
 }
 </style>
 </head>
@@ -58,7 +53,7 @@ body{background:#e9e9ee;font-family:'Helvetica Neue',Arial,sans-serif;color:#111
   <h1>🧊 QR-labels · Avery L7120 (35×35)</h1>
   <button class="btn new" onclick="build()">🔄 Nyt ark (nye koder)</button>
   <button class="btn print" onclick="window.print()">🖨️ Print</button>
-  <div class="hint">35 QR-labels pr. A4 (35×35 mm — Avery L7120/J8120). <b>Testprint FØRST på alm. papir</b> og hold op mod Avery-arket i modlys. I print-dialogen: <b>Margener = Ingen/None</b>, <b>Skala = 100 %</b> (ikke “tilpas til side”), sidehoved/-fod slået fra. Sig til hvis rækker/kolonner skal skubbes — margenerne er nemme at justere.</div>
+  <div class="hint">35 farvede QR-labels pr. A4 (35×35 mm — Avery L7120/J8120). Geometrien er kalibreret efter dit fysiske ark (pitch 39 mm, top 14 mm, side 9,5 mm). <b>Print:</b> Margener = Ingen, Skala = 100 % (ikke “tilpas til side”), sidehoved/-fod fra. Koderne matcher fryser-appen.</div>
 </div>
 <div class="wrap"><div class="sheet" id="sheet"></div></div>
 
@@ -71,16 +66,19 @@ function kode(){
   for(var i=0;i<6;i++)out+=cs[a[i]%cs.length];
   return out;
 }
-function qrSvg(txt){
+// 35 distinkte, mørke farver (golden-angle hue-spredning; mørke nok til scanning)
+function farve(i){ var h=Math.round((i*137.508)%360); return 'hsl('+h+',66%,37%)'; }
+function qrSvg(txt,color){
   var q=qrcode(0,'M');q.addData(txt);q.make();
-  return q.createSvgTag({cellSize:4,margin:0,scalable:true});
+  var svg=q.createSvgTag({cellSize:4,margin:2,scalable:true});
+  return svg.replace(/<path/g,'<path fill="'+color+'"');
 }
 function build(){
   var sheet=document.getElementById('sheet');sheet.innerHTML='';
   for(var i=0;i<35;i++){
-    var c=kode();
+    var c=kode(), col=farve(i);
     var el=document.createElement('div');el.className='label';
-    el.innerHTML='<div class="qr">'+qrSvg(c)+'</div><div class="code">'+c+'</div>';
+    el.innerHTML='<div class="qr">'+qrSvg(c,col)+'</div><div class="code" style="color:'+col+'">'+c+'</div>';
     sheet.appendChild(el);
   }
 }
