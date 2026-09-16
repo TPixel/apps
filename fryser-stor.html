@@ -49,7 +49,7 @@ body{background:#e9e9ee;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;
   <h1>🧊 Store labels · Avery 99×68</h1>
   <button class="btn new" onclick="build()">🔄 Nyt ark (nye koder)</button>
   <button class="btn print" onclick="window.print()">🖨️ Print</button>
-  <div class="hint">8 labels pr. A4 (99,1 × 67,7 mm — Avery L7165/J8165). Hver label har en unik, farvet QR-kode der matcher fryser-appen. <b>Print:</b> Margener = Ingen, Skala = 100 % (ikke “tilpas til side”), sidehoved/-fod fra. Testprint på alm. papir mod Avery-arket først.</div>
+  <div class="hint">8 labels pr. A4 (99,1 × 67,7 mm — Avery L7165/J8165). Hver label har en unik QR-kode der matcher fryser-appen. <b>Print:</b> Margener = Ingen, Skala = 100 % (ikke “tilpas til side”), sidehoved/-fod fra. Testprint på alm. papir mod Avery-arket først.</div>
 </div>
 <div class="wrap"><div class="sheet" id="sheet"></div></div>
 
@@ -59,8 +59,6 @@ var CAT=[
   ['KØD','#C0143C'],['FISK','#1565C0'],['FJERKRÆ','#B26A00'],['GRØNT','#1B7A3A'],['FRUGT','#D24726'],
   ['DESSERT','#9C1C86'],['FÆRDIG RET','#0E7C7B'],['BRØD','#7A5230']
 ];
-// QR- + Vægt-farve pr. label (cykler)
-var QRCOL=['#0E7C7B','#C25E00','#2E2E8B','#B3123C','#1B6B3A','#6A1B9A','#1F4E79','#8B3A1B'];
 
 function kode(){
   var cs='ACDEFGHJKMNPQRTUVWXYZ2346789',out='';
@@ -81,7 +79,7 @@ function build(){
   var sheet=document.getElementById('sheet');sheet.innerHTML='';
   for(var i=0;i<8;i++){
     var c=kode();
-    var col=QRCOL[i%QRCOL.length];
+    var col='#000000';   // QR (og Vægt) sort — scanner mest sikkert
     var r1='',r2='';
     for(var k=0;k<5;k++) r1+=cat(CAT[k][0],CAT[k][1]);
     for(var k=5;k<8;k++) r2+=cat(CAT[k][0],CAT[k][1]);

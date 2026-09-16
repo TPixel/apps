@@ -53,7 +53,7 @@ body{background:#e9e9ee;font-family:'Helvetica Neue',Arial,sans-serif;color:#111
   <h1>🧊 QR-labels · Avery L7120 (35×35)</h1>
   <button class="btn new" onclick="build()">🔄 Nyt ark (nye koder)</button>
   <button class="btn print" onclick="window.print()">🖨️ Print</button>
-  <div class="hint">35 farvede QR-labels pr. A4 (35×35 mm — Avery L7120/J8120). Geometrien er kalibreret efter dit fysiske ark (pitch 39 mm, top 14 mm, side 9,5 mm). <b>Print:</b> Margener = Ingen, Skala = 100 % (ikke “tilpas til side”), sidehoved/-fod fra. Koderne matcher fryser-appen.</div>
+  <div class="hint">35 QR-labels pr. A4 (35×35 mm — Avery L7120/J8120). Geometrien er kalibreret efter dit fysiske ark (pitch 39 mm, top 14 mm, side 9,5 mm). <b>Print:</b> Margener = Ingen, Skala = 100 % (ikke “tilpas til side”), sidehoved/-fod fra. Koderne matcher fryser-appen.</div>
 </div>
 <div class="wrap"><div class="sheet" id="sheet"></div></div>
 
@@ -66,8 +66,8 @@ function kode(){
   for(var i=0;i<6;i++)out+=cs[a[i]%cs.length];
   return out;
 }
-// 35 distinkte, mørke farver (golden-angle hue-spredning; mørke nok til scanning)
-function farve(i){ var h=Math.round((i*137.508)%360); return 'hsl('+h+',66%,37%)'; }
+// Sorte QR-koder (scanner mest sikkert)
+function farve(i){ return '#000000'; }
 function qrSvg(txt,color){
   var q=qrcode(0,'M');q.addData(txt);q.make();
   var svg=q.createSvgTag({cellSize:4,margin:2,scalable:true});
