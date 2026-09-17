@@ -56,6 +56,13 @@ input[type=file]{display:none}
 /* overlay */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:flex-end;z-index:20}
 .ov.show{display:flex}
+.nfcov{position:fixed;inset:0;background:#0C0C12;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:40;padding:24px;text-align:center}
+.nfcov.show{display:flex}
+.nfcov .big{font-size:66px;line-height:1}
+.nfcov h2{font-size:24px;font-weight:bold}
+.nfcov p{color:#8a8a94;font-size:15px;max-width:320px}
+.nfcov .go{background:#E8820A;color:#fff;border:none;border-radius:14px;font-weight:bold;font-size:20px;padding:18px 28px;font-family:inherit;cursor:pointer;width:100%;max-width:360px;margin-top:6px}
+.nfcov .cancel{background:none;border:none;color:#8a8a94;font-size:15px;font-family:inherit;cursor:pointer;padding:8px}
 .sheet{background:#16161f;width:100%;max-width:520px;margin:0 auto;border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92dvh;overflow-y:auto}
 .sheet h2{font-size:20px;margin-bottom:14px}
 .flytbox{background:#0f1420;border:1px solid #26324a;border-radius:14px;padding:14px 16px;margin:16px 0}
@@ -160,6 +167,15 @@ input[type=file]{display:none}
     <button class="btn add" id="takeConfirm" style="display:none" onclick="confirmTake()">📤 Tag ud af fryseren</button>
     <button class="btn ghost" onclick="closeTake()">Luk</button>
   </div>
+</div>
+
+<!-- NFC: åbnet via tag → klar til at tage ud -->
+<div class="nfcov" id="nfcOv">
+  <div class="big">🧊</div>
+  <h2>Tag ud af fryseren</h2>
+  <p>Scan QR-koden på den pakke du tager ud.</p>
+  <button class="go" onclick="nfcGo()">📤 Scan pakke</button>
+  <button class="cancel" onclick="nfcCancel()">Annuller</button>
 </div>
 
 <script>
@@ -336,6 +352,21 @@ function saveAdd(){
 
 // --- Tag ud-flow (scan QR) ---
 function startTake(){document.getElementById('takeCam').click();}
+// NFC: tagget åbner appen med ?take -> vis stor "klar til at tage ud"-skærm.
+// (Kameraet kan ikke auto-åbne uden et tryk på iPhone, så ét tryk starter scan.)
+function nfcClearFlag(){try{sessionStorage.removeItem('nfcTake');}catch(e){}}
+function nfcGo(){nfcClearFlag();document.getElementById('nfcOv').classList.remove('show');startTake();}
+function nfcCancel(){nfcClearFlag();document.getElementById('nfcOv').classList.remove('show');}
+(function(){
+  var p=new URLSearchParams(location.search);
+  var want=p.has('take')||p.get('mode')==='take'||location.hash==='#take';
+  var flag=false;try{flag=sessionStorage.getItem('nfcTake')==='1';}catch(e){}
+  if(want||flag){
+    try{sessionStorage.setItem('nfcTake','1');}catch(e){}         // overlev auto-update reload
+    if(want){try{history.replaceState(null,'',location.pathname);}catch(e){}}
+    document.getElementById('nfcOv').classList.add('show');
+  }
+})();
 function onTakePhoto(input){
   if(!input.files[0])return;var file=input.files[0];input.value='';
   processFile(file).then(function(r){
