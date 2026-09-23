@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pladejagt">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0C0C12">
+<link rel="apple-touch-icon" href="plader-touch.png">
+<link rel="icon" type="image/png" href="plader-favicon.png">
+<link rel="manifest" href="plader.webmanifest">
+<title>Pladejagt — Ditzel & Co</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0C0C12;color:#fff;font-family:'Tahoma',sans-serif;font-weight:bold;min-height:100dvh;padding:22px 20px calc(108px + env(safe-area-inset-bottom));max-width:1180px;margin:0 auto}
+.logo{font-size:12px;color:#555;letter-spacing:1px;text-transform:uppercase}
+h1{font-size:34px;margin:2px 0 4px;display:flex;align-items:center;gap:10px}
+.topRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.count{font-size:15px;color:#999}
+.gear{background:#1a1a24;border:none;color:#aaa;border-radius:10px;padding:8px 12px;font-size:16px;cursor:pointer;font-family:inherit}
+.search{width:100%;padding:12px 14px;border-radius:12px;border:none;background:#1a1a24;color:#fff;font-size:16px;font-family:inherit;font-weight:bold;margin-bottom:10px}
+.search::placeholder{color:#555}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:7px 12px;border-radius:20px;background:#1a1a24;color:#aaa;font-size:13px;border:1.5px solid transparent;cursor:pointer;white-space:nowrap;font-family:inherit;font-weight:bold}
+.chip.on{background:#E8820A;color:#fff;border-color:#E8820A}
+.banner{background:#3a2a12;color:#FBBF24;border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:12px;display:none;line-height:1.4}
+.banner.show{display:block}
+.banner a{color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{background:#1a1a24;border-radius:16px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;border:2px solid transparent}
+.card:hover{background:#20202c}
+.card.koebt{border-color:#2f6b3a}
+.cov{width:100%;aspect-ratio:1/1;object-fit:cover;background:#0C0C12;display:block}
+.cov.none{display:flex;align-items:center;justify-content:center;font-size:48px;color:#333}
+.cinfo{padding:10px 12px 12px}
+.card .art{font-size:12px;color:#E8820A;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .alb{font-size:15px;line-height:1.2;margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card .yr{font-size:12px;color:#777;margin-top:4px;display:flex;justify-content:space-between}
+.tag{display:inline-block;border-radius:6px;padding:1px 6px;font-size:11px}
+.tag.k{background:#1e3a24;color:#4ade80}
+.tag.o{background:#2a2a38;color:#bbb}
+.empty{text-align:center;color:#555;font-size:15px;padding:50px 0;line-height:1.5}
+.actionbar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,#0C0C12 24px);max-width:1180px;margin:0 auto}
+.btn{flex:1;padding:16px;border-radius:14px;border:none;font-family:inherit;font-weight:bold;font-size:16px;color:#fff;cursor:pointer}
+.btn:active{transform:scale(.97)}
+.btn.add{background:#E8820A}
+.btn.alt{background:#2a2a38}
+.btn.danger{background:#3a1a1a;color:#f87171}
+.btn.ok{background:#1e3a24;color:#4ade80}
+input[type=file]{display:none}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:flex-end;z-index:20}
+.ov.show{display:flex}
+.sheet{background:#16161f;width:100%;max-width:560px;margin:0 auto;border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92dvh;overflow-y:auto}
+.sheet h2{font-size:20px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:#888;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold}
+.field textarea{resize:vertical;min-height:70px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.sheet .btn{width:100%;margin-top:6px}
+.ghost{background:transparent;color:#888;padding:14px;font-size:15px}
+.status{font-size:14px;text-align:center;min-height:20px;margin:6px 0;color:#FBBF24;line-height:1.4}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid #444;border-top-color:#E8820A;border-radius:50%;animation:s .7s linear infinite;vertical-align:-3px;margin-right:6px}
+@keyframes s{to{transform:rotate(360deg)}}
+.photoRow{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.photoRow img{width:110px;height:110px;object-fit:cover;border-radius:12px;background:#0C0C12;flex:0 0 auto}
+.photoRow .match{flex:1;min-width:0;font-size:13px;color:#aaa;line-height:1.45}
+.photoRow .match b{color:#fff;font-size:15px}
+.matchPick{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.matchPick::-webkit-scrollbar{display:none}
+.matchPick img{width:64px;height:64px;border-radius:8px;object-fit:cover;flex:0 0 auto;border:2px solid transparent;cursor:pointer;background:#0C0C12}
+.matchPick img.on{border-color:#E8820A}
+.detHead{display:flex;gap:14px;align-items:flex-start;margin-bottom:10px}
+.detCov{width:120px;height:120px;border-radius:14px;object-fit:cover;flex:0 0 auto;background:#0C0C12}
+.detTxt{min-width:0;flex:1}
+.detArt{font-size:13px;color:#E8820A;text-transform:uppercase;letter-spacing:.5px}
+.detAlb{font-size:22px;line-height:1.15;margin:2px 0 6px}
+.detMeta{font-size:14px;color:#aaa;line-height:1.5}
+.linkH{font-size:12px;color:#888;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.5px}
+.links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.links a{display:flex;align-items:center;gap:8px;background:#0C0C12;color:#fff;text-decoration:none;border-radius:11px;padding:12px 12px;font-size:14px;border-left:4px solid #333}
+.links a.stream{border-left-color:#E8820A}
+.links a.vinyl{border-left-color:#6fb3c2}
+.links a.dk{border-left-color:#c39a5c}
+.links a:active{transform:scale(.97)}
+.noteBox{font-size:15px;line-height:1.5;color:#ececf4;background:#14141d;border-radius:12px;padding:12px 14px;margin:12px 0}
+.small{font-size:12px;color:#666;line-height:1.5;margin-top:8px}
+.small a{color:#E8820A}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#2a2a38;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;display:none;z-index:50;max-width:90%}
+.toast.show{display:block}
+</style>
+</head>
+<body>
+<div class="logo">Ditzel &amp; Co</div>
+<h1>🎵 Pladejagt</h1>
+<div class="topRow">
+  <div class="count" id="count"></div>
+  <button class="gear" onclick="openSettings()">⚙️</button>
+</div>
+<input class="search" id="search" type="search" inputmode="search" placeholder="Søg kunstner eller album…">
+<div class="chips" id="chips">
+  <button class="chip on" data-f="alle" onclick="setFilter('alle')">Alle</button>
+  <button class="chip" data-f="oenske" onclick="setFilter('oenske')">🛒 Ønsker</button>
+  <button class="chip" data-f="koebt" onclick="setFilter('koebt')">✅ Købt</button>
+</div>
+<div class="banner" id="banner"></div>
+<div class="grid" id="grid"></div>
+
+<div class="actionbar">
+  <button class="btn add" onclick="startScan()">📷 Scan cover</button>
+  <button class="btn alt" onclick="startManual()">✏️ Skriv selv</button>
+</div>
+
+<input type="file" id="cam" accept="image/*" capture="environment" onchange="onPhoto(this)">
+<input type="file" id="lib" accept="image/*" onchange="onPhoto(this)">
+<input type="file" id="importFile" accept="application/json,.json" onchange="onImport(this)">
+
+<!-- Tilføj-ark -->
+<div class="ov" id="addOv">
+  <div class="sheet">
+    <h2 id="addTitle">Ny plade</h2>
+    <div class="status" id="addStatus"></div>
+    <div class="photoRow" id="photoRow" style="display:none">
+      <img id="addThumb" alt="">
+      <div class="match" id="addMatch"></div>
+    </div>
+    <div class="matchPick" id="matchPick"></div>
+    <div class="field"><label>Kunstner</label><input id="fArt" placeholder="fx Pink Floyd" autocomplete="off"></div>
+    <div class="field"><label>Album</label><input id="fAlb" placeholder="fx The Dark Side of the Moon" autocomplete="off"></div>
+    <div class="row">
+      <div class="field"><label>År</label><input id="fYr" inputmode="numeric" placeholder="1973"></div>
+      <div class="field"><label>Genre</label><input id="fGen" placeholder="fx Rock"></div>
+    </div>
+    <div class="field"><label>Pladeselskab</label><input id="fLab" placeholder="fx Harvest"></div>
+    <div class="field"><label>Note</label><input id="fNote" placeholder="fx set hos Kim / hørt i radioen"></div>
+    <button class="btn alt" id="lookupBtn" onclick="lookupFromFields()">🔍 Slå cover og år op</button>
+    <button class="btn add" onclick="saveAdd()">Gem på listen</button>
+    <button class="btn ghost" onclick="closeAdd()">Fortryd</button>
+  </div>
+</div>
+
+<!-- Detalje-ark -->
+<div class="ov" id="detOv">
+  <div class="sheet">
+    <div class="detHead">
+      <img class="detCov" id="dCov" alt="">
+      <div class="detTxt">
+        <div class="detArt" id="dArt"></div>
+        <div class="detAlb" id="dAlb"></div>
+        <div class="detMeta" id="dMeta"></div>
+      </div>
+    </div>
+    <div class="noteBox" id="dNote" style="display:none"></div>
+    <div class="linkH">Lyt</div>
+    <div class="links" id="dStream"></div>
+    <div class="linkH">Køb på vinyl</div>
+    <div class="links" id="dVinyl"></div>
+    <div class="linkH">Danske butikker</div>
+    <div class="links" id="dDk"></div>
+    <div class="small">Butiks-links åbner en søgning på pladen — det er ikke garanteret at de har den på lager.</div>
+    <button class="btn ok" id="dToggle" onclick="toggleStatus()"></button>
+    <div class="row">
+      <button class="btn alt" onclick="editCurrent()">✏️ Ret</button>
+      <button class="btn alt" onclick="shareCurrent()">📤 Del</button>
+    </div>
+    <button class="btn danger" onclick="deleteCurrent()">🗑 Slet fra listen</button>
+    <button class="btn ghost" onclick="closeDet()">Luk</button>
+  </div>
+</div>
+
+<!-- Indstillinger -->
+<div class="ov" id="setOv">
+  <div class="sheet">
+    <h2>⚙️ Indstillinger</h2>
+    <div class="field"><label>Claude API-nøgle (til at genkende covers direkte fra telefonen)</label><input id="sKey" type="password" placeholder="sk-ant-…" autocomplete="off"></div>
+    <div class="small">Nøglen gemmes kun lokalt på denne enhed. Appen prøver først Ditzel-workeren (<code>/api/plader/scan</code>) — findes den ikke, bruges nøglen her. Uden nogen af delene kan du stadig skrive kunstner og album selv og slå cover op.</div>
+    <div style="height:14px"></div>
+    <div class="row">
+      <button class="btn alt" onclick="exportJson()">⬇️ Eksportér</button>
+      <button class="btn alt" onclick="document.getElementById('importFile').click()">⬆️ Importér</button>
+    </div>
+    <button class="btn alt" onclick="copyList()">📋 Kopiér listen som tekst (til Noter)</button>
+    <button class="btn add" onclick="saveSettings()">Gem</button>
+    <button class="btn ghost" onclick="closeSettings()">Luk</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var API='https://lightcrew-api.thomas-5c5.workers.dev';
+var KEY='plader-liste';
+var items=[];
+var filter='alle';
+var current=null;      // id i detalje-ark
+var editing=null;      // id der redigeres i tilføj-ark
+var pending={foto:null,thumb:null,cover:null,candidates:[]};
+
+// ---------- Lager ----------
+function load(){try{items=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){items=[];}render();}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(items));}catch(e){toast('⚠️ Kunne ikke gemme — er lageret fuldt?',true);}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function toast(t,bad){var e=document.getElementById('toast');e.textContent=t;e.style.background=bad?'#5a1a1a':'#2a2a38';e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(function(){e.classList.remove('show');},2600);}
+function getKeySetting(){try{return localStorage.getItem('plader-claude-key')||'';}catch(e){return '';}}
+
+// ---------- Liste ----------
+function setFilter(f){filter=f;document.querySelectorAll('.chip').forEach(function(c){c.classList.toggle('on',c.dataset.f===f);});render();}
+document.getElementById('search').addEventListener('input',render);
+function render(){
+  var q=document.getElementById('search').value.trim().toLowerCase();
+  var list=items.filter(function(it){
+    if(filter==='oenske'&&it.status==='koebt')return false;
+    if(filter==='koebt'&&it.status!=='koebt')return false;
+    if(q&&((it.kunstner+' '+it.album+' '+(it.genre||'')+' '+(it.note||'')).toLowerCase().indexOf(q)===-1))return false;
+    return true;
+  }).sort(function(a,b){return (b.tilfoejet||'').localeCompare(a.tilfoejet||'')||(b.id>a.id?1:-1);});
+  var n=items.length,k=items.filter(function(i){return i.status==='koebt';}).length;
+  document.getElementById('count').textContent=n?n+' plade'+(n===1?'':'r')+' · '+(n-k)+' på ønskelisten · '+k+' købt':'';
+  var g=document.getElementById('grid');
+  if(!list.length){g.innerHTML='<div class="empty" style="grid-column:1/-1">'+(n?'Ingen plader matcher.':'Ingen plader endnu.<br>Tag et billede af et cover — så finder appen kunstner, album og hvor du kan købe den.')+'</div>';return;}
+  g.innerHTML=list.map(function(it){
+    var img=it.cover?'<img class="cov" src="'+esc(it.cover)+'" alt="" loading="lazy" onerror="this.outerHTML=\'<div class=&quot;cov none&quot;>💿</div>\'">':(it.thumb?'<img class="cov" src="data:image/jpeg;base64,'+it.thumb+'" alt="">':'<div class="cov none">💿</div>');
+    return '<div class="card'+(it.status==='koebt'?' koebt':'')+'" onclick="openDet(\''+it.id+'\')">'+img+
+      '<div class="cinfo"><div class="art">'+esc(it.kunstner)+'</div><div class="alb">'+esc(it.album)+'</div>'+
+      '<div class="yr"><span>'+esc(it.aar||'')+'</span><span class="tag '+(it.status==='koebt'?'k':'o')+'">'+(it.status==='koebt'?'Købt':'Ønske')+'</span></div></div></div>';
+  }).join('');
+}
+
+// ---------- Foto ----------
+function startScan(){
+  document.getElementById('banner').classList.remove('show');
+  document.getElementById('cam').click();
+}
+function startManual(){editing=null;resetAdd();document.getElementById('addTitle').textContent='Ny plade';openAdd();setTimeout(function(){document.getElementById('fArt').focus();},300);}
+function processFile(file){
+  return new Promise(function(res,rej){
+    var img=new Image();
+    img.onload=function(){
+      var max=1024,w=img.width,h=img.height;
+      if(w>h&&w>max){h=Math.round(h*max/w);w=max;}else if(h>=w&&h>max){w=Math.round(w*max/h);h=max;}
+      var cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
+      var dataUrl=cv.toDataURL('image/jpeg',0.8);
+      var tmax=200,tw=w,th=h;
+      if(tw>th&&tw>tmax){th=Math.round(th*tmax/tw);tw=tmax;}else if(th>=tw&&th>tmax){tw=Math.round(tw*tmax/th);th=tmax;}
+      var tv=document.createElement('canvas');tv.width=tw;tv.height=th;tv.getContext('2d').drawImage(img,0,0,tw,th);
+      res({dataUrl:dataUrl,b64:dataUrl.split(',')[1],thumb:tv.toDataURL('image/jpeg',0.6).split(',')[1]});
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror=rej;img.src=URL.createObjectURL(file);
+  });
+}
+function onPhoto(input){
+  if(!input.files[0])return;var file=input.files[0];input.value='';
+  editing=null;resetAdd();document.getElementById('addTitle').textContent='Ny plade';
+  processFile(file).then(function(r){
+    pending.foto=r.b64;pending.thumb=r.thumb;
+    document.getElementById('photoRow').style.display='flex';
+    document.getElementById('addThumb').src=r.dataUrl;
+    document.getElementById('addMatch').textContent='';
+    openAdd();
+    identify(r.b64);
+  }).catch(function(){toast('Kunne ikke læse billedet',true);});
+}
+
+// ---------- Genkendelse: worker først, ellers Claude direkte ----------
+function identify(b64){
+  var s=document.getElementById('addStatus');
+  s.innerHTML='<span class="spin"></span>Kigger på coveret…';
+  identifyViaWorker(b64).catch(function(){
+    var key=getKeySetting();
+    if(!key)throw new Error('nokey');
+    s.innerHTML='<span class="spin"></span>Spørger Claude…';
+    return identifyViaClaude(b64,key);
+  }).then(function(f){
+    s.textContent='';
+    if(!f||(!f.kunstner&&!f.album)){s.textContent='Kunne ikke genkende coveret — skriv kunstner og album selv';return;}
+    fillFields(f);
+    if(f.sikkerhed&&f.sikkerhed<0.6)s.textContent='Usikkert bud — tjek at det er rigtigt';
+    lookupFromFields();
+  }).catch(function(e){
+    if(e&&e.message==='nokey'){
+      s.textContent='Ingen automatisk genkendelse endnu — skriv kunstner og album, så slår jeg cover og år op.';
+      var b=document.getElementById('banner');
+      b.innerHTML='🔎 Automatisk genkendelse er ikke slået til. Workeren mangler <b>/api/plader/scan</b> — eller læg en Claude API-nøgle ind under ⚙️.';
+      b.classList.add('show');
+    } else {
+      s.textContent='Genkendelse fejlede ('+(e&&e.message?e.message:'ukendt')+') — skriv selv';
+    }
+    setTimeout(function(){document.getElementById('fArt').focus();},200);
+  });
+}
+function identifyViaWorker(b64){
+  var ctrl=('AbortController' in window)?new AbortController():null;
+  var t=setTimeout(function(){if(ctrl)ctrl.abort();},25000);
+  return fetch(API+'/api/plader/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({foto:b64}),signal:ctrl?ctrl.signal:undefined})
+    .then(function(r){clearTimeout(t);if(!r.ok)throw new Error('worker '+r.status);return r.json();})
+    .then(function(d){var f=(d&&d.felter)||d;if(!f||typeof f!=='object')throw new Error('tomt svar');return f;});
+}
+var SCHEMA={type:'object',additionalProperties:false,required:['kunstner','album','aar','label','genre','sikkerhed','note'],
+  properties:{kunstner:{type:'string'},album:{type:'string'},aar:{type:'string'},label:{type:'string'},genre:{type:'string'},
+    sikkerhed:{type:'number',description:'0-1: hvor sikker du er på kunstner+album'},note:{type:'string',description:'Kort bemærkning, fx hvis det er en genudgivelse, boks eller du er i tvivl'}}};
+function identifyViaClaude(b64,key){
+  var body={
+    model:'claude-opus-5',
+    max_tokens:1024,
+    output_config:{effort:'low',format:{type:'json_schema',schema:SCHEMA}},
+    system:'Du identificerer musikalbums ud fra et foto af et pladecover (vinyl/CD), evt. taget skævt, med refleks, eller som screenshot fra Tidal/Instagram. Svar med kunstner og albumtitel præcis som de officielt skrives. Kan noget ikke ses, sæt tom streng. Gæt kun år/label/genre når du er rimeligt sikker.',
+    messages:[{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+      {type:'text',text:'Hvilket album er dette? Udfyld felterne.'}
+    ]}]
+  };
+  return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
+      'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify(body)})
+    .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error((j.error&&j.error.message)||('API '+r.status));return j;});})
+    .then(function(j){
+      if(j.stop_reason==='refusal')throw new Error('afvist');
+      var txt=(j.content||[]).filter(function(c){return c.type==='text';}).map(function(c){return c.text;}).join('');
+      return JSON.parse(txt);
+    });
+}
+function fillFields(f){
+  if(f.kunstner)document.getElementById('fArt').value=f.kunstner;
+  if(f.album)document.getElementById('fAlb').value=f.album;
+  if(f.aar)document.getElementById('fYr').value=String(f.aar).slice(0,4);
+  if(f.label)document.getElementById('fLab').value=f.label;
+  if(f.genre)document.getElementById('fGen').value=f.genre;
+  if(f.note&&!document.getElementById('fNote').value)document.getElementById('fNote').value=f.note;
+}
+
+// ---------- Opslag af officielt cover + år (iTunes → MusicBrainz) ----------
+function lookupFromFields(){
+  var art=document.getElementById('fArt').value.trim(),alb=document.getElementById('fAlb').value.trim();
+  if(!art&&!alb){toast('Skriv kunstner eller album først');return;}
+  var m=document.getElementById('addMatch');
+  document.getElementById('photoRow').style.display='flex';
+  if(!pending.foto)document.getElementById('addThumb').src='plader-icon-192.png';
+  m.innerHTML='<span class="spin"></span>Slår op…';
+  document.getElementById('matchPick').innerHTML='';
+  pending.candidates=[];pending.cover=null;
+  lookupItunes(art,alb).then(function(c){
+    if(c.length)return c;
+    return lookupMusicBrainz(art,alb);
+  }).then(function(c){
+    pending.candidates=c;
+    if(!c.length){m.innerHTML='Fandt ikke pladen i iTunes/MusicBrainz — gemmer med dit eget billede.';return;}
+    pickCandidate(0);
+    document.getElementById('matchPick').innerHTML=c.slice(0,8).map(function(x,i){return '<img src="'+esc(x.cover)+'" alt="" class="'+(i===0?'on':'')+'" title="'+esc(x.kunstner+' – '+x.album)+'" onclick="pickCandidate('+i+')">';}).join('');
+  }).catch(function(){m.textContent='Opslag fejlede (offline?) — gemmer med dit eget billede.';});
+}
+function pickCandidate(i){
+  var c=pending.candidates[i];if(!c)return;
+  pending.cover=c.cover;
+  document.querySelectorAll('#matchPick img').forEach(function(im,j){im.classList.toggle('on',j===i);});
+  document.getElementById('addMatch').innerHTML='<b>'+esc(c.kunstner)+' – '+esc(c.album)+'</b><br>'+esc([c.aar,c.kilde].filter(Boolean).join(' · '))+'<br><span style="color:#666">Tryk på et andet cover hvis det er forkert</span>';
+  if(c.aar&&!document.getElementById('fYr').value)document.getElementById('fYr').value=c.aar;
+  if(c.genre&&!document.getElementById('fGen').value)document.getElementById('fGen').value=c.genre;
+}
+function lookupItunes(art,alb){
+  var q=encodeURIComponent((art+' '+alb).trim());
+  return fetch('https://itunes.apple.com/search?term='+q+'&entity=album&limit=8&country=dk')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      return (d.results||[]).map(function(r){
+        return {kunstner:r.artistName,album:r.collectionName,aar:(r.releaseDate||'').slice(0,4),genre:r.primaryGenreName,
+          cover:(r.artworkUrl100||'').replace(/100x100bb/,'600x600bb'),kilde:'iTunes'};
+      }).filter(function(x){return x.cover;});
+    }).catch(function(){return [];});
+}
+function lookupMusicBrainz(art,alb){
+  var lucene=[];
+  if(art)lucene.push('artist:"'+art.replace(/"/g,'')+'"');
+  if(alb)lucene.push('releasegroup:"'+alb.replace(/"/g,'')+'"');
+  return fetch('https://musicbrainz.org/ws/2/release-group/?query='+encodeURIComponent(lucene.join(' AND '))+'&fmt=json&limit=6',{headers:{'Accept':'application/json'}})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      return (d['release-groups']||[]).map(function(g){
+        return {kunstner:(g['artist-credit']||[]).map(function(a){return a.name;}).join(', '),album:g.title,
+          aar:(g['first-release-date']||'').slice(0,4),cover:'https://coverartarchive.org/release-group/'+g.id+'/front-500',kilde:'MusicBrainz'};
+      });
+    }).catch(function(){return [];});
+}
+
+// ---------- Tilføj/ret ----------
+function resetAdd(){
+  pending={foto:null,thumb:null,cover:null,candidates:[]};
+  ['fArt','fAlb','fYr','fGen','fLab','fNote'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('addStatus').textContent='';
+  document.getElementById('addMatch').textContent='';
+  document.getElementById('matchPick').innerHTML='';
+  document.getElementById('photoRow').style.display='none';
+  document.getElementById('addThumb').src='';
+}
+function openAdd(){document.getElementById('addOv').classList.add('show');}
+function closeAdd(){document.getElementById('addOv').classList.remove('show');}
+function saveAdd(){
+  var art=document.getElementById('fArt').value.trim(),alb=document.getElementById('fAlb').value.trim();
+  if(!art&&!alb){toast('Skriv mindst kunstner eller album',true);return;}
+  var rec;
+  if(editing){rec=items.find(function(i){return i.id===editing;});}
+  if(!rec){rec={id:uid(),status:'oenske',tilfoejet:todayISO()};items.unshift(rec);}
+  rec.kunstner=art;rec.album=alb;
+  rec.aar=document.getElementById('fYr').value.trim();
+  rec.genre=document.getElementById('fGen').value.trim();
+  rec.label=document.getElementById('fLab').value.trim();
+  rec.note=document.getElementById('fNote').value.trim();
+  if(pending.cover)rec.cover=pending.cover;
+  if(pending.thumb)rec.thumb=pending.thumb;
+  persist();render();closeAdd();
+  toast(editing?'Rettet':'💿 Gemt på listen');
+  editing=null;
+}
+function editCurrent(){
+  var it=items.find(function(i){return i.id===current;});if(!it)return;
+  closeDet();resetAdd();editing=it.id;
+  document.getElementById('addTitle').textContent='Ret plade';
+  document.getElementById('fArt').value=it.kunstner||'';document.getElementById('fAlb').value=it.album||'';
+  document.getElementById('fYr').value=it.aar||'';document.getElementById('fGen').value=it.genre||'';
+  document.getElementById('fLab').value=it.label||'';document.getElementById('fNote').value=it.note||'';
+  if(it.cover||it.thumb){document.getElementById('photoRow').style.display='flex';document.getElementById('addThumb').src=it.cover||('data:image/jpeg;base64,'+it.thumb);}
+  openAdd();
+}
+
+// ---------- Detalje ----------
+function q(s){return encodeURIComponent(s);}
+function gsite(site,s){return 'https://www.google.com/search?q='+q('site:'+site+' '+s);}
+function openDet(id){
+  var it=items.find(function(i){return i.id===id;});if(!it)return;current=id;
+  var cov=document.getElementById('dCov');
+  cov.src=it.cover||(it.thumb?'data:image/jpeg;base64,'+it.thumb:'plader-icon-192.png');
+  document.getElementById('dArt').textContent=it.kunstner||'';
+  document.getElementById('dAlb').textContent=it.album||'';
+  document.getElementById('dMeta').innerHTML=[it.aar,it.genre,it.label].filter(Boolean).map(esc).join(' · ')+(it.tilfoejet?'<br><span style="color:#666">Tilføjet '+esc(it.tilfoejet)+'</span>':'');
+  var n=document.getElementById('dNote');n.style.display=it.note?'block':'none';n.textContent=it.note||'';
+  var s=(it.kunstner+' '+it.album).trim();
+  document.getElementById('dStream').innerHTML=
+    link('https://listen.tidal.com/search?q='+q(s),'🎵 Tidal','stream')+
+    link('https://bandcamp.com/search?q='+q(s)+'&item_type=a','🎵 Bandcamp','stream');
+  document.getElementById('dVinyl').innerHTML=
+    link('https://www.discogs.com/search/?q='+q(s)+'&type=release&format_exact=Vinyl','💿 Discogs','vinyl')+
+    link('https://www.ebay.com/sch/i.html?_nkw='+q(s+' vinyl LP'),'💿 eBay','vinyl')+
+    link('https://www.discogs.com/sell/list?q='+q(s)+'&format=Vinyl','💿 Discogs Marketplace','vinyl')+
+    link('https://www.google.com/search?q='+q(s+' vinyl køb'),'🔎 Google','vinyl');
+  document.getElementById('dDk').innerHTML=
+    link(gsite('accord.dk',s),'🇩🇰 Accord','dk')+
+    link(gsite('moby-disc.dk',s),'🇩🇰 Moby Disc','dk')+
+    link(gsite('imusic.dk',s+' vinyl'),'🇩🇰 iMusic','dk')+
+    link(gsite('vinylpladen.dk',s),'🇩🇰 Vinylpladen','dk')+
+    link(gsite('pladekombinatet.dk',s),'🇩🇰 Pladekombinatet','dk');
+  document.getElementById('dToggle').textContent=it.status==='koebt'?'↩️ Sæt tilbage på ønskelisten':'✅ Markér som købt';
+  document.getElementById('detOv').classList.add('show');
+}
+function link(href,label,cls){return '<a class="'+cls+'" href="'+esc(href)+'" target="_blank" rel="noopener">'+label+'</a>';}
+function closeDet(){document.getElementById('detOv').classList.remove('show');}
+function toggleStatus(){
+  var it=items.find(function(i){return i.id===current;});if(!it)return;
+  it.status=it.status==='koebt'?'oenske':'koebt';
+  if(it.status==='koebt')it.koebt=todayISO();else delete it.koebt;
+  persist();render();openDet(current);
+  toast(it.status==='koebt'?'✅ Markeret som købt':'Tilbage på ønskelisten');
+}
+function deleteCurrent(){
+  var it=items.find(function(i){return i.id===current;});if(!it)return;
+  if(!confirm('Slet "'+(it.kunstner+' – '+it.album)+'" fra listen?'))return;
+  items=items.filter(function(i){return i.id!==current;});persist();render();closeDet();toast('Slettet');
+}
+function shareCurrent(){
+  var it=items.find(function(i){return i.id===current;});if(!it)return;
+  var s=(it.kunstner+' '+it.album).trim();
+  var txt='🎵 '+it.kunstner+' – '+it.album+(it.aar?' ('+it.aar+')':'')+'\n'+
+    'Tidal: https://listen.tidal.com/search?q='+q(s)+'\n'+
+    'Discogs: https://www.discogs.com/search/?q='+q(s)+'&type=release&format_exact=Vinyl'+(it.note?'\n'+it.note:'');
+  if(navigator.share){navigator.share({title:it.kunstner+' – '+it.album,text:txt}).catch(function(){});}
+  else{copyText(txt);}
+}
+
+// ---------- Indstillinger / eksport ----------
+function openSettings(){document.getElementById('sKey').value=getKeySetting();document.getElementById('setOv').classList.add('show');}
+function closeSettings(){document.getElementById('setOv').classList.remove('show');}
+function saveSettings(){
+  var k=document.getElementById('sKey').value.trim();
+  try{if(k)localStorage.setItem('plader-claude-key',k);else localStorage.removeItem('plader-claude-key');}catch(e){}
+  document.getElementById('banner').classList.remove('show');
+  closeSettings();toast('Gemt');
+}
+function exportJson(){
+  var blob=new Blob([JSON.stringify({eksporteret:new Date().toISOString(),plader:items},null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pladejagt-'+todayISO()+'.json';document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);
+}
+function onImport(input){
+  if(!input.files[0])return;var f=input.files[0];input.value='';
+  var rd=new FileReader();
+  rd.onload=function(){
+    try{
+      var d=JSON.parse(rd.result);var arr=Array.isArray(d)?d:(d.plader||[]);
+      var ids={};items.forEach(function(i){ids[i.id]=1;});
+      var n=0;arr.forEach(function(p){if(p&&p.id&&!ids[p.id]){items.push(p);n++;}});
+      persist();render();toast(n+' plader importeret');
+    }catch(e){toast('Kunne ikke læse filen',true);}
+  };
+  rd.readAsText(f);
+}
+function listAsText(){
+  return items.map(function(it){
+    var s=(it.kunstner+' '+it.album).trim();
+    return (it.status==='koebt'?'✅ ':'🛒 ')+it.kunstner+' – '+it.album+(it.aar?' ('+it.aar+')':'')+
+      '\n   Tidal: https://listen.tidal.com/search?q='+q(s)+
+      '\n   Discogs: https://www.discogs.com/search/?q='+q(s)+'&type=release&format_exact=Vinyl'+
+      (it.note?'\n   '+it.note:'');
+  }).join('\n\n');
+}
+function copyList(){if(!items.length){toast('Listen er tom');return;}copyText('🎵 Pladejagt — '+todayISO()+'\n\n'+listAsText());}
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast('📋 Kopieret');},function(){fallbackCopy(t);});}
+  else fallbackCopy(t);
+}
+function fallbackCopy(t){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('📋 Kopieret');}catch(e){toast('Kunne ikke kopiere',true);}ta.remove();}
+
+// Luk ark ved tryk udenfor
+document.querySelectorAll('.ov').forEach(function(ov){ov.addEventListener('click',function(e){if(e.target===ov)ov.classList.remove('show');});});
+
+// --- Auto-opdatering: henter nyeste version og genindlæser hvis filen er ændret ---
+(function(){
+  var SELF=location.pathname.split('?')[0];
+  function h32(s){var h=5381,i=s.length;while(i){h=(h*33)^s.charCodeAt(--i);}return (h>>>0).toString(36);}
+  function tjek(){
+    fetch(SELF+'?_='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.ok?r.text():null;})
+      .then(function(t){
+        if(!t||t.length<800)return;
+        var ny=h32(t),gemt=null;
+        try{gemt=localStorage.getItem('plader-ver');}catch(e){}
+        if(ny!==gemt){
+          try{localStorage.setItem('plader-ver',ny);}catch(e){}
+          if(location.search.indexOf('v='+ny)===-1)location.replace(SELF+'?v='+ny);
+        }
+      }).catch(function(){});
+  }
+  setTimeout(tjek,1500);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)tjek();});
+  setInterval(tjek,300000);
+})();
+
+load();
+</script>
+</body>
+</html>
