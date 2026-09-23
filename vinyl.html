@@ -30,7 +30,6 @@ body{position:relative}
     repeating-radial-gradient(circle at 50% 50%, #131316 0px, #131316 1.6px, #1d1d21 1.6px, #1d1d21 2.4px, #16161a 2.4px, #16161a 3.4px),
     #141417;
   box-shadow:0 0 0 2px #0a0a0c,0 40px 120px rgba(0,0,0,.8)}
-/* Spor-inddelinger (lidt lysere bånd) og yderkant */
 .disc::before{content:"";position:absolute;inset:0;border-radius:50%;
   background:
     radial-gradient(circle at 50% 50%, transparent 0 30%, rgba(255,255,255,.035) 30.2%, rgba(255,255,255,.035) 30.7%, transparent 30.9%),
@@ -38,36 +37,48 @@ body{position:relative}
     radial-gradient(circle at 50% 50%, transparent 0 56%, rgba(255,255,255,.035) 56.2%, rgba(255,255,255,.035) 56.7%, transparent 56.9%),
     radial-gradient(circle at 50% 50%, transparent 0 66%, rgba(255,255,255,.035) 66.2%, rgba(255,255,255,.035) 66.7%, transparent 66.9%),
     radial-gradient(circle at 50% 50%, transparent 0 47.4%, #0e0e10 47.6%, #232327 48.4%, #0b0b0d 49.2%, transparent 49.4%)}
-/* Label: coveret */
-.label{position:absolute;left:50%;top:50%;width:35%;height:35%;transform:translate(-50%,-50%);border-radius:50%;background:#1e1e24 center/cover no-repeat;box-shadow:inset 0 0 0 3px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);overflow:hidden}
+.label{position:absolute;left:50%;top:50%;width:35%;height:35%;transform:translate(-50%,-50%);border-radius:50%;background:#1e1e24;box-shadow:inset 0 0 0 3px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);overflow:hidden}
 .label .art{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transition:opacity 1.2s ease}
 .label .art.on{opacity:1}
 .label .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(var(--d)*.05);color:#3a3a44}
 .hole{position:absolute;left:50%;top:50%;width:2.2%;height:2.2%;transform:translate(-50%,-50%);border-radius:50%;background:#08080b;box-shadow:inset 0 1px 3px #000,0 0 0 2px #2b2b30;z-index:3}
-/* Lysrefleks der ikke drejer med */
 .sheen{position:absolute;width:var(--d);height:var(--d);left:calc(0.2 * var(--d) - var(--d)/2 + 24px);top:50%;margin-top:calc(var(--d) / -2);border-radius:50%;pointer-events:none;
   background:conic-gradient(from -20deg at 50% 50%, transparent 0deg, rgba(255,255,255,.075) 22deg, transparent 48deg, transparent 178deg, rgba(255,255,255,.055) 205deg, transparent 232deg, transparent 360deg);
   -webkit-mask:radial-gradient(circle at 50% 50%, transparent 0 18.3%, #000 18.5%);mask:radial-gradient(circle at 50% 50%, transparent 0 18.3%, #000 18.5%)}
+/* Tryk på pladen = afspil/pause (kun med WiiM) */
+.disc.tap{cursor:pointer}
 
 /* Tekstsiden */
-.info{position:fixed;top:0;bottom:0;left:calc(0.2 * var(--d) + var(--d)/2 + 24px + 4vw);right:5vw;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.4vh,18px);padding:6vh 0;min-width:0}
+.info{position:fixed;top:0;bottom:0;left:calc(0.2 * var(--d) + var(--d)/2 + 24px + 4vw);right:5vw;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.3vh,16px);padding:6vh 0;min-width:0}
 .now{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#E8820A;display:flex;align-items:center;gap:10px}
 .now .dot{width:9px;height:9px;border-radius:50%;background:#E8820A;box-shadow:0 0 12px #E8820A;animation:pulse 1.6s ease-in-out infinite}
 .now.idle{color:#666}.now.idle .dot{background:#555;box-shadow:none;animation:none}
 @keyframes pulse{50%{opacity:.35}}
-.title{font-size:clamp(32px,5.2vw,74px);line-height:1.05;letter-spacing:-.5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;text-shadow:0 4px 30px rgba(0,0,0,.5)}
+.title{font-size:clamp(32px,5vw,70px);line-height:1.05;letter-spacing:-.5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;text-shadow:0 4px 30px rgba(0,0,0,.5)}
 .artist{font-size:clamp(20px,2.6vw,36px);color:#f0f0f4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .album{font-size:clamp(15px,1.7vw,22px);color:#a0a0ac;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Fremdrift + knapper (WiiM) */
+.player{display:none;flex-direction:column;gap:10px;margin:4px 0 2px}
+.player.on{display:flex}
+.prog{position:relative;height:5px;border-radius:3px;background:rgba(255,255,255,.12);cursor:pointer}
+.prog .fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:#E8820A;width:0;box-shadow:0 0 10px rgba(232,130,10,.5)}
+.times{display:flex;justify-content:space-between;font-size:12px;color:#8a8a96;font-variant-numeric:tabular-nums;margin-top:-4px}
+.ctrl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ctrl button{background:rgba(255,255,255,.08);border:none;color:#fff;border-radius:50%;width:52px;height:52px;font-size:22px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center}
+.ctrl button.big{width:64px;height:64px;font-size:26px;background:#E8820A;box-shadow:0 6px 24px rgba(232,130,10,.35)}
+.ctrl button:active{transform:scale(.94)}
+.vol{display:flex;align-items:center;gap:8px;flex:1;min-width:140px;max-width:260px;margin-left:8px;color:#9a9aa6;font-size:16px}
+.vol input{flex:1;-webkit-appearance:none;appearance:none;height:5px;border-radius:3px;background:rgba(255,255,255,.14);outline:none}
+.vol input::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.src{font-size:12px;color:#77778a;letter-spacing:.5px;text-transform:uppercase}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
 .chip{font-size:12px;padding:5px 11px;border-radius:20px;background:rgba(255,255,255,.08);color:#ddd;text-transform:lowercase}
 .stats{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:clamp(13px,1.3vw,16px);color:#9a9aa6}
 .stats b{color:#fff}
-.bio{font-size:clamp(13px,1.35vw,17px);line-height:1.5;color:#c4c4cc;font-weight:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical}
-.foot{font-size:11px;color:#55555f;letter-spacing:.5px;margin-top:6px}
-.fade{transition:opacity .5s ease}
-.fade.out{opacity:0}
+.bio{font-size:clamp(13px,1.35vw,17px);line-height:1.5;color:#c4c4cc;font-weight:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical}
+.foot{font-size:11px;color:#55555f;letter-spacing:.5px;margin-top:4px}
 
-/* Portræt: pladen øverst (kun nederste del ses), tekst nedenunder */
+/* Portræt */
 @media (orientation:portrait){
   :root{--d:115vw}
   .disc,.sheen{left:50%;margin-left:calc(var(--d) / -2);top:calc(0.22 * var(--d) - var(--d)/2 + 16px);margin-top:0}
@@ -77,9 +88,13 @@ body{position:relative}
   .vignette{background:radial-gradient(ellipse at 50% 30%,transparent 40%,rgba(0,0,0,.55) 100%)}
 }
 
-/* Indstillinger */
-.gear{position:fixed;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:10;background:rgba(255,255,255,.06);border:none;color:#888;border-radius:12px;padding:10px 13px;font-size:18px;cursor:pointer;opacity:.35;transition:opacity .3s}
-.gear:hover,.gear:active{opacity:1}
+/* Knapper i hjørnerne */
+.corner{position:fixed;z-index:10;background:rgba(255,255,255,.06);border:none;color:#aaa;border-radius:12px;padding:10px 14px;font-size:16px;cursor:pointer;font-family:inherit;font-weight:bold;opacity:.45;transition:opacity .3s}
+.corner:hover,.corner:active{opacity:1}
+.gear{top:calc(12px + env(safe-area-inset-top));right:14px}
+.browseBtn{bottom:calc(14px + env(safe-area-inset-bottom));right:14px}
+
+/* Ark */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:20;padding:20px}
 .ov.show{display:flex}
 .sheet{background:#16161f;width:100%;max-width:560px;border-radius:20px;padding:22px 22px 18px;max-height:92dvh;overflow-y:auto;-webkit-user-select:text;user-select:text}
@@ -87,14 +102,36 @@ body{position:relative}
 .sheet p{font-size:13px;color:#999;line-height:1.5;font-weight:normal;margin-bottom:14px}
 .sheet p a{color:#E8820A}
 .sheet ol{font-size:13px;color:#bbb;line-height:1.6;font-weight:normal;margin:0 0 14px 18px}
+.sheet h3{font-size:13px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:12px;color:#888;margin-bottom:5px}
-.field input{width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold;-webkit-user-select:text;user-select:text}
+.field input,.field select{width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold;-webkit-user-select:text;user-select:text}
 .btn{width:100%;padding:15px;border-radius:14px;border:none;font-family:inherit;font-weight:bold;font-size:16px;color:#fff;cursor:pointer;margin-top:6px}
 .btn.add{background:#E8820A}
 .btn.alt{background:#2a2a38}
 .btn.ghost{background:transparent;color:#888;font-size:15px}
 .err{color:#f87171;font-size:13px;min-height:18px;margin-top:6px;line-height:1.4}
+.ok{color:#4ade80}
+
+/* Bladre-panel */
+.browse{position:fixed;inset:0;z-index:15;background:rgba(8,8,11,.92);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);display:none;flex-direction:column;padding:calc(18px + env(safe-area-inset-top)) 0 calc(18px + env(safe-area-inset-bottom));overflow-y:auto}
+.browse.show{display:flex}
+.browse .head{display:flex;align-items:center;justify-content:space-between;padding:0 28px 8px}
+.browse h2{font-size:26px}
+.browse .close{background:rgba(255,255,255,.08);border:none;color:#fff;border-radius:12px;padding:10px 16px;font-size:15px;font-family:inherit;font-weight:bold;cursor:pointer}
+.row{margin:10px 0 6px}
+.row h3{font-size:13px;color:#9a9aa6;text-transform:uppercase;letter-spacing:1px;padding:0 28px;margin-bottom:10px}
+.row .hint{font-size:13px;color:#666;padding:0 28px;font-weight:normal}
+.strip{display:flex;gap:14px;overflow-x:auto;padding:4px 28px 14px;scroll-snap-type:x proximity;scrollbar-width:none}
+.strip::-webkit-scrollbar{display:none}
+.tile{flex:0 0 auto;width:clamp(130px,15vw,190px);scroll-snap-align:start;cursor:pointer}
+.tile:active{transform:scale(.97)}
+.tile .cv{width:100%;aspect-ratio:1/1;border-radius:12px;background:#1a1a22 center/cover no-repeat;box-shadow:0 10px 30px rgba(0,0,0,.5);display:flex;align-items:flex-end;padding:10px;overflow:hidden}
+.tile .cv.txt{background:linear-gradient(135deg,#2a2a38,#15151c);font-size:14px;line-height:1.25;color:#ddd}
+.tile .cv.playing{outline:3px solid #E8820A}
+.tile .t1{font-size:14px;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .t2{font-size:12px;color:#8a8a96;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pickCov{width:150px;height:150px;border-radius:14px;background:#1a1a22 center/cover no-repeat;margin:0 auto 14px}
 </style>
 </head>
 <body>
@@ -103,7 +140,7 @@ body{position:relative}
 <div class="vignette"></div>
 
 <div class="stage">
-  <div class="disc" id="disc">
+  <div class="disc" id="disc" onclick="discTap()">
     <div class="label" id="labelEl">
       <div class="empty" id="labelEmpty">♪</div>
       <div class="art" id="art1"></div>
@@ -114,89 +151,121 @@ body{position:relative}
   <div class="sheen"></div>
 </div>
 
-<div class="info fade" id="info">
+<div class="info" id="info">
   <div class="now idle" id="now"><span class="dot"></span><span id="nowTxt">Klar</span></div>
   <div class="title" id="title">Vinyl</div>
-  <div class="artist" id="artist">Tryk på ⚙️ og forbind Last.fm</div>
-  <div class="album" id="album">Tidal → Indstillinger → Last.fm-scrobbling</div>
+  <div class="artist" id="artist">Tryk på ⚙️ og forbind WiiM eller Last.fm</div>
+  <div class="album" id="album"></div>
+  <div class="player" id="player">
+    <div class="prog" id="prog" onclick="seekTo(event)"><div class="fill" id="fill"></div></div>
+    <div class="times"><span id="tPos">0:00</span><span id="tLen">0:00</span></div>
+    <div class="ctrl">
+      <button onclick="cmd('prev')" title="Forrige">⏮</button>
+      <button class="big" id="playBtn" onclick="cmd('toggle')" title="Afspil/pause">▶</button>
+      <button onclick="cmd('next')" title="Næste">⏭</button>
+      <div class="vol"><span id="volIcon">🔊</span><input type="range" id="vol" min="0" max="100" value="30" oninput="volDrag(this.value)" onchange="volSet(this.value)"></div>
+      <span class="src" id="src"></span>
+    </div>
+  </div>
   <div class="chips" id="chips"></div>
   <div class="stats" id="stats"></div>
   <div class="bio" id="bio"></div>
   <div class="foot" id="foot"></div>
 </div>
 
-<button class="gear" onclick="openSettings()">⚙️</button>
+<button class="corner gear" onclick="openSettings()">⚙️</button>
+<button class="corner browseBtn" onclick="openBrowse()">💿 Bladre</button>
 
+<!-- Indstillinger -->
 <div class="ov" id="setOv">
   <div class="sheet">
-    <h2>Forbind til Tidal</h2>
-    <p>Tidal fortæller ikke selv websider hvad der spiller. Men Tidal kan scrobble til Last.fm, og herfra læser appen "spiller nu" hvert par sekunder.</p>
-    <ol>
-      <li>I Tidal-appen: <b>Indstillinger → Tilsluttede tjenester → Last.fm</b> (log ind, slå scrobbling til).</li>
-      <li>Opret en gratis API-nøgle på <a href="https://www.last.fm/api/account/create" target="_blank" rel="noopener">last.fm/api/account/create</a> og indsæt den her.</li>
-    </ol>
+    <h2>Forbindelse</h2>
+    <h3>WiiM (anbefalet)</h3>
+    <p>Kør <b>wiim-bro</b> på Mac'en (se mappen wiim-bro i apps) og åbn denne side derfra, fx <b>http://mac.local:8787/vinyl.html</b>. Så findes broen automatisk. Ellers skriv adressen her.</p>
+    <div class="field"><label>WiiM-bro adresse</label><input id="sBridge" autocapitalize="off" autocorrect="off" placeholder="http://mac.local:8787"></div>
+    <div class="err" id="sBridgeStat"></div>
+    <h3>Last.fm (ekstra info, eller hvis Tidal spiller på iPad'en)</h3>
+    <p>Tidal-appen → Indstillinger → Tilsluttede tjenester → Last.fm. API-nøgle: <a href="https://www.last.fm/api/account/create" target="_blank" rel="noopener">last.fm/api/account/create</a>. Med nøglen får du også tags, bio, dine egne afspilningstal og bedre bladre-forslag.</p>
     <div class="field"><label>Last.fm brugernavn</label><input id="sUser" autocapitalize="off" autocorrect="off" placeholder="fx thomasditzel"></div>
     <div class="field"><label>Last.fm API-nøgle</label><input id="sKey" autocapitalize="off" autocorrect="off" placeholder="32 tegn"></div>
+    <h3>Pladen</h3>
     <div class="field"><label>Omdrejninger</label>
-      <select id="sRpm" style="width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold">
+      <select id="sRpm">
         <option value="33.333">33⅓ rpm (LP)</option><option value="45">45 rpm (single)</option><option value="12">Roligt (12 rpm)</option>
       </select>
     </div>
     <div class="err" id="sErr"></div>
     <button class="btn add" onclick="saveSettings()">Gem og forbind</button>
-    <button class="btn alt" onclick="demo()">Vis demo (uden Last.fm)</button>
+    <button class="btn alt" onclick="demo()">Vis demo</button>
     <button class="btn ghost" onclick="closeSettings()">Luk</button>
+  </div>
+</div>
+
+<!-- Bladre -->
+<div class="browse" id="browse">
+  <div class="head"><h2>💿 Bladre</h2><button class="close" onclick="closeBrowse()">Luk</button></div>
+  <div id="rows"></div>
+</div>
+
+<!-- Valgt album fra bladre -->
+<div class="ov" id="pickOv">
+  <div class="sheet" style="text-align:center">
+    <div class="pickCov" id="pCov"></div>
+    <h2 id="pAlb"></h2>
+    <p id="pArt" style="margin-bottom:10px"></p>
+    <a class="btn add" id="pTidal" href="#" target="_blank" rel="noopener" style="display:block;text-decoration:none">🎵 Åbn i Tidal</a>
+    <a class="btn alt" id="pLfm" href="#" target="_blank" rel="noopener" style="display:block;text-decoration:none">Læs om albummet</a>
+    <button class="btn ghost" onclick="document.getElementById('pickOv').classList.remove('show')">Luk</button>
   </div>
 </div>
 
 <script>
 // ---------- Indstillinger ----------
-var CFG={user:'',key:'',rpm:33.333};
+var CFG={user:'',key:'',rpm:33.333,bridge:''};
 (function(){
-  try{var c=JSON.parse(localStorage.getItem('vinyl-cfg')||'{}');Object.assign(CFG,c);}catch(e){}
+  try{Object.assign(CFG,JSON.parse(localStorage.getItem('vinyl-cfg')||'{}'));}catch(e){}
   var p=new URLSearchParams(location.search);
-  if(p.get('user'))CFG.user=p.get('user');
-  if(p.get('key'))CFG.key=p.get('key');
+  ['user','key','bridge'].forEach(function(k){if(p.get(k))CFG[k]=p.get(k);});
   if(p.get('rpm'))CFG.rpm=parseFloat(p.get('rpm'))||CFG.rpm;
-  if(p.get('user')||p.get('key'))saveCfg();
+  if(p.get('user')||p.get('key')||p.get('bridge'))saveCfg();
 })();
 function saveCfg(){try{localStorage.setItem('vinyl-cfg',JSON.stringify(CFG));}catch(e){}}
 function openSettings(){
-  document.getElementById('sUser').value=CFG.user;document.getElementById('sKey').value=CFG.key;
+  document.getElementById('sBridge').value=CFG.bridge;document.getElementById('sUser').value=CFG.user;document.getElementById('sKey').value=CFG.key;
   document.getElementById('sRpm').value=String(CFG.rpm);document.getElementById('sErr').textContent='';
+  document.getElementById('sBridgeStat').textContent=BRIDGE?'Forbundet til bro: '+BRIDGE:'';document.getElementById('sBridgeStat').className=BRIDGE?'err ok':'err';
   document.getElementById('setOv').classList.add('show');
 }
 function closeSettings(){document.getElementById('setOv').classList.remove('show');}
 function saveSettings(){
-  CFG.user=document.getElementById('sUser').value.trim();
-  CFG.key=document.getElementById('sKey').value.trim();
+  CFG.bridge=document.getElementById('sBridge').value.trim().replace(/\/+$/,'');
+  CFG.user=document.getElementById('sUser').value.trim();CFG.key=document.getElementById('sKey').value.trim();
   CFG.rpm=parseFloat(document.getElementById('sRpm').value)||33.333;
-  if(!CFG.user||!CFG.key){document.getElementById('sErr').textContent='Både brugernavn og API-nøgle skal udfyldes.';return;}
-  saveCfg();closeSettings();demoMode=false;lastKey='';poll();
+  saveCfg();closeSettings();demoMode=false;lastKey='';start();
 }
-document.getElementById('setOv').addEventListener('click',function(e){if(e.target===this)closeSettings();});
+document.querySelectorAll('.ov').forEach(function(ov){ov.addEventListener('click',function(e){if(e.target===ov)ov.classList.remove('show');});});
 
-// ---------- Pladen drejer (blød start/stop) ----------
+// ---------- Pladen drejer ----------
 var angle=0,vel=0,playing=false,lastT=0;
 var disc=document.getElementById('disc');
 function frame(t){
   var dt=lastT?Math.min((t-lastT)/1000,0.1):0;lastT=t;
-  var target=playing?CFG.rpm*6:0; // grader/sek
-  var k=playing?1.6:0.9;          // accelerationsfaktor
+  var target=playing?CFG.rpm*6:0,k=playing?1.6:0.9;
   vel+=(target-vel)*Math.min(1,dt*k);
   if(!playing&&vel<0.5)vel=0;
   angle=(angle+vel*dt)%360;
   disc.style.transform='rotate('+angle+'deg)';
+  tickProgress();
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
+function discTap(){if(MODE==='wiim')cmd('toggle');}
 
 // ---------- Visning ----------
 var artToggle=0,bgToggle=0,currentArt='';
 function setArt(url){
   if(url===currentArt)return;currentArt=url;
-  var arts=[document.getElementById('art1'),document.getElementById('art2')];
-  var bgs=[document.getElementById('bg1'),document.getElementById('bg2')];
+  var arts=[document.getElementById('art1'),document.getElementById('art2')],bgs=[document.getElementById('bg1'),document.getElementById('bg2')];
   document.getElementById('labelEmpty').style.display=url?'none':'flex';
   if(!url){arts.forEach(function(a){a.classList.remove('on');});bgs.forEach(function(b){b.classList.remove('on');});return;}
   var img=new Image();
@@ -210,16 +279,16 @@ function setArt(url){
 }
 function txt(id,s){document.getElementById(id).textContent=s||'';}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function fmtDur(ms){ms=parseInt(ms,10);if(!ms)return '';var s=Math.round(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+function fmtDur(ms){ms=parseInt(ms,10);if(!ms&&ms!==0)return '';var s=Math.max(0,Math.round(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
 function fmtN(n){n=parseInt(n,10);if(!n&&n!==0)return '';return n.toLocaleString('da-DK');}
 function clock(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function setPlaying(p){playing=!!p;document.getElementById('now').classList.toggle('idle',!playing);document.getElementById('playBtn').textContent=playing?'❚❚':'▶';}
 
+var cur=null; // det der vises nu
 function showTrack(t,extra){
-  // t: {name, artist, album, art, nowPlaying, date}
-  var now=document.getElementById('now');
-  playing=!!t.nowPlaying;
-  now.classList.toggle('idle',!playing);
-  txt('nowTxt',playing?'Spiller nu på Tidal':(t.name?'Sidst spillet'+(t.date?' · '+t.date:''):'Ingen musik lige nu'));
+  cur=t;
+  setPlaying(t.nowPlaying);
+  txt('nowTxt',t.nowPlaying?'Spiller nu'+(t.source?' · '+t.source:''):(t.name?(t.status==='pause'?'Pause':'Sidst spillet'+(t.date?' · '+t.date:'')):'Ingen musik lige nu'));
   txt('title',t.name||'Stille');
   txt('artist',t.artist||'');
   txt('album',[t.album,extra&&extra.year].filter(Boolean).join(' · '));
@@ -227,20 +296,68 @@ function showTrack(t,extra){
   chips.innerHTML=((extra&&extra.tags)||[]).slice(0,5).map(function(x){return '<span class="chip">'+esc(x)+'</span>';}).join('');
   var st=[];
   if(extra){
-    if(extra.duration)st.push('<span>Længde <b>'+fmtDur(extra.duration)+'</b></span>');
+    if(extra.duration&&MODE!=='wiim')st.push('<span>Længde <b>'+fmtDur(extra.duration)+'</b></span>');
     if(extra.userPlays)st.push('<span>Du har hørt den <b>'+fmtN(extra.userPlays)+'</b> gange</span>');
     if(extra.listeners)st.push('<span><b>'+fmtN(extra.listeners)+'</b> lyttere på Last.fm</span>');
     if(extra.genre&&!(extra.tags||[]).length)st.push('<span>'+esc(extra.genre)+'</span>');
   }
+  if(t.quality)st.push('<span>'+esc(t.quality)+'</span>');
   document.getElementById('stats').innerHTML=st.join('');
   txt('bio',(extra&&extra.bio)||'');
   setArt(t.art||'');
 }
 
+// ---------- Fremdrift (WiiM) ----------
+var W={pos:0,len:0,ts:0,playing:false};
+function tickProgress(){
+  if(MODE!=='wiim'||!W.len)return;
+  var pos=W.pos+(W.playing?Date.now()-W.ts:0);if(pos>W.len)pos=W.len;
+  document.getElementById('fill').style.width=(100*pos/W.len).toFixed(2)+'%';
+  var s=fmtDur(pos);if(document.getElementById('tPos').textContent!==s)txt('tPos',s);
+}
+function seekTo(e){
+  if(MODE!=='wiim'||!W.len)return;
+  var r=e.currentTarget.getBoundingClientRect(),f=(e.clientX-r.left)/r.width;
+  cmd('seek',Math.round(f*W.len/1000));
+}
+
+// ---------- WiiM-bro ----------
+var BRIDGE='',MODE='',pollTimer=null,lastKey='',demoMode=false,infoCache={};
+function bridgeFetch(path){return fetch(BRIDGE+path,{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('bro '+r.status);return r.json();});}
+function findBridge(){
+  var cands=[];
+  if(CFG.bridge)cands.push(CFG.bridge);
+  if(location.protocol==='http:')cands.push(location.origin);
+  return cands.reduce(function(p,c){return p.then(function(found){if(found)return found;return fetch(c+'/wiim/ping',{cache:'no-store'}).then(function(r){return r.ok?c:'';}).catch(function(){return '';});});},Promise.resolve(''));
+}
+var volDragging=false;
+function pollWiim(){
+  clearTimeout(pollTimer);if(MODE!=='wiim')return;
+  bridgeFetch('/wiim/status').then(function(s){
+    W={pos:s.pos||0,len:s.len||0,ts:Date.now(),playing:!!s.playing};
+    txt('tLen',fmtDur(W.len));
+    if(!volDragging&&typeof s.vol==='number'&&!isNaN(s.vol)){document.getElementById('vol').value=s.vol;txt('volIcon',s.mute||s.vol===0?'🔇':(s.vol<40?'🔉':'🔊'));}
+    txt('src',s.source||'');
+    var q=[];if(s.sampleRate)q.push((Math.round(s.sampleRate/100)/10).toLocaleString('da-DK')+' kHz');if(s.bitDepth)q.push(s.bitDepth+' bit');
+    var rec={name:s.title,artist:s.artist,album:s.album,art:s.art,nowPlaying:!!s.playing,status:s.status,source:s.source,quality:q.join(' / ')};
+    var key=rec.artist+'|'+rec.name+'|'+rec.album;
+    txt('foot','WiiM · opdateret '+clock());
+    if(key!==lastKey){lastKey=key;showTrack(rec,infoCache[rec.artist+'|'+rec.name]||null);if(rec.name)enrich(rec);}
+    else{setPlaying(rec.nowPlaying);txt('nowTxt',rec.nowPlaying?'Spiller nu'+(rec.source?' · '+rec.source:''):(rec.status==='pause'?'Pause':'Stoppet'));if(cur){cur.nowPlaying=rec.nowPlaying;if(rec.art&&rec.art!==currentArt&&!(infoCache[rec.artist+'|'+rec.name]||{}).art)setArt(rec.art);}}
+  }).catch(function(e){txt('foot','WiiM-bro svarer ikke ('+(e.message||'')+') · prøver igen');}).finally(function(){pollTimer=setTimeout(pollWiim,2000);});
+}
+function cmd(c,v){
+  if(MODE!=='wiim')return;
+  if(c==='toggle')setPlaying(!playing); // optimistisk
+  bridgeFetch('/wiim/cmd?c='+c+(v!=null?'&v='+encodeURIComponent(v):'')).catch(function(){}).then(function(){clearTimeout(pollTimer);pollTimer=setTimeout(pollWiim,350);});
+}
+function volDrag(v){volDragging=true;txt('volIcon',v==0?'🔇':(v<40?'🔉':'🔊'));}
+function volSet(v){volDragging=false;cmd('vol',v);}
+
 // ---------- Last.fm ----------
 var LFM='https://ws.audioscrobbler.com/2.0/';
-var lastKey='',demoMode=false,pollTimer=null,infoCache={};
 function lfm(params){
+  if(!CFG.key)return Promise.reject(new Error('ingen Last.fm-nøgle'));
   params.api_key=CFG.key;params.format='json';
   var qs=Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k]);}).join('&');
   return fetch(LFM+'?'+qs).then(function(r){return r.json();}).then(function(j){if(j.error)throw new Error(j.message||('Last.fm fejl '+j.error));return j;});
@@ -251,26 +368,19 @@ function bestImg(arr){
   for(var i=0;i<order.length;i++){var f=arr.filter(function(x){return x.size===order[i]&&x['#text'];})[0];if(f)return f['#text'];}
   return (arr[arr.length-1]||{})['#text']||'';
 }
-function poll(){
-  clearTimeout(pollTimer);
-  if(demoMode)return;
-  if(!CFG.user||!CFG.key){return;}
+function pollLfm(){
+  clearTimeout(pollTimer);if(MODE!=='lastfm')return;
   lfm({method:'user.getrecenttracks',user:CFG.user,limit:1,extended:1}).then(function(j){
     var tr=(j.recenttracks&&j.recenttracks.track)||[];if(!Array.isArray(tr))tr=[tr];
-    var t=tr[0];
-    if(!t){showTrack({},null);return;}
+    var t=tr[0];if(!t){showTrack({},null);return;}
     var np=!!(t['@attr']&&t['@attr'].nowplaying==='true');
-    var rec={name:t.name,artist:(t.artist&&(t.artist.name||t.artist['#text']))||'',album:(t.album&&t.album['#text'])||'',
-      art:bestImg(t.image),nowPlaying:np,date:t.date?relTime(parseInt(t.date.uts,10)*1000):''};
+    var rec={name:t.name,artist:(t.artist&&(t.artist.name||t.artist['#text']))||'',album:(t.album&&t.album['#text'])||'',art:bestImg(t.image),nowPlaying:np,source:'Tidal',date:t.date?relTime(parseInt(t.date.uts,10)*1000):''};
     var key=rec.artist+'|'+rec.name+'|'+(np?'np':'idle');
     txt('foot','Via Last.fm · opdateret '+clock());
-    if(key===lastKey){playing=np;document.getElementById('now').classList.toggle('idle',!np);return;}
-    lastKey=key;
-    showTrack(rec,infoCache[rec.artist+'|'+rec.name]||null);
-    enrich(rec);
-  }).catch(function(e){
-    txt('foot','Last.fm: '+(e.message||'ingen forbindelse')+' · prøver igen');
-  }).finally(function(){pollTimer=setTimeout(poll,playing?8000:15000);});
+    if(key===lastKey){setPlaying(np);return;}
+    lastKey=key;showTrack(rec,infoCache[rec.artist+'|'+rec.name]||null);enrich(rec);
+  }).catch(function(e){txt('foot','Last.fm: '+(e.message||'ingen forbindelse')+' · prøver igen');})
+  .finally(function(){pollTimer=setTimeout(pollLfm,playing?8000:15000);});
 }
 function relTime(ms){
   var m=Math.round((Date.now()-ms)/60000);
@@ -278,59 +388,123 @@ function relTime(ms){
   var h=Math.round(m/60);if(h<24)return 'for '+h+' time'+(h===1?'':'r')+' siden';
   var d=Math.round(h/24);return 'for '+d+' dag'+(d===1?'':'e')+' siden';
 }
-// Ekstra info: track.getInfo + artist.getInfo + iTunes (skarpere cover + år)
+// Ekstra info: Last.fm (hvis nøgle) + iTunes (år, genre, skarpt cover hvis intet)
 function enrich(rec){
   var ck=rec.artist+'|'+rec.name;
-  if(infoCache[ck]){showTrack(rec,infoCache[ck]);if(infoCache[ck].art)setArt(infoCache[ck].art);return;}
+  if(infoCache[ck]){var c=infoCache[ck];if(c.art&&!rec.art)rec.art=c.art;showTrack(rec,c);return;}
   var extra={};
   var p1=lfm({method:'track.getinfo',artist:rec.artist,track:rec.name,username:CFG.user,autocorrect:1}).then(function(j){
-    var t=j.track||{};
-    extra.duration=t.duration;extra.listeners=t.listeners;extra.userPlays=t.userplaycount;
+    var t=j.track||{};extra.duration=t.duration;extra.listeners=t.listeners;extra.userPlays=t.userplaycount;
     extra.tags=((t.toptags&&t.toptags.tag)||[]).map(function(x){return x.name;});
     if(t.wiki&&t.wiki.summary)extra.bio=clean(t.wiki.summary);
     if(!rec.album&&t.album&&t.album.title)rec.album=t.album.title;
-    if(!rec.art&&t.album)rec.art=bestImg(t.album.image);
+    if(!rec.art&&t.album)extra.art=bestImg(t.album.image);
   }).catch(function(){});
   var p2=lfm({method:'artist.getinfo',artist:rec.artist,autocorrect:1,lang:'da'}).then(function(j){
-    var a=j.artist||{};
-    if(!extra.bio&&a.bio&&a.bio.summary)extra.bio=clean(a.bio.summary);
+    var a=j.artist||{};if(!extra.bio&&a.bio&&a.bio.summary)extra.bio=clean(a.bio.summary);
     if(!(extra.tags||[]).length)extra.tags=((a.tags&&a.tags.tag)||[]).map(function(x){return x.name;});
   }).catch(function(){});
-  var p3=itunes(rec).then(function(r){if(r){extra.year=r.year;extra.genre=r.genre;if(r.art)extra.art=r.art;}}).catch(function(){});
+  var p3=itunes(rec).then(function(r){if(r){extra.year=r.year;extra.genre=r.genre;if(!rec.art&&r.art)extra.art=r.art;}}).catch(function(){});
   Promise.all([p1,p2,p3]).then(function(){
     infoCache[ck]=extra;
-    if(lastKey.indexOf(rec.artist+'|'+rec.name+'|')!==0)return;
-    if(extra.art)rec.art=extra.art;
-    showTrack(rec,extra);
+    if(!cur||cur.artist!==rec.artist||cur.name!==rec.name)return;
+    if(extra.art&&!cur.art)cur.art=extra.art;
+    showTrack(cur,extra);
   });
 }
 function clean(html){return String(html).replace(/<a[^>]*>Read more[^<]*<\/a>/i,'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();}
 function itunes(rec){
   var term=encodeURIComponent((rec.artist+' '+(rec.album||rec.name)).trim());
   return fetch('https://itunes.apple.com/search?term='+term+'&entity='+(rec.album?'album':'song')+'&limit=3&country=dk')
+    .then(function(r){return r.json();}).then(function(d){var r=(d.results||[])[0];if(!r)return null;
+      return {year:(r.releaseDate||'').slice(0,4),genre:r.primaryGenreName,art:(r.artworkUrl100||'').replace(/100x100bb/,'1200x1200bb')};});
+}
+
+// ---------- Bladre ----------
+var browseCache={};
+function openBrowse(){document.getElementById('browse').classList.add('show');buildBrowse();}
+function closeBrowse(){document.getElementById('browse').classList.remove('show');}
+function tidalLink(artist,album){return 'https://listen.tidal.com/search?q='+encodeURIComponent((artist+' '+album).trim());}
+function tile(a){
+  var cv=a.art?'<div class="cv'+(cur&&a.album===cur.album&&a.artist===cur.artist?' playing':'')+'" style="background-image:url(\''+esc(a.art)+'\')"></div>':'<div class="cv txt">'+esc(a.album)+'</div>';
+  return '<div class="tile" data-art="'+esc(a.art||'')+'" data-artist="'+esc(a.artist)+'" data-album="'+esc(a.album)+'" data-year="'+esc(a.year||'')+'" onclick="pickTile(this)">'+cv+'<div class="t1">'+esc(a.album)+'</div><div class="t2">'+esc([a.artist,a.year].filter(Boolean).join(' · '))+'</div></div>';
+}
+function row(id,title,hint){return '<div class="row" id="'+id+'"><h3>'+esc(title)+'</h3>'+(hint?'<div class="hint">'+esc(hint)+'</div>':'<div class="strip"></div>')+'</div>';}
+function fillRow(id,albums){var r=document.getElementById(id);if(!r)return;if(!albums||!albums.length){r.innerHTML='<h3>'+r.querySelector('h3').innerHTML+'</h3><div class="hint">Intet fundet.</div>';return;}r.querySelector('.strip').innerHTML=albums.map(tile).join('');}
+function pickTile(el){
+  var d=el.dataset;document.getElementById('pCov').style.backgroundImage=d.art?'url("'+d.art+'")':'none';
+  txt('pAlb',d.album);txt('pArt',[d.artist,d.year].filter(Boolean).join(' · '));
+  document.getElementById('pTidal').href=tidalLink(d.artist,d.album);
+  document.getElementById('pLfm').href='https://www.last.fm/music/'+encodeURIComponent(d.artist)+'/'+encodeURIComponent(d.album);
+  document.getElementById('pickOv').classList.add('show');
+}
+function buildBrowse(){
+  var artist=(cur&&cur.artist)||'',rows=document.getElementById('rows');
+  var key=artist+'|'+(CFG.key?'k':'');
+  if(browseCache[key]){rows.innerHTML=browseCache[key];return;}
+  var html='';
+  if(artist)html+=row('rMore','Mere fra '+artist);
+  if(artist&&CFG.key)html+=row('rSim','Hvis du kan lide '+artist);
+  if(CFG.key&&CFG.user)html+=row('rTop','Dine mest hørte de sidste 3 måneder');
+  if(cur&&infoCache[cur.artist+'|'+cur.name]&&(infoCache[cur.artist+'|'+cur.name].tags||[]).length&&CFG.key)html+=row('rTag','Mere '+infoCache[cur.artist+'|'+cur.name].tags[0]);
+  if(!artist)html+=row('rNone','Bladre','Sæt noget musik i gang, så finder jeg mere fra kunstneren, lignende kunstnere og dine favoritter.');
+  if(!CFG.key)html+=row('rHint','Flere forslag','Læg en Last.fm-nøgle ind under ⚙️, så kommer der også lignende kunstnere, genre-forslag og dine mest hørte.');
+  rows.innerHTML=html;
+  var tasks=[];
+  if(artist)tasks.push(itunesAlbums(artist).then(function(a){fillRow('rMore',a);}));
+  if(artist&&CFG.key)tasks.push(similar(artist).then(function(a){fillRow('rSim',a);}));
+  if(CFG.key&&CFG.user)tasks.push(lfm({method:'user.gettopalbums',user:CFG.user,period:'3month',limit:20}).then(function(j){
+    fillRow('rTop',((j.topalbums&&j.topalbums.album)||[]).map(function(a){return {artist:a.artist.name,album:a.name,art:bestImg(a.image)};}));}).catch(function(){fillRow('rTop',[]);}));
+  if(document.getElementById('rTag'))tasks.push(lfm({method:'tag.gettopalbums',tag:infoCache[cur.artist+'|'+cur.name].tags[0],limit:20}).then(function(j){
+    fillRow('rTag',((j.albums&&j.albums.album)||[]).map(function(a){return {artist:a.artist.name,album:a.name,art:bestImg(a.image)};}));}).catch(function(){fillRow('rTag',[]);}));
+  Promise.all(tasks).then(function(){browseCache[key]=rows.innerHTML;});
+}
+function itunesAlbums(artist){
+  return fetch('https://itunes.apple.com/search?term='+encodeURIComponent(artist)+'&entity=album&attribute=artistTerm&limit=40&country=dk')
     .then(function(r){return r.json();}).then(function(d){
-      var r=(d.results||[])[0];if(!r)return null;
-      return {year:(r.releaseDate||'').slice(0,4),genre:r.primaryGenreName,art:(r.artworkUrl100||'').replace(/100x100bb/,'1200x1200bb')};
-    });
+      var seen={};
+      return (d.results||[]).filter(function(r){return r.artistName&&r.artistName.toLowerCase()===artist.toLowerCase();})
+        .filter(function(r){var k=r.collectionName.replace(/\s*\(.*?\)|\s*-\s*(single|ep|deluxe.*|remaster.*)$/gi,'').toLowerCase();if(seen[k])return false;seen[k]=1;return true;})
+        .sort(function(a,b){return (b.releaseDate||'').localeCompare(a.releaseDate||'');})
+        .map(function(r){return {artist:r.artistName,album:r.collectionName,year:(r.releaseDate||'').slice(0,4),art:(r.artworkUrl100||'').replace(/100x100bb/,'600x600bb')};});
+    }).catch(function(){return [];});
+}
+function similar(artist){
+  return lfm({method:'artist.getsimilar',artist:artist,limit:12,autocorrect:1}).then(function(j){
+    var arts=((j.similarartists&&j.similarartists.artist)||[]).map(function(a){return a.name;});
+    return Promise.all(arts.map(function(a){
+      return lfm({method:'artist.gettopalbums',artist:a,limit:1,autocorrect:1}).then(function(r){var al=((r.topalbums&&r.topalbums.album)||[])[0];return al?{artist:a,album:al.name,art:bestImg(al.image)}:null;}).catch(function(){return null;});
+    })).then(function(list){return list.filter(Boolean);});
+  }).catch(function(){return [];});
 }
 
 // ---------- Demo ----------
 function demo(){
-  closeSettings();demoMode=true;clearTimeout(pollTimer);lastKey='demo';
-  showTrack({name:'Time',artist:'Pink Floyd',album:'The Dark Side of the Moon',art:'plader-icon-512.png',nowPlaying:true},
+  closeSettings();demoMode=true;MODE='demo';clearTimeout(pollTimer);lastKey='demo';
+  document.getElementById('player').classList.remove('on');
+  showTrack({name:'Time',artist:'Pink Floyd',album:'The Dark Side of the Moon',art:'plader-icon-512.png',nowPlaying:true,source:'Demo'},
     {year:'1973',tags:['progressive rock','psychedelic','classic rock'],duration:413000,listeners:1856000,userPlays:42,
      bio:'Pink Floyd var et britisk rockband dannet i London i 1965. Med deres eksperimenterende lyd, filosofiske tekster og storslåede liveshows blev de et af de mest indflydelsesrige bands i rockens historie.'});
-  txt('foot','Demo · sådan ser det ud når Tidal spiller');
+  txt('foot','Demo · sådan ser det ud når musikken spiller');
+}
+
+// ---------- Start ----------
+function start(){
+  clearTimeout(pollTimer);
+  findBridge().then(function(b){
+    BRIDGE=b;
+    if(BRIDGE){MODE='wiim';document.getElementById('player').classList.add('on');disc.classList.add('tap');pollWiim();return;}
+    document.getElementById('player').classList.remove('on');disc.classList.remove('tap');
+    if(CFG.user&&CFG.key){MODE='lastfm';pollLfm();return;}
+    MODE='';setTimeout(openSettings,400);
+  });
 }
 
 // ---------- Hold skærmen tændt ----------
 var wake=null;
-function keepAwake(){
-  if(!('wakeLock' in navigator))return;
-  navigator.wakeLock.request('screen').then(function(w){wake=w;}).catch(function(){});
-}
-document.addEventListener('visibilitychange',function(){if(!document.hidden){keepAwake();if(!demoMode)poll();}});
-document.addEventListener('click',function(){if(!wake)keepAwake();},{once:true});
+function keepAwake(){if(!('wakeLock' in navigator))return;navigator.wakeLock.request('screen').then(function(w){wake=w;w.addEventListener('release',function(){wake=null;});}).catch(function(){});}
+document.addEventListener('visibilitychange',function(){if(!document.hidden){keepAwake();if(MODE==='wiim')pollWiim();else if(MODE==='lastfm')pollLfm();}});
+document.addEventListener('click',function(){if(!wake)keepAwake();});
 keepAwake();
 
 // ---------- Auto-opdatering af selve appen ----------
@@ -347,7 +521,7 @@ keepAwake();
   setTimeout(tjek,2500);setInterval(tjek,600000);
 })();
 
-if(CFG.user&&CFG.key){poll();}else{setTimeout(openSettings,600);}
+start();
 </script>
 </body>
 </html>
