@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vinyl">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#08080b">
+<link rel="apple-touch-icon" href="plader-touch.png">
+<link rel="icon" type="image/png" href="plader-favicon.png">
+<link rel="manifest" href="vinyl.webmanifest">
+<title>Vinyl — Nu spiller</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{height:100%;overflow:hidden;background:#08080b;color:#fff;font-family:'Tahoma',sans-serif;font-weight:bold}
+body{position:relative}
+
+/* Baggrund: coveret sløret som stemning */
+.bg{position:fixed;inset:-12%;background-size:cover;background-position:center;filter:blur(70px) brightness(.32) saturate(1.4);opacity:0;transition:opacity 1.6s ease;transform:scale(1.15)}
+.bg.on{opacity:1}
+.vignette{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 50%,transparent 40%,rgba(0,0,0,.55) 100%)}
+
+/* Pladen */
+:root{--d:110vh}
+.stage{position:fixed;inset:0}
+.disc{position:absolute;width:var(--d);height:var(--d);left:calc(0.2 * var(--d) - var(--d)/2 + 24px);top:50%;margin-top:calc(var(--d) / -2);border-radius:50%;will-change:transform;
+  background:
+    radial-gradient(circle at 50% 50%, #0c0c0e 0 17.5%, #2a2a2e 17.6%, #2a2a2e 18.1%, #17171a 18.2%, transparent 18.3%),
+    repeating-radial-gradient(circle at 50% 50%, #131316 0px, #131316 1.6px, #1d1d21 1.6px, #1d1d21 2.4px, #16161a 2.4px, #16161a 3.4px),
+    #141417;
+  box-shadow:0 0 0 2px #0a0a0c,0 40px 120px rgba(0,0,0,.8)}
+/* Spor-inddelinger (lidt lysere bånd) og yderkant */
+.disc::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 30%, rgba(255,255,255,.035) 30.2%, rgba(255,255,255,.035) 30.7%, transparent 30.9%),
+    radial-gradient(circle at 50% 50%, transparent 0 43%, rgba(255,255,255,.035) 43.2%, rgba(255,255,255,.035) 43.7%, transparent 43.9%),
+    radial-gradient(circle at 50% 50%, transparent 0 56%, rgba(255,255,255,.035) 56.2%, rgba(255,255,255,.035) 56.7%, transparent 56.9%),
+    radial-gradient(circle at 50% 50%, transparent 0 66%, rgba(255,255,255,.035) 66.2%, rgba(255,255,255,.035) 66.7%, transparent 66.9%),
+    radial-gradient(circle at 50% 50%, transparent 0 47.4%, #0e0e10 47.6%, #232327 48.4%, #0b0b0d 49.2%, transparent 49.4%)}
+/* Label: coveret */
+.label{position:absolute;left:50%;top:50%;width:35%;height:35%;transform:translate(-50%,-50%);border-radius:50%;background:#1e1e24 center/cover no-repeat;box-shadow:inset 0 0 0 3px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);overflow:hidden}
+.label .art{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transition:opacity 1.2s ease}
+.label .art.on{opacity:1}
+.label .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(var(--d)*.05);color:#3a3a44}
+.hole{position:absolute;left:50%;top:50%;width:2.2%;height:2.2%;transform:translate(-50%,-50%);border-radius:50%;background:#08080b;box-shadow:inset 0 1px 3px #000,0 0 0 2px #2b2b30;z-index:3}
+/* Lysrefleks der ikke drejer med */
+.sheen{position:absolute;width:var(--d);height:var(--d);left:calc(0.2 * var(--d) - var(--d)/2 + 24px);top:50%;margin-top:calc(var(--d) / -2);border-radius:50%;pointer-events:none;
+  background:conic-gradient(from -20deg at 50% 50%, transparent 0deg, rgba(255,255,255,.075) 22deg, transparent 48deg, transparent 178deg, rgba(255,255,255,.055) 205deg, transparent 232deg, transparent 360deg);
+  -webkit-mask:radial-gradient(circle at 50% 50%, transparent 0 18.3%, #000 18.5%);mask:radial-gradient(circle at 50% 50%, transparent 0 18.3%, #000 18.5%)}
+
+/* Tekstsiden */
+.info{position:fixed;top:0;bottom:0;left:calc(0.2 * var(--d) + var(--d)/2 + 24px + 4vw);right:5vw;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.4vh,18px);padding:6vh 0;min-width:0}
+.now{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#E8820A;display:flex;align-items:center;gap:10px}
+.now .dot{width:9px;height:9px;border-radius:50%;background:#E8820A;box-shadow:0 0 12px #E8820A;animation:pulse 1.6s ease-in-out infinite}
+.now.idle{color:#666}.now.idle .dot{background:#555;box-shadow:none;animation:none}
+@keyframes pulse{50%{opacity:.35}}
+.title{font-size:clamp(32px,5.2vw,74px);line-height:1.05;letter-spacing:-.5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;text-shadow:0 4px 30px rgba(0,0,0,.5)}
+.artist{font-size:clamp(20px,2.6vw,36px);color:#f0f0f4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.album{font-size:clamp(15px,1.7vw,22px);color:#a0a0ac;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.chip{font-size:12px;padding:5px 11px;border-radius:20px;background:rgba(255,255,255,.08);color:#ddd;text-transform:lowercase}
+.stats{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:clamp(13px,1.3vw,16px);color:#9a9aa6}
+.stats b{color:#fff}
+.bio{font-size:clamp(13px,1.35vw,17px);line-height:1.5;color:#c4c4cc;font-weight:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical}
+.foot{font-size:11px;color:#55555f;letter-spacing:.5px;margin-top:6px}
+.fade{transition:opacity .5s ease}
+.fade.out{opacity:0}
+
+/* Portræt: pladen øverst (kun nederste del ses), tekst nedenunder */
+@media (orientation:portrait){
+  :root{--d:115vw}
+  .disc,.sheen{left:50%;margin-left:calc(var(--d) / -2);top:calc(0.22 * var(--d) - var(--d)/2 + 16px);margin-top:0}
+  .info{left:7vw;right:7vw;top:calc(0.22 * var(--d) + var(--d)/2 + 16px + 3vh);bottom:0;justify-content:flex-start;padding:0 0 4vh}
+  .title{font-size:clamp(30px,7.5vw,64px)}
+  .artist{font-size:clamp(20px,4.2vw,32px)}
+  .vignette{background:radial-gradient(ellipse at 50% 30%,transparent 40%,rgba(0,0,0,.55) 100%)}
+}
+
+/* Indstillinger */
+.gear{position:fixed;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:10;background:rgba(255,255,255,.06);border:none;color:#888;border-radius:12px;padding:10px 13px;font-size:18px;cursor:pointer;opacity:.35;transition:opacity .3s}
+.gear:hover,.gear:active{opacity:1}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:20;padding:20px}
+.ov.show{display:flex}
+.sheet{background:#16161f;width:100%;max-width:560px;border-radius:20px;padding:22px 22px 18px;max-height:92dvh;overflow-y:auto;-webkit-user-select:text;user-select:text}
+.sheet h2{font-size:20px;margin-bottom:6px}
+.sheet p{font-size:13px;color:#999;line-height:1.5;font-weight:normal;margin-bottom:14px}
+.sheet p a{color:#E8820A}
+.sheet ol{font-size:13px;color:#bbb;line-height:1.6;font-weight:normal;margin:0 0 14px 18px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:#888;margin-bottom:5px}
+.field input{width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold;-webkit-user-select:text;user-select:text}
+.btn{width:100%;padding:15px;border-radius:14px;border:none;font-family:inherit;font-weight:bold;font-size:16px;color:#fff;cursor:pointer;margin-top:6px}
+.btn.add{background:#E8820A}
+.btn.alt{background:#2a2a38}
+.btn.ghost{background:transparent;color:#888;font-size:15px}
+.err{color:#f87171;font-size:13px;min-height:18px;margin-top:6px;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="bg" id="bg1"></div>
+<div class="bg" id="bg2"></div>
+<div class="vignette"></div>
+
+<div class="stage">
+  <div class="disc" id="disc">
+    <div class="label" id="labelEl">
+      <div class="empty" id="labelEmpty">♪</div>
+      <div class="art" id="art1"></div>
+      <div class="art" id="art2"></div>
+    </div>
+    <div class="hole"></div>
+  </div>
+  <div class="sheen"></div>
+</div>
+
+<div class="info fade" id="info">
+  <div class="now idle" id="now"><span class="dot"></span><span id="nowTxt">Klar</span></div>
+  <div class="title" id="title">Vinyl</div>
+  <div class="artist" id="artist">Tryk på ⚙️ og forbind Last.fm</div>
+  <div class="album" id="album">Tidal → Indstillinger → Last.fm-scrobbling</div>
+  <div class="chips" id="chips"></div>
+  <div class="stats" id="stats"></div>
+  <div class="bio" id="bio"></div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<button class="gear" onclick="openSettings()">⚙️</button>
+
+<div class="ov" id="setOv">
+  <div class="sheet">
+    <h2>Forbind til Tidal</h2>
+    <p>Tidal fortæller ikke selv websider hvad der spiller. Men Tidal kan scrobble til Last.fm, og herfra læser appen "spiller nu" hvert par sekunder.</p>
+    <ol>
+      <li>I Tidal-appen: <b>Indstillinger → Tilsluttede tjenester → Last.fm</b> (log ind, slå scrobbling til).</li>
+      <li>Opret en gratis API-nøgle på <a href="https://www.last.fm/api/account/create" target="_blank" rel="noopener">last.fm/api/account/create</a> og indsæt den her.</li>
+    </ol>
+    <div class="field"><label>Last.fm brugernavn</label><input id="sUser" autocapitalize="off" autocorrect="off" placeholder="fx thomasditzel"></div>
+    <div class="field"><label>Last.fm API-nøgle</label><input id="sKey" autocapitalize="off" autocorrect="off" placeholder="32 tegn"></div>
+    <div class="field"><label>Omdrejninger</label>
+      <select id="sRpm" style="width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold">
+        <option value="33.333">33⅓ rpm (LP)</option><option value="45">45 rpm (single)</option><option value="12">Roligt (12 rpm)</option>
+      </select>
+    </div>
+    <div class="err" id="sErr"></div>
+    <button class="btn add" onclick="saveSettings()">Gem og forbind</button>
+    <button class="btn alt" onclick="demo()">Vis demo (uden Last.fm)</button>
+    <button class="btn ghost" onclick="closeSettings()">Luk</button>
+  </div>
+</div>
+
+<script>
+// ---------- Indstillinger ----------
+var CFG={user:'',key:'',rpm:33.333};
+(function(){
+  try{var c=JSON.parse(localStorage.getItem('vinyl-cfg')||'{}');Object.assign(CFG,c);}catch(e){}
+  var p=new URLSearchParams(location.search);
+  if(p.get('user'))CFG.user=p.get('user');
+  if(p.get('key'))CFG.key=p.get('key');
+  if(p.get('rpm'))CFG.rpm=parseFloat(p.get('rpm'))||CFG.rpm;
+  if(p.get('user')||p.get('key'))saveCfg();
+})();
+function saveCfg(){try{localStorage.setItem('vinyl-cfg',JSON.stringify(CFG));}catch(e){}}
+function openSettings(){
+  document.getElementById('sUser').value=CFG.user;document.getElementById('sKey').value=CFG.key;
+  document.getElementById('sRpm').value=String(CFG.rpm);document.getElementById('sErr').textContent='';
+  document.getElementById('setOv').classList.add('show');
+}
+function closeSettings(){document.getElementById('setOv').classList.remove('show');}
+function saveSettings(){
+  CFG.user=document.getElementById('sUser').value.trim();
+  CFG.key=document.getElementById('sKey').value.trim();
+  CFG.rpm=parseFloat(document.getElementById('sRpm').value)||33.333;
+  if(!CFG.user||!CFG.key){document.getElementById('sErr').textContent='Både brugernavn og API-nøgle skal udfyldes.';return;}
+  saveCfg();closeSettings();demoMode=false;lastKey='';poll();
+}
+document.getElementById('setOv').addEventListener('click',function(e){if(e.target===this)closeSettings();});
+
+// ---------- Pladen drejer (blød start/stop) ----------
+var angle=0,vel=0,playing=false,lastT=0;
+var disc=document.getElementById('disc');
+function frame(t){
+  var dt=lastT?Math.min((t-lastT)/1000,0.1):0;lastT=t;
+  var target=playing?CFG.rpm*6:0; // grader/sek
+  var k=playing?1.6:0.9;          // accelerationsfaktor
+  vel+=(target-vel)*Math.min(1,dt*k);
+  if(!playing&&vel<0.5)vel=0;
+  angle=(angle+vel*dt)%360;
+  disc.style.transform='rotate('+angle+'deg)';
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---------- Visning ----------
+var artToggle=0,bgToggle=0,currentArt='';
+function setArt(url){
+  if(url===currentArt)return;currentArt=url;
+  var arts=[document.getElementById('art1'),document.getElementById('art2')];
+  var bgs=[document.getElementById('bg1'),document.getElementById('bg2')];
+  document.getElementById('labelEmpty').style.display=url?'none':'flex';
+  if(!url){arts.forEach(function(a){a.classList.remove('on');});bgs.forEach(function(b){b.classList.remove('on');});return;}
+  var img=new Image();
+  img.onload=function(){
+    if(currentArt!==url)return;
+    artToggle=1-artToggle;bgToggle=1-bgToggle;
+    arts[artToggle].style.backgroundImage='url("'+url+'")';arts[artToggle].classList.add('on');arts[1-artToggle].classList.remove('on');
+    bgs[bgToggle].style.backgroundImage='url("'+url+'")';bgs[bgToggle].classList.add('on');bgs[1-bgToggle].classList.remove('on');
+  };
+  img.src=url;
+}
+function txt(id,s){document.getElementById(id).textContent=s||'';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function fmtDur(ms){ms=parseInt(ms,10);if(!ms)return '';var s=Math.round(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+function fmtN(n){n=parseInt(n,10);if(!n&&n!==0)return '';return n.toLocaleString('da-DK');}
+function clock(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+
+function showTrack(t,extra){
+  // t: {name, artist, album, art, nowPlaying, date}
+  var now=document.getElementById('now');
+  playing=!!t.nowPlaying;
+  now.classList.toggle('idle',!playing);
+  txt('nowTxt',playing?'Spiller nu på Tidal':(t.name?'Sidst spillet'+(t.date?' · '+t.date:''):'Ingen musik lige nu'));
+  txt('title',t.name||'Stille');
+  txt('artist',t.artist||'');
+  txt('album',[t.album,extra&&extra.year].filter(Boolean).join(' · '));
+  var chips=document.getElementById('chips');
+  chips.innerHTML=((extra&&extra.tags)||[]).slice(0,5).map(function(x){return '<span class="chip">'+esc(x)+'</span>';}).join('');
+  var st=[];
+  if(extra){
+    if(extra.duration)st.push('<span>Længde <b>'+fmtDur(extra.duration)+'</b></span>');
+    if(extra.userPlays)st.push('<span>Du har hørt den <b>'+fmtN(extra.userPlays)+'</b> gange</span>');
+    if(extra.listeners)st.push('<span><b>'+fmtN(extra.listeners)+'</b> lyttere på Last.fm</span>');
+    if(extra.genre&&!(extra.tags||[]).length)st.push('<span>'+esc(extra.genre)+'</span>');
+  }
+  document.getElementById('stats').innerHTML=st.join('');
+  txt('bio',(extra&&extra.bio)||'');
+  setArt(t.art||'');
+}
+
+// ---------- Last.fm ----------
+var LFM='https://ws.audioscrobbler.com/2.0/';
+var lastKey='',demoMode=false,pollTimer=null,infoCache={};
+function lfm(params){
+  params.api_key=CFG.key;params.format='json';
+  var qs=Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k]);}).join('&');
+  return fetch(LFM+'?'+qs).then(function(r){return r.json();}).then(function(j){if(j.error)throw new Error(j.message||('Last.fm fejl '+j.error));return j;});
+}
+function bestImg(arr){
+  if(!arr||!arr.length)return '';
+  var order=['mega','extralarge','large','medium'];
+  for(var i=0;i<order.length;i++){var f=arr.filter(function(x){return x.size===order[i]&&x['#text'];})[0];if(f)return f['#text'];}
+  return (arr[arr.length-1]||{})['#text']||'';
+}
+function poll(){
+  clearTimeout(pollTimer);
+  if(demoMode)return;
+  if(!CFG.user||!CFG.key){return;}
+  lfm({method:'user.getrecenttracks',user:CFG.user,limit:1,extended:1}).then(function(j){
+    var tr=(j.recenttracks&&j.recenttracks.track)||[];if(!Array.isArray(tr))tr=[tr];
+    var t=tr[0];
+    if(!t){showTrack({},null);return;}
+    var np=!!(t['@attr']&&t['@attr'].nowplaying==='true');
+    var rec={name:t.name,artist:(t.artist&&(t.artist.name||t.artist['#text']))||'',album:(t.album&&t.album['#text'])||'',
+      art:bestImg(t.image),nowPlaying:np,date:t.date?relTime(parseInt(t.date.uts,10)*1000):''};
+    var key=rec.artist+'|'+rec.name+'|'+(np?'np':'idle');
+    txt('foot','Via Last.fm · opdateret '+clock());
+    if(key===lastKey){playing=np;document.getElementById('now').classList.toggle('idle',!np);return;}
+    lastKey=key;
+    showTrack(rec,infoCache[rec.artist+'|'+rec.name]||null);
+    enrich(rec);
+  }).catch(function(e){
+    txt('foot','Last.fm: '+(e.message||'ingen forbindelse')+' · prøver igen');
+  }).finally(function(){pollTimer=setTimeout(poll,playing?8000:15000);});
+}
+function relTime(ms){
+  var m=Math.round((Date.now()-ms)/60000);
+  if(m<1)return 'lige før';if(m<60)return 'for '+m+' min siden';
+  var h=Math.round(m/60);if(h<24)return 'for '+h+' time'+(h===1?'':'r')+' siden';
+  var d=Math.round(h/24);return 'for '+d+' dag'+(d===1?'':'e')+' siden';
+}
+// Ekstra info: track.getInfo + artist.getInfo + iTunes (skarpere cover + år)
+function enrich(rec){
+  var ck=rec.artist+'|'+rec.name;
+  if(infoCache[ck]){showTrack(rec,infoCache[ck]);if(infoCache[ck].art)setArt(infoCache[ck].art);return;}
+  var extra={};
+  var p1=lfm({method:'track.getinfo',artist:rec.artist,track:rec.name,username:CFG.user,autocorrect:1}).then(function(j){
+    var t=j.track||{};
+    extra.duration=t.duration;extra.listeners=t.listeners;extra.userPlays=t.userplaycount;
+    extra.tags=((t.toptags&&t.toptags.tag)||[]).map(function(x){return x.name;});
+    if(t.wiki&&t.wiki.summary)extra.bio=clean(t.wiki.summary);
+    if(!rec.album&&t.album&&t.album.title)rec.album=t.album.title;
+    if(!rec.art&&t.album)rec.art=bestImg(t.album.image);
+  }).catch(function(){});
+  var p2=lfm({method:'artist.getinfo',artist:rec.artist,autocorrect:1,lang:'da'}).then(function(j){
+    var a=j.artist||{};
+    if(!extra.bio&&a.bio&&a.bio.summary)extra.bio=clean(a.bio.summary);
+    if(!(extra.tags||[]).length)extra.tags=((a.tags&&a.tags.tag)||[]).map(function(x){return x.name;});
+  }).catch(function(){});
+  var p3=itunes(rec).then(function(r){if(r){extra.year=r.year;extra.genre=r.genre;if(r.art)extra.art=r.art;}}).catch(function(){});
+  Promise.all([p1,p2,p3]).then(function(){
+    infoCache[ck]=extra;
+    if(lastKey.indexOf(rec.artist+'|'+rec.name+'|')!==0)return;
+    if(extra.art)rec.art=extra.art;
+    showTrack(rec,extra);
+  });
+}
+function clean(html){return String(html).replace(/<a[^>]*>Read more[^<]*<\/a>/i,'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();}
+function itunes(rec){
+  var term=encodeURIComponent((rec.artist+' '+(rec.album||rec.name)).trim());
+  return fetch('https://itunes.apple.com/search?term='+term+'&entity='+(rec.album?'album':'song')+'&limit=3&country=dk')
+    .then(function(r){return r.json();}).then(function(d){
+      var r=(d.results||[])[0];if(!r)return null;
+      return {year:(r.releaseDate||'').slice(0,4),genre:r.primaryGenreName,art:(r.artworkUrl100||'').replace(/100x100bb/,'1200x1200bb')};
+    });
+}
+
+// ---------- Demo ----------
+function demo(){
+  closeSettings();demoMode=true;clearTimeout(pollTimer);lastKey='demo';
+  showTrack({name:'Time',artist:'Pink Floyd',album:'The Dark Side of the Moon',art:'plader-icon-512.png',nowPlaying:true},
+    {year:'1973',tags:['progressive rock','psychedelic','classic rock'],duration:413000,listeners:1856000,userPlays:42,
+     bio:'Pink Floyd var et britisk rockband dannet i London i 1965. Med deres eksperimenterende lyd, filosofiske tekster og storslåede liveshows blev de et af de mest indflydelsesrige bands i rockens historie.'});
+  txt('foot','Demo · sådan ser det ud når Tidal spiller');
+}
+
+// ---------- Hold skærmen tændt ----------
+var wake=null;
+function keepAwake(){
+  if(!('wakeLock' in navigator))return;
+  navigator.wakeLock.request('screen').then(function(w){wake=w;}).catch(function(){});
+}
+document.addEventListener('visibilitychange',function(){if(!document.hidden){keepAwake();if(!demoMode)poll();}});
+document.addEventListener('click',function(){if(!wake)keepAwake();},{once:true});
+keepAwake();
+
+// ---------- Auto-opdatering af selve appen ----------
+(function(){
+  var SELF=location.pathname.split('?')[0];
+  function h32(s){var h=5381,i=s.length;while(i){h=(h*33)^s.charCodeAt(--i);}return (h>>>0).toString(36);}
+  function tjek(){
+    fetch(SELF+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():null;}).then(function(t){
+      if(!t||t.length<800)return;var ny=h32(t),gemt=null;
+      try{gemt=localStorage.getItem('vinyl-ver');}catch(e){}
+      if(ny!==gemt){try{localStorage.setItem('vinyl-ver',ny);}catch(e){}if(location.search.indexOf('v='+ny)===-1){var p=new URLSearchParams(location.search);p.set('v',ny);location.replace(SELF+'?'+p.toString());}}
+    }).catch(function(){});
+  }
+  setTimeout(tjek,2500);setInterval(tjek,600000);
+})();
+
+if(CFG.user&&CFG.key){poll();}else{setTimeout(openSettings,600);}
+</script>
+</body>
+</html>
