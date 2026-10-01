@@ -63,6 +63,12 @@ input[type=file]{display:none}
 .nfcov p{color:#8a8a94;font-size:15px;max-width:320px}
 .nfcov .go{background:#E8820A;color:#fff;border:none;border-radius:14px;font-weight:bold;font-size:20px;padding:18px 28px;font-family:inherit;cursor:pointer;width:100%;max-width:360px;margin-top:6px}
 .nfcov .cancel{background:none;border:none;color:#8a8a94;font-size:15px;font-family:inherit;cursor:pointer;padding:8px}
+.scanov{position:fixed;inset:0;background:#000;display:none;align-items:center;justify-content:center;z-index:50}
+.scanov.show{display:flex}
+.scanov video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scanov .frame{position:relative;z-index:1;width:72vw;max-width:300px;height:72vw;max-height:300px;border:3px solid #fff;border-radius:18px;box-shadow:0 0 0 2000px rgba(0,0,0,.45)}
+.scanov .shint{position:absolute;z-index:2;bottom:132px;left:0;right:0;text-align:center;color:#fff;font-size:16px;font-weight:bold;text-shadow:0 1px 4px #000;padding:0 24px}
+.scanov .scancel{position:absolute;z-index:2;bottom:calc(40px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:12px;font-size:16px;font-weight:bold;font-family:inherit;padding:13px 30px;cursor:pointer}
 .sheet{background:#16161f;width:100%;max-width:520px;margin:0 auto;border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92dvh;overflow-y:auto}
 .sheet h2{font-size:20px;margin-bottom:14px}
 .flytbox{background:#0f1420;border:1px solid #26324a;border-radius:14px;padding:14px 16px;margin:16px 0}
@@ -176,6 +182,14 @@ input[type=file]{display:none}
   <p>Scan QR-koden på den pakke du tager ud.</p>
   <button class="go" onclick="nfcGo()">📤 Scan pakke</button>
   <button class="cancel" onclick="nfcCancel()">Annuller</button>
+</div>
+
+<!-- Live QR-scanner (kamera-stream) -->
+<div class="scanov" id="scanOv">
+  <video id="scanVideo" playsinline muted autoplay></video>
+  <div class="frame"></div>
+  <div class="shint" id="scanHint">Hold QR-koden inde i rammen</div>
+  <button class="scancel" onclick="closeScanner()">Annuller</button>
 </div>
 
 <script>
@@ -302,7 +316,7 @@ function onAddPhoto(input){
     document.getElementById('addThumb').src=r.dataUrl;
     openAdd();
     var s=document.getElementById('addStatus');
-    if(!pendingQr){s.textContent='Kunne ikke læse QR — tag et nærbillede af QR-koden';document.getElementById('addQr').textContent='';setTimeout(function(){document.getElementById('qrCam').click();},400);}
+    if(!pendingQr){document.getElementById('addQr').textContent='';setTimeout(scanAddQr,300);}
     else{document.getElementById('addQr').textContent='QR: '+pendingQr;}
     // AI-aflæsning
     s.innerHTML='<span class="spin"></span>Aflæser label…';
@@ -326,6 +340,13 @@ function onQrClose(input){
     else{document.getElementById('addStatus').textContent='Kunne stadig ikke læse QR — prøv igen (hold roligt, fyld hele billedet med QR-koden)';}
   });
 }
+// Live-scan QR til tilføj-flowet; fald tilbage til foto hvis kamera nægtes
+function scanAddQr(){
+  openScanner(function(qr){
+    pendingQr=qr;document.getElementById('addQr').textContent='QR: '+qr;document.getElementById('addStatus').textContent='';
+    if(pendingSaveAfterQr){pendingSaveAfterQr=false;saveAdd();}
+  }, 'Scan QR-koden på labelen', function(){document.getElementById('qrCam').click();});
+}
 function openAdd(){
   document.getElementById('fInd').value=todayISO();
   document.getElementById('addOv').classList.add('show');
@@ -338,7 +359,7 @@ document.getElementById('fInd').addEventListener('change',recalcUdloeb);
 function closeAdd(){document.getElementById('addOv').classList.remove('show');clearAdd();}
 function clearAdd(){pendingFoto='';pendingQr='';pendingThumb='';pendingSaveAfterQr=false;['fNavn','fVaegt','fNote'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('fHylde').value='';document.getElementById('addQr').textContent='';document.getElementById('addStatus').textContent='';}
 function saveAdd(){
-  if(!pendingQr){document.getElementById('addStatus').textContent='📷 QR-koden blev ikke læst — tag et skarpt nærbillede KUN af QR-koden, så gemmes der automatisk';pendingSaveAfterQr=true;document.getElementById('qrCam').click();return;}
+  if(!pendingQr){document.getElementById('addStatus').textContent='📷 Scan QR-koden, så gemmes der automatisk';pendingSaveAfterQr=true;scanAddQr();return;}
   var body={qr:pendingQr,navn:document.getElementById('fNavn').value.trim(),type:document.getElementById('fType').value,
     vaegt:document.getElementById('fVaegt').value.trim(),indfrossen:document.getElementById('fInd').value,
     udloeb:document.getElementById('fUd').value,note:document.getElementById('fNote').value.trim(),
@@ -350,8 +371,52 @@ function saveAdd(){
     }).catch(function(){s.textContent='Offline — prøv igen';});
 }
 
-// --- Tag ud-flow (scan QR) ---
-function startTake(){document.getElementById('takeCam').click();}
+// --- Live QR-scanner (kamera-stream, afkoder løbende = meget mere robust) ---
+var scanStream=null,scanRAF=null,scanCv=null,scanCb=null,scanFail=null;
+function openScanner(onFound,hint,onFail){
+  scanCb=onFound;scanFail=onFail||null;
+  document.getElementById('scanHint').textContent=hint||'Hold QR-koden inde i rammen';
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){if(scanFail)scanFail();return;}
+  document.getElementById('scanOv').classList.add('show');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}}).then(function(st){
+    scanStream=st;var v=document.getElementById('scanVideo');v.srcObject=st;v.muted=true;v.setAttribute('playsinline','');
+    var pr=v.play();if(pr&&pr.catch)pr.catch(function(){});
+    scanRAF=requestAnimationFrame(scanTick);
+  }).catch(function(){var f=scanFail;closeScanner();if(f)f();});
+}
+function scanTick(){
+  var v=document.getElementById('scanVideo');
+  if(v&&v.videoWidth&&v.readyState>=2){
+    var w=v.videoWidth,h=v.videoHeight,max=900;
+    if(w>max){h=Math.round(h*max/w);w=max;}
+    if(!scanCv)scanCv=document.createElement('canvas');
+    scanCv.width=w;scanCv.height=h;var cx=scanCv.getContext('2d');cx.drawImage(v,0,0,w,h);
+    var q=null;
+    try{
+      var id=cx.getImageData(0,0,w,h),d=id.data;
+      var c=jsQR(new Uint8ClampedArray(d),w,h,{inversionAttempts:'attemptBoth'});
+      if(c&&c.data)q=c.data.trim();
+      else{var n=w*h,d2=new Uint8ClampedArray(d.length),i,p;
+        for(i=0,p=0;i<n;i++,p+=4){var vv=(Math.min(d[p],d[p+1],d[p+2])<190)?0:255;d2[p]=d2[p+1]=d2[p+2]=vv;d2[p+3]=255;}
+        c=jsQR(d2,w,h,{inversionAttempts:'attemptBoth'});if(c&&c.data)q=c.data.trim();}
+    }catch(e){}
+    if(q){var cb=scanCb;closeScanner();if(cb)cb(q);return;}
+  }
+  scanRAF=requestAnimationFrame(scanTick);
+}
+function closeScanner(){
+  if(scanRAF){cancelAnimationFrame(scanRAF);scanRAF=null;}
+  if(scanStream){try{scanStream.getTracks().forEach(function(t){t.stop();});}catch(e){}scanStream=null;}
+  var v=document.getElementById('scanVideo');if(v){try{v.pause();}catch(e){}v.srcObject=null;}
+  scanCb=null;scanFail=null;
+  document.getElementById('scanOv').classList.remove('show');
+}
+
+// --- Tag ud-flow (live scan QR) ---
+function startTake(){
+  openScanner(function(qr){lookup(qr);}, 'Scan QR-koden på pakken du tager ud',
+    function(){document.getElementById('takeCam').click();}); // fallback: foto hvis kamera nægtes
+}
 // NFC: tagget åbner appen med ?take -> vis stor "klar til at tage ud"-skærm.
 // (Kameraet kan ikke auto-åbne uden et tryk på iPhone, så ét tryk starter scan.)
 function nfcClearFlag(){try{sessionStorage.removeItem('nfcTake');}catch(e){}}
