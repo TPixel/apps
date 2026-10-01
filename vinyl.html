@@ -49,14 +49,32 @@ body{position:relative}
 .disc.tap{cursor:pointer}
 
 /* Tekstsiden */
-.info{position:fixed;top:0;bottom:0;left:calc(0.2 * var(--d) + var(--d)/2 + 24px + 4vw);right:5vw;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.3vh,16px);padding:6vh 0;min-width:0}
+.info{position:fixed;top:0;bottom:0;left:calc(0.2 * var(--d) + var(--d)/2 + 24px + 4vw);right:5vw;display:flex;flex-direction:column;justify-content:flex-end;gap:clamp(6px,1vh,12px);padding:calc(14px + env(safe-area-inset-top)) 0 calc(4vh + env(safe-area-inset-bottom));min-width:0}
+.info>*{flex-shrink:0}
+/* Hylden: bladre i plader øverst til højre */
+.shelf{flex:0 0 auto;display:flex;flex-direction:column;margin-right:48px;margin-bottom:auto}
+.tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;background:rgba(255,255,255,.07);border:none;color:#9a9aa6;border-radius:16px;padding:7px 12px;font-size:12px;font-family:inherit;font-weight:bold;cursor:pointer;white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.tabs button.on{background:#E8820A;color:#fff}
+.tabs input{flex:1 0 140px;min-width:140px;background:rgba(255,255,255,.1);border:none;border-radius:16px;padding:7px 12px;color:#fff;font-size:16px;font-family:inherit;font-weight:bold;outline:none;-webkit-user-select:text;user-select:text}
+.shelfStrip{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;padding:2px 2px 10px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.shelfStrip::-webkit-scrollbar{display:none}
+.shelfStrip .tile{width:clamp(96px,10.5vw,138px)}
+.shelfStrip .tile .cv{border-radius:8px}
+.shelfStrip .tile .t1{font-size:12px;margin-top:6px}
+.shelfStrip .tile .t2{font-size:11px}
+.shelfMsg{font-size:13px;color:#77778a;font-weight:normal;padding:10px 2px;line-height:1.45}
+.tile.busy .cv{opacity:.45}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:rgba(20,20,26,.95);color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;opacity:0;transition:all .3s;z-index:30;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.5);max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
 .now{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#E8820A;display:flex;align-items:center;gap:10px}
 .now .dot{width:9px;height:9px;border-radius:50%;background:#E8820A;box-shadow:0 0 12px #E8820A;animation:pulse 1.6s ease-in-out infinite}
 .now.idle{color:#666}.now.idle .dot{background:#555;box-shadow:none;animation:none}
 @keyframes pulse{50%{opacity:.35}}
-.title{font-size:clamp(32px,5vw,70px);line-height:1.05;letter-spacing:-.5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;text-shadow:0 4px 30px rgba(0,0,0,.5)}
-.artist{font-size:clamp(20px,2.6vw,36px);color:#f0f0f4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.album{font-size:clamp(15px,1.7vw,22px);color:#a0a0ac;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.title{font-size:clamp(26px,3.8vw,52px);line-height:1.05;letter-spacing:-.5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-shadow:0 4px 30px rgba(0,0,0,.5)}
+.artist{font-size:clamp(17px,2vw,27px);color:#f0f0f4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.album{font-size:clamp(13px,1.4vw,18px);color:#a0a0ac;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Fremdrift + knapper (WiiM) */
 .player{display:none;flex-direction:column;gap:10px;margin:4px 0 2px}
 .player.on{display:flex}
@@ -75,16 +93,19 @@ body{position:relative}
 .chip{font-size:12px;padding:5px 11px;border-radius:20px;background:rgba(255,255,255,.08);color:#ddd;text-transform:lowercase}
 .stats{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:clamp(13px,1.3vw,16px);color:#9a9aa6}
 .stats b{color:#fff}
-.bio{font-size:clamp(13px,1.35vw,17px);line-height:1.5;color:#c4c4cc;font-weight:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical}
+.bio{font-size:clamp(12px,1.15vw,15px);line-height:1.45;color:#c4c4cc;font-weight:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
 .foot{font-size:11px;color:#55555f;letter-spacing:.5px;margin-top:4px}
 
 /* Portræt */
 @media (orientation:portrait){
   :root{--d:115vw}
-  .disc,.sheen{left:50%;margin-left:calc(var(--d) / -2);top:calc(0.22 * var(--d) - var(--d)/2 + 16px);margin-top:0}
-  .info{left:7vw;right:7vw;top:calc(0.22 * var(--d) + var(--d)/2 + 16px + 3vh);bottom:0;justify-content:flex-start;padding:0 0 4vh}
-  .title{font-size:clamp(30px,7.5vw,64px)}
-  .artist{font-size:clamp(20px,4.2vw,32px)}
+  .disc,.sheen{left:50%;margin-left:calc(var(--d) / -2);top:calc(0.12 * var(--d) - var(--d)/2 + 16px);margin-top:0}
+  .info{left:7vw;right:7vw;top:calc(0.12 * var(--d) + var(--d)/2 + 16px + 2vh);bottom:0;justify-content:flex-start;padding:0 0 4vh}
+  .title{font-size:clamp(26px,6vw,50px)}
+  .artist{font-size:clamp(18px,3.4vw,26px)}
+  .shelf{margin-right:0;margin-bottom:6px}
+  .info{overflow-y:auto;scrollbar-width:none}
+  .shelfStrip .tile{width:clamp(90px,17vw,130px)}
   .vignette{background:radial-gradient(ellipse at 50% 30%,transparent 40%,rgba(0,0,0,.55) 100%)}
 }
 
@@ -152,6 +173,10 @@ body{position:relative}
 </div>
 
 <div class="info" id="info">
+  <div class="shelf" id="shelf">
+    <div class="tabs" id="tabs"></div>
+    <div class="shelfStrip" id="shelfStrip"></div>
+  </div>
   <div class="now idle" id="now"><span class="dot"></span><span id="nowTxt">Klar</span></div>
   <div class="title" id="title">Vinyl</div>
   <div class="artist" id="artist">Tryk på ⚙️ og forbind WiiM eller Last.fm</div>
@@ -184,6 +209,11 @@ body{position:relative}
     <p>Kør <b>wiim-bro</b> på Mac'en (se mappen wiim-bro i apps) og åbn denne side derfra, fx <b>http://mac.local:8787/vinyl.html</b>. Så findes broen automatisk. Ellers skriv adressen her.</p>
     <div class="field"><label>WiiM-bro adresse</label><input id="sBridge" autocapitalize="off" autocorrect="off" placeholder="http://mac.local:8787"></div>
     <div class="err" id="sBridgeStat"></div>
+    <h3>Tidal-søgning (til hylden)</h3>
+    <p>Gør det muligt at søge i Tidal og spille ethvert album direkte på WiiM'en. Opret en gratis app på <a href="https://developer.tidal.com/dashboard" target="_blank" rel="noopener">developer.tidal.com</a> (log ind med din Tidal-konto → <b>Create app</b>) og kopiér Client ID og Client Secret hertil. Nøglen gemmes kun på Mac'en.</p>
+    <div class="field"><label>Tidal Client ID</label><input id="sTid" autocapitalize="off" autocorrect="off" placeholder="Client ID"></div>
+    <div class="field"><label>Tidal Client Secret</label><input id="sTsec" type="password" autocapitalize="off" autocorrect="off" placeholder="Client Secret (lad stå tom for at beholde)"></div>
+    <div class="err" id="sTidStat"></div>
     <h3>Last.fm (ekstra info, eller hvis Tidal spiller på iPad'en)</h3>
     <p>Tidal-appen → Indstillinger → Tilsluttede tjenester → Last.fm. API-nøgle: <a href="https://www.last.fm/api/account/create" target="_blank" rel="noopener">last.fm/api/account/create</a>. Med nøglen får du også tags, bio, dine egne afspilningstal og bedre bladre-forslag.</p>
     <div class="field"><label>Last.fm brugernavn</label><input id="sUser" autocapitalize="off" autocorrect="off" placeholder="fx thomasditzel"></div>
@@ -206,6 +236,8 @@ body{position:relative}
   <div class="head"><h2>💿 Bladre</h2><button class="close" onclick="closeBrowse()">Luk</button></div>
   <div id="rows"></div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <!-- Valgt album fra bladre -->
 <div class="ov" id="pickOv">
@@ -234,6 +266,7 @@ function openSettings(){
   document.getElementById('sBridge').value=CFG.bridge;document.getElementById('sUser').value=CFG.user;document.getElementById('sKey').value=CFG.key;
   document.getElementById('sRpm').value=String(CFG.rpm);document.getElementById('sErr').textContent='';
   document.getElementById('sBridgeStat').textContent=BRIDGE?'Forbundet til bro: '+BRIDGE:'';document.getElementById('sBridgeStat').className=BRIDGE?'err ok':'err';
+  var ts=document.getElementById('sTidStat');ts.className=TIDAL_OK?'err ok':'err';ts.textContent=TIDAL_OK?'Tidal forbundet ✓':(BRIDGE?'':'Kræver WiiM-broen');
   document.getElementById('setOv').classList.add('show');
 }
 function closeSettings(){document.getElementById('setOv').classList.remove('show');}
@@ -241,7 +274,17 @@ function saveSettings(){
   CFG.bridge=document.getElementById('sBridge').value.trim().replace(/\/+$/,'');
   CFG.user=document.getElementById('sUser').value.trim();CFG.key=document.getElementById('sKey').value.trim();
   CFG.rpm=parseFloat(document.getElementById('sRpm').value)||33.333;
-  saveCfg();closeSettings();demoMode=false;lastKey='';start();
+  saveCfg();
+  var tid=document.getElementById('sTid').value.trim(),tsec=document.getElementById('sTsec').value.trim();
+  if(tid&&tsec&&BRIDGE){
+    var st=document.getElementById('sTidStat');st.className='err';st.textContent='Tjekker Tidal-nøglen…';
+    fetch(BRIDGE+'/tidal/setup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:tid,secret:tsec})}).then(function(r){return r.json();}).then(function(j){
+      if(j.ok){st.className='err ok';st.textContent='Tidal forbundet ✓';TIDAL_OK=true;document.getElementById('sTsec').value='';setTimeout(function(){closeSettings();demoMode=false;lastKey='';start();},700);}
+      else st.textContent='Tidal: '+(j.error||'fejl');
+    }).catch(function(e){st.textContent='Kunne ikke nå broen: '+e.message;});
+    return;
+  }
+  closeSettings();demoMode=false;lastKey='';start();
 }
 document.querySelectorAll('.ov').forEach(function(ov){ov.addEventListener('click',function(e){if(e.target===ov)ov.classList.remove('show');});});
 
@@ -305,7 +348,9 @@ function showTrack(t,extra){
   document.getElementById('stats').innerHTML=st.join('');
   txt('bio',(extra&&extra.bio)||'');
   setArt(t.art||'');
+  if((t.artist||'')!==shelfArtist){shelfArtist=t.artist||'';var ae=document.activeElement;if(!(ae&&ae.id==='shelfSearch'))buildShelf();}
 }
+var shelfArtist=null;
 
 // ---------- Fremdrift (WiiM) ----------
 var W={pos:0,len:0,ts:0,playing:false};
@@ -432,7 +477,8 @@ function tile(a){
 function row(id,title,hint){return '<div class="row" id="'+id+'"><h3>'+esc(title)+'</h3>'+(hint?'<div class="hint">'+esc(hint)+'</div>':'<div class="strip"></div>')+'</div>';}
 function fillRow(id,albums){var r=document.getElementById(id);if(!r)return;if(!albums||!albums.length){r.innerHTML='<h3>'+r.querySelector('h3').innerHTML+'</h3><div class="hint">Intet fundet.</div>';return;}r.querySelector('.strip').innerHTML=albums.map(tile).join('');}
 function pickTile(el){
-  var d=el.dataset;document.getElementById('pCov').style.backgroundImage=d.art?'url("'+d.art+'")':'none';
+  var d=el.dataset;
+  if(MODE==='wiim'){closeBrowse();return playAlbum({artist:d.artist,album:d.album,art:d.art,year:d.year},el);}document.getElementById('pCov').style.backgroundImage=d.art?'url("'+d.art+'")':'none';
   txt('pAlb',d.album);txt('pArt',[d.artist,d.year].filter(Boolean).join(' · '));
   document.getElementById('pTidal').href=tidalLink(d.artist,d.album);
   document.getElementById('pLfm').href='https://www.last.fm/music/'+encodeURIComponent(d.artist)+'/'+encodeURIComponent(d.album);
@@ -478,6 +524,96 @@ function similar(artist){
   }).catch(function(){return [];});
 }
 
+// ---------- Hylden (øverst til højre): bladre og spil direkte på WiiM ----------
+var TIDAL_OK=false,SHELF_TAB='',SHELF_ITEMS=[],shelfCache={},shelfQ='',shelfReq=0;
+try{SHELF_TAB=localStorage.getItem('vinyl-shelf')||'';}catch(e){}
+function toast(s,ms){var t=document.getElementById('toast');t.textContent=s;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},ms||2600);}
+function shelfTabs(){
+  var artist=(cur&&cur.artist)||'',t=[];
+  if(BRIDGE)t.push(['recent','Senest spillet']);
+  if(artist)t.push(['more','Mere fra '+artist]);
+  if(artist&&CFG.key)t.push(['similar','Lignende']);
+  if(CFG.key&&CFG.user)t.push(['top','Dine mest hørte']);
+  t.push(['search','🔍 Søg']);
+  return t;
+}
+function buildShelf(){
+  var tabs=shelfTabs();
+  if(!tabs.some(function(x){return x[0]===SHELF_TAB;}))SHELF_TAB=tabs[0][0];
+  document.getElementById('tabs').innerHTML=tabs.map(function(x){
+    if(x[0]==='search'&&SHELF_TAB==='search')return '<input id="shelfSearch" type="search" enterkeyhint="search" placeholder="Søg i Tidal…" value="'+esc(shelfQ)+'" onkeydown="if(event.key===\'Enter\'){shelfQ=this.value;this.blur();loadShelf();}">';
+    return '<button class="'+(x[0]===SHELF_TAB?'on':'')+'" onclick="shelfSet(\''+x[0]+'\')">'+esc(x[1])+'</button>';
+  }).join('');
+  loadShelf();
+}
+function shelfSet(tab){
+  SHELF_TAB=tab;try{localStorage.setItem('vinyl-shelf',tab);}catch(e){}
+  buildShelf();
+  if(tab==='search'){var i=document.getElementById('shelfSearch');if(i&&!shelfQ)i.focus();}
+}
+function shelfMsg(s){SHELF_ITEMS=[];document.getElementById('shelfStrip').innerHTML='<div class="shelfMsg">'+s+'</div>';}
+function loadShelf(){
+  var tab=SHELF_TAB,artist=(cur&&cur.artist)||'',req=++shelfReq,p,key=tab;
+  if(tab==='more'||tab==='similar')key+='|'+artist;
+  if(tab==='search')key+='|'+shelfQ.toLowerCase();
+  var cached=shelfCache[key];
+  if(cached&&Date.now()-cached.t<(tab==='recent'?30000:1800000)){renderShelf(cached.items);return;}
+  if(tab==='recent')p=bridgeFetch('/wiim/recent').then(function(l){return l.filter(function(x){return x.kind!=='other';}).map(function(x){return {artist:x.artist||'',album:x.album||'',art:x.art||'',tid:x.id||'',pid:x.playlistId||'',sub:x.playlistId?'Playliste':''};});});
+  else if(tab==='more')p=(TIDAL_OK?bridgeFetch('/tidal/search?q='+encodeURIComponent(artist)).then(function(l){
+      var la=artist.toLowerCase();var own=l.filter(function(x){return (x.artist||'').toLowerCase().indexOf(la)>=0||la.indexOf((x.artist||'').toLowerCase())>=0;});
+      return (own.length?own:l).map(function(x){return {artist:x.artist,album:x.album,art:x.art,year:x.year,tid:x.id};});
+    }):itunesAlbums(artist));
+  else if(tab==='similar')p=similar(artist);
+  else if(tab==='top')p=lfm({method:'user.gettopalbums',user:CFG.user,period:'3month',limit:24}).then(function(j){return ((j.topalbums&&j.topalbums.album)||[]).map(function(a){return {artist:a.artist.name,album:a.name,art:bestImg(a.image)};});});
+  else if(tab==='search'){
+    if(!BRIDGE)return shelfMsg('Søgning kræver WiiM-broen.');
+    if(!TIDAL_OK)return shelfMsg('Læg en Tidal-nøgle ind under ⚙️ for at søge i hele Tidal.');
+    if(!shelfQ.trim())return shelfMsg('Skriv kunstner eller album og tryk Søg.');
+    p=bridgeFetch('/tidal/search?q='+encodeURIComponent(shelfQ)).then(function(l){return l.map(function(x){return {artist:x.artist,album:x.album,art:x.art,year:x.year,tid:x.id};});});
+  }
+  if(!p)return shelfMsg('');
+  shelfMsg('Henter…');
+  p.then(function(items){if(req!==shelfReq)return;items=items||[];shelfCache[key]={t:Date.now(),items:items};renderShelf(items);})
+   .catch(function(e){if(req!==shelfReq)return;shelfMsg('Kunne ikke hente ('+esc(e.message||'fejl')+')');});
+}
+function renderShelf(items){
+  SHELF_ITEMS=items;
+  if(!items.length)return shelfMsg('Intet fundet.');
+  document.getElementById('shelfStrip').innerHTML=items.map(function(a,i){
+    var playingNow=cur&&a.album&&cur.album&&a.album.toLowerCase()===String(cur.album).toLowerCase();
+    var cv=a.art?'<div class="cv'+(playingNow?' playing':'')+'" style="background-image:url(\''+esc(a.art)+'\')"></div>':'<div class="cv txt'+(playingNow?' playing':'')+'">'+esc(a.album)+'</div>';
+    return '<div class="tile" onclick="shelfTap('+i+',this)">'+cv+'<div class="t1">'+esc(a.album)+'</div><div class="t2">'+esc(a.sub||[a.artist,a.year].filter(Boolean).join(' · '))+'</div></div>';
+  }).join('');
+  document.getElementById('shelfStrip').scrollLeft=0;
+}
+function shelfTap(i,el){playAlbum(SHELF_ITEMS[i],el);}
+// Spil et album på WiiM: kendt kø → Tidal-id → find på Tidal ud fra navn → ellers vis kort med "Åbn i Tidal"
+function playAlbum(a,el){
+  if(!a)return;
+  if(MODE!=='wiim'||!BRIDGE)return showPick(a);
+  var path=a.pid?'/wiim/playtidal?kind=playlist&id='+encodeURIComponent(a.pid)+'&name='+encodeURIComponent(a.album||'')
+    :a.tid?'/wiim/playtidal?id='+encodeURIComponent(a.tid)+'&name='+encodeURIComponent(a.album||'')+'&artist='+encodeURIComponent(a.artist||'')
+    :(TIDAL_OK?'/wiim/playfind?artist='+encodeURIComponent(a.artist||'')+'&album='+encodeURIComponent(a.album||''):'');
+  if(!path)return showPick(a,'Læg en Tidal-nøgle ind under ⚙️, så kan albummet spilles direkte.');
+  if(el)el.classList.add('busy');
+  toast('▶ Starter '+(a.album||'')+'…');
+  fetch(BRIDGE+path,{cache:'no-store'}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||('fejl '+r.status));return j;});})
+    .then(function(){toast('▶ '+(a.album||'')+(a.artist?' — '+a.artist:''));lastKey='';shelfCache={};clearTimeout(pollTimer);pollTimer=setTimeout(pollWiim,1500);})
+    .catch(function(e){toast(e.message||'Kunne ikke starte',3500);if(!a.pid&&!a.tid)showPick(a);})
+    .finally(function(){if(el)el.classList.remove('busy');});
+}
+function showPick(a,hint){
+  document.getElementById('pCov').style.backgroundImage=a.art?'url("'+a.art+'")':'none';
+  txt('pAlb',a.album);txt('pArt',hint||[a.artist,a.year].filter(Boolean).join(' · '));
+  document.getElementById('pTidal').href=tidalLink(a.artist||'',a.album||'');
+  document.getElementById('pLfm').href='https://www.last.fm/music/'+encodeURIComponent(a.artist||'')+'/'+encodeURIComponent(a.album||'');
+  document.getElementById('pickOv').classList.add('show');
+}
+function checkTidal(){
+  if(!BRIDGE){TIDAL_OK=false;return Promise.resolve();}
+  return bridgeFetch('/tidal/status').then(function(j){TIDAL_OK=!!j.ok;}).catch(function(){TIDAL_OK=false;});
+}
+
 // ---------- Demo ----------
 function demo(){
   closeSettings();demoMode=true;MODE='demo';clearTimeout(pollTimer);lastKey='demo';
@@ -493,7 +629,8 @@ function start(){
   clearTimeout(pollTimer);
   findBridge().then(function(b){
     BRIDGE=b;
-    if(BRIDGE){MODE='wiim';document.getElementById('player').classList.add('on');disc.classList.add('tap');pollWiim();return;}
+    if(BRIDGE){MODE='wiim';document.getElementById('player').classList.add('on');disc.classList.add('tap');pollWiim();checkTidal().then(buildShelf);return;}
+    buildShelf();
     document.getElementById('player').classList.remove('on');disc.classList.remove('tap');
     if(CFG.user&&CFG.key){MODE='lastfm';pollLfm();return;}
     MODE='';setTimeout(openSettings,400);
