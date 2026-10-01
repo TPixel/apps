@@ -149,6 +149,7 @@ input[type=file]{display:none}
     <div class="field"><label>Note</label><input id="fNote" placeholder="fx 4 stk / Netto"></div>
     <div class="field"><label>Placering</label><select id="fHylde"></select></div>
     <button class="btn add" onclick="saveAdd()">Gem i fryseren</button>
+    <button class="btn take" onclick="startBulk()">➕ Gem + flere ens pakker</button>
     <button class="btn ghost" onclick="closeAdd()">Fortryd</button>
   </div>
 </div>
@@ -192,6 +193,21 @@ input[type=file]{display:none}
   <button class="scancel" onclick="closeScanner()">Annuller</button>
 </div>
 
+<!-- Bulk: flere ens pakker, hver sin QR -->
+<div class="nfcov" id="bulkOv">
+  <div class="big">🧊</div>
+  <h2 id="bulkTitle">Flere ens pakker</h2>
+  <p id="bulkMeta"></p>
+  <div style="width:100%;max-width:360px;text-align:left">
+    <label style="color:#8a8a94;font-size:13px;display:block;margin-bottom:4px">Placering (skift for forskellig)</label>
+    <select id="bulkHylde" style="width:100%;background:#1a1a24;color:#fff;border:1px solid #333;border-radius:10px;padding:13px;font-size:16px;font-family:inherit"></select>
+  </div>
+  <div id="bulkCount" style="font-size:18px;font-weight:bold;margin-top:4px">Lagt i fryseren: 0</div>
+  <div id="bulkStatus" style="min-height:18px;font-size:14px;font-weight:bold"></div>
+  <button class="go" onclick="bulkScan()">📷 Scan pakke</button>
+  <button class="cancel" onclick="bulkDone()">✓ Færdig</button>
+</div>
+
 <script>
 var API='https://lightcrew-api.thomas-5c5.workers.dev';
 var TYPES=[
@@ -212,6 +228,18 @@ function todayISO(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth
 function addMonthsISO(iso,m){var d=iso?new Date(iso):new Date();d.setMonth(d.getMonth()+m);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function daysUntil(iso){if(!iso)return null;var d=new Date(iso+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);return Math.round((d-n)/86400000);}
 function fmtDK(iso){if(!iso)return'';var p=iso.split('-');return p.length===3?p[2]+'/'+p[1]:iso;}
+// Vægt-parsing + sammentælling (svarer "hvor meget X har jeg")
+function parseVaegt(s){
+  if(!s)return null;s=(''+s).toLowerCase().replace(',','.');
+  var m=s.match(/(\d+(?:\.\d+)?)\s*(kg|g|l|ml)?/);if(!m)return null;
+  var n=parseFloat(m[1]);if(isNaN(n))return null;var u=m[2]||'g';
+  if(u==='kg')return{g:n*1000,ml:0};if(u==='g')return{g:n,ml:0};
+  if(u==='l')return{g:0,ml:n*1000};if(u==='ml')return{g:0,ml:n};return{g:n,ml:0};
+}
+function fmtKg(g){if(g>=1000){var kg=g/1000;return (kg%1===0?kg.toFixed(0):kg.toFixed(kg<10?2:1)).replace('.',',')+' kg';}return Math.round(g)+' g';}
+function fmtL(ml){if(ml>=1000){var l=ml/1000;return (l%1===0?l.toFixed(0):l.toFixed(1)).replace('.',',')+' L';}return Math.round(ml)+' ml';}
+function sumVaegt(items){var g=0,ml=0,any=false;items.forEach(function(i){var w=parseVaegt(i.vaegt);if(w){any=true;g+=w.g;ml+=w.ml;}});
+  if(!any)return'';var p=[];if(g>0)p.push(fmtKg(g));if(ml>0)p.push(fmtL(ml));return p.join(' · ');}
 
 // --- Byg type-chips ---
 (function(){
@@ -240,7 +268,9 @@ function render(items){
   if(sort==='nyest'){items.sort(function(a,b){return (b.indfrossen||'').localeCompare(a.indfrossen||'');});}
   else if(sort==='aeldst'){items.sort(function(a,b){return (a.indfrossen||'￿').localeCompare(b.indfrossen||'￿');});}
   else{items.sort(function(a,b){return (a.udloeb||'9999-99-99').localeCompare(b.udloeb||'9999-99-99');});}
-  document.getElementById('count').textContent=items.length?items.length+' vare'+(items.length===1?'':'r')+' i fryseren':'';
+  var totV=sumVaegt(items);
+  var filtreret=!!(document.getElementById('search').value.trim()||filterType||document.getElementById('hyldeFilter').value);
+  document.getElementById('count').textContent=items.length?(items.length+' vare'+(items.length===1?'':'r')+(filtreret?'':' i fryseren')+(totV?' · i alt '+totV:'')):'';
   var soon=items.filter(function(i){var d=daysUntil(i.udloeb);return d!==null&&d<=14;}).length;
   var b=document.getElementById('banner');
   if(soon){b.textContent='⚠️ '+soon+' vare'+(soon===1?'':'r')+' udløber snart';b.classList.add('show');}else{b.classList.remove('show');}
@@ -370,6 +400,48 @@ function saveAdd(){
       if(d.ok){closeAdd();load();}else{s.textContent='Fejl: '+(d.error||'ukendt');}
     }).catch(function(){s.textContent='Offline — prøv igen';});
 }
+
+// --- Bulk: flere ens pakker (samme vare, unik QR pr. pakke, valgfri placering) ---
+var bulkTmpl=null,bulkSaved=[];
+function startBulk(){
+  var navn=document.getElementById('fNavn').value.trim();
+  bulkTmpl={navn:navn,type:document.getElementById('fType').value,
+    vaegt:document.getElementById('fVaegt').value.trim(),indfrossen:document.getElementById('fInd').value,
+    udloeb:document.getElementById('fUd').value,note:document.getElementById('fNote').value.trim(),
+    foto:pendingFoto,thumb:pendingThumb};
+  bulkSaved=[];
+  fyldHylder(document.getElementById('bulkHylde'),'— ingen placering —');
+  document.getElementById('bulkHylde').value=document.getElementById('fHylde').value;
+  document.getElementById('bulkTitle').textContent=(emojiOf[bulkTmpl.type]||'📦')+' '+(navn||'Vare');
+  document.getElementById('bulkMeta').textContent=[bulkTmpl.type,bulkTmpl.vaegt,(bulkTmpl.udloeb?'bedst før '+fmtDK(bulkTmpl.udloeb):'')].filter(Boolean).join(' · ');
+  document.getElementById('bulkStatus').textContent='';
+  updateBulkCount();
+  document.getElementById('addOv').classList.remove('show');
+  document.getElementById('bulkOv').classList.add('show');
+  if(pendingQr){bulkSaveQr(pendingQr);}   // allerede scannet pakke = #1
+  else{bulkScan();}
+}
+function updateBulkCount(){document.getElementById('bulkCount').textContent='Lagt i fryseren: '+bulkSaved.length;}
+function bulkScan(){
+  if(!document.getElementById('bulkOv').classList.contains('show'))return;
+  openScanner(function(qr){bulkSaveQr(qr);},'Scan pakke '+(bulkSaved.length+1)+(bulkTmpl&&bulkTmpl.navn?' · '+bulkTmpl.navn:''),
+    function(){var s=document.getElementById('bulkStatus');s.style.color='#f87171';s.textContent='Kamera kræves — tillad kamera-adgang';});
+}
+function bulkSaveQr(qr){
+  if(!bulkTmpl)return;
+  var s=document.getElementById('bulkStatus');
+  if(bulkSaved.indexOf(qr)!==-1){s.style.color='#FBBF24';s.textContent='⚠️ Den pakke er allerede scannet';setTimeout(bulkScan,800);return;}
+  var hylde=document.getElementById('bulkHylde').value;
+  var body={qr:qr,navn:bulkTmpl.navn,type:bulkTmpl.type,vaegt:bulkTmpl.vaegt,indfrossen:bulkTmpl.indfrossen,
+    udloeb:bulkTmpl.udloeb,note:bulkTmpl.note,hylde:hylde,foto:bulkTmpl.foto,thumb:bulkTmpl.thumb};
+  s.style.color='#8a8a94';s.textContent='Gemmer…';
+  fetch(API+'/api/fryser',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json();}).then(function(d){
+      if(d.ok){bulkSaved.push(qr);updateBulkCount();s.style.color='#4ade80';s.textContent='✓ Pakke '+bulkSaved.length+' lagt i'+(hylde?' ('+kortHylde(hylde)+')':'');setTimeout(bulkScan,650);}
+      else{s.style.color='#f87171';s.textContent='Fejl: '+(d.error||'ukendt');}
+    }).catch(function(){s.style.color='#f87171';s.textContent='Offline — prøv igen';});
+}
+function bulkDone(){closeScanner();document.getElementById('bulkOv').classList.remove('show');bulkTmpl=null;bulkSaved=[];clearAdd();load();}
 
 // --- Live QR-scanner (kamera-stream, afkoder løbende = meget mere robust) ---
 var scanStream=null,scanRAF=null,scanCv=null,scanCb=null,scanFail=null;
