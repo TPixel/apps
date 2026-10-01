@@ -285,6 +285,13 @@ const server = http.createServer(async (req, res) => {
       const h = history.find((x) => norm(x.album) === norm(a.album)); if (h && !h.id) { h.id = a.id; saveHistory(); }
       return json(res, 200, { ok: true, album: a });
     }
+    if (u.pathname === '/img') { // samme-oprindelse-proxy for covers, så siden kan aflæse farverne
+      const src = u.searchParams.get('u') || '';
+      let h = ''; try { h = new URL(src).hostname; } catch (e) { /* */ }
+      if (!/^https:/.test(src) || !/(^|\.)(tidal\.com|mzstatic\.com|last\.fm|fastly\.net|akamaized\.net)$/.test(h)) { res.writeHead(400); return res.end(); }
+      return https.get(src, { timeout: 8000 }, (r) => { cors(res); res.writeHead(r.statusCode || 502, { 'Content-Type': r.headers['content-type'] || 'image/jpeg', 'Cache-Control': 'max-age=86400' }); r.pipe(res); })
+        .on('error', () => { res.writeHead(502); res.end(); });
+    }
     if (u.pathname === '/tidal/search') return json(res, 200, await tidalSearch(u.searchParams.get('q') || '', 24));
     if (u.pathname === '/tidal/status') { try { await tidalToken(); return json(res, 200, { ok: true }); } catch (e) { return json(res, 200, { ok: false, error: e.message }); } }
     if (u.pathname === '/tidal/setup' && req.method === 'POST') {
