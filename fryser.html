@@ -105,7 +105,7 @@ input[type=file]{display:none}
 </style>
 </head>
 <body>
-<div class="logo">Ditzel &amp; Co</div>
+<div class="logo" style="display:flex;justify-content:space-between;align-items:center">Ditzel &amp; Co <span id="appver" onclick="haardOpdater()" title="Tryk for at tvinge opdatering" style="color:#555;font-weight:normal;letter-spacing:.5px;cursor:pointer">v…</span></div>
 <h1>🧊 Fryseren</h1>
 <div class="count" id="count"></div>
 <a href="fryser-labels.html" style="display:inline-block;margin-top:6px;font-size:13px;color:#E8820A;text-decoration:none">🖨️ Print tomme labels</a>
@@ -494,8 +494,9 @@ function confirmTake(){
 function closeTake(){document.getElementById('takeOv').classList.remove('show');}
 
 // --- Auto-opdatering: henter nyeste version og genindlæser hvis filen er ændret ---
+function haardOpdater(){var SELF=location.pathname.split('?')[0];try{localStorage.removeItem('fryser-ver');}catch(e){}location.replace(SELF+'?v='+Date.now());}
 (function(){
-  var SELF=location.pathname.split('?')[0];
+  var SELF=location.pathname.split('?')[0],reloadetEn=false;
   function h32(s){var h=5381,i=s.length;while(i){h=(h*33)^s.charCodeAt(--i);}return (h>>>0).toString(36);}
   function tjek(){
     fetch(SELF+'?_='+Date.now(),{cache:'no-store'})
@@ -504,15 +505,18 @@ function closeTake(){document.getElementById('takeOv').classList.remove('show');
         if(!t||t.length<800)return;
         var ny=h32(t),gemt=null;
         try{gemt=localStorage.getItem('fryser-ver');}catch(e){}
-        if(ny!==gemt){
+        var vEl=document.getElementById('appver');if(vEl)vEl.textContent='v'+ny;
+        var paaDenne=location.search.indexOf('v='+ny)!==-1;      // undgå reload-loop
+        if(ny!==gemt && !paaDenne && !reloadetEn){
+          reloadetEn=true;
           try{localStorage.setItem('fryser-ver',ny);}catch(e){}
-          if(location.search.indexOf('v='+ny)===-1)location.replace(SELF+'?v='+ny);
+          location.replace(SELF+'?v='+ny+'.'+Date.now());        // unik buster -> garanteret frisk HTML
         }
       }).catch(function(){});
   }
-  setTimeout(tjek,1500);
+  setTimeout(tjek,700);
   document.addEventListener('visibilitychange',function(){if(!document.hidden)tjek();});
-  setInterval(tjek,300000);
+  setInterval(tjek,120000);
 })();
 
 load();
