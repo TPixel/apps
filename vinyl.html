@@ -199,7 +199,7 @@ body{position:relative}
 </div>
 
 <button class="corner gear" onclick="openSettings()">⚙️</button>
-<button class="corner browseBtn" onclick="openBrowse()">💿 Bladre</button>
+<button class="corner browseBtn" onclick="openReol()">📚 Reol</button>
 
 <!-- Indstillinger -->
 <div class="ov" id="setOv">
@@ -251,6 +251,7 @@ body{position:relative}
   </div>
 </div>
 
+<script>document.write('<script src="reol.js?v='+Date.now()+'"><\/script>')</script>
 <script>
 // ---------- Indstillinger ----------
 var CFG={user:'',key:'',rpm:33.333,bridge:''};
@@ -614,6 +615,8 @@ function checkTidal(){
   return bridgeFetch('/tidal/status').then(function(j){TIDAL_OK=!!j.ok;}).catch(function(){TIDAL_OK=false;});
 }
 
+function openReol(){if(!BRIDGE){openBrowse();return;}Reol.init({base:BRIDGE});Reol.open();}
+
 // ---------- Demo ----------
 function demo(){
   closeSettings();demoMode=true;MODE='demo';clearTimeout(pollTimer);lastKey='demo';
@@ -652,10 +655,10 @@ keepAwake();
     fetch(SELF+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():null;}).then(function(t){
       if(!t||t.length<800)return;var ny=h32(t),gemt=null;
       try{gemt=localStorage.getItem('vinyl-ver');}catch(e){}
-      if(ny!==gemt){try{localStorage.setItem('vinyl-ver',ny);}catch(e){}if(location.search.indexOf('v='+ny)===-1){var p=new URLSearchParams(location.search);p.set('v',ny);location.replace(SELF+'?'+p.toString());}}
+      if(ny!==gemt){if(window.Reol&&Reol.isOpen()&&!document.hidden){setTimeout(tjek,60000);return;}try{localStorage.setItem('vinyl-ver',ny);}catch(e){}if(location.search.indexOf('v='+ny)===-1){var p=new URLSearchParams(location.search);p.set('v',ny);location.replace(SELF+'?'+p.toString());}}
     }).catch(function(){});
   }
-  setTimeout(tjek,2500);setInterval(tjek,600000);
+  setTimeout(tjek,2500);setInterval(tjek,120000);document.addEventListener('visibilitychange',function(){if(!document.hidden)tjek();});
 })();
 
 start();

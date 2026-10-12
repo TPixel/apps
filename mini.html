@@ -58,6 +58,10 @@ body.plate{padding:28px 10px 10px}
 .disc .hole{position:absolute;left:50%;top:50%;width:3%;height:3%;transform:translate(-50%,-50%);border-radius:50%;background:#0d0d11;box-shadow:0 0 0 1px #2b2b30}
 .sheen{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(from -20deg,transparent 0deg,rgba(255,255,255,.07) 22deg,transparent 48deg,transparent 178deg,rgba(255,255,255,.05) 205deg,transparent 232deg)}
 .wrapDisc{position:relative}
+.parm{position:absolute;z-index:3;top:-4%;right:-16%;width:30%;height:92%;overflow:visible;pointer-events:none;display:none}
+body.plate .parm{display:block}
+.parm .swing{transform-origin:78px 60px;transform:rotate(-6deg);transition:transform 1.4s cubic-bezier(.4,.1,.2,1)}
+body.playing .parm .swing{transform:rotate(20deg)}
 .pt{font-size:clamp(13px,5vw,22px);text-align:center;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pa{font-size:clamp(11px,3.4vw,15px);color:#b4b4be;text-align:center;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-6px}
 /* Lyst træ + farvet vinyl i pladevisning */
@@ -78,13 +82,15 @@ body.plate .disc .lbl{width:40%;height:40%}
 body.plate .disc .hole{background:#c9a06a}
 .disc{--v1:#17171a;--v2:#131316;--v3:#1d1d21}
 .foot{position:fixed;right:10px;bottom:4px;font-size:9px;color:#44444e;font-weight:normal}
+.rl-top{padding-top:32px!important}.rl-x,.rl-nowb{top:30px!important}.rl-det{padding-top:70px!important}.rl-det .rl-back{top:30px!important}
 </style>
 </head>
 <body>
 <div class="bg" id="bg"></div>
+<button class="mode" id="reolBtn" style="right:44px" onclick="openReol()" title="Pladereol (R)">▥</button>
 <button class="mode" id="modeBtn" onclick="toggleMode()" title="Skift visning (P)">◉</button>
 <div id="plate">
-  <div class="wrapDisc"><div class="disc" id="disc" onclick="cmd('toggle')" title="Afspil/pause"><div class="lbl" id="lbl"></div><div class="hole"></div></div><div class="sheen"></div></div>
+  <div class="wrapDisc"><svg class="parm" viewBox="0 0 100 260"><g class="swing"><rect x="60" y="8" width="36" height="22" rx="4" fill="#3a2a1a"/><circle cx="78" cy="60" r="11" fill="#2b2b2f" stroke="#777" stroke-width="2"/><path d="M78 60 L74 200 L52 232" fill="none" stroke="#e4e4e8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><g transform="translate(52 232) rotate(32)"><rect x="-9" y="-6" width="18" height="26" rx="3" fill="#222"/></g></g></svg><div class="disc" id="disc" onclick="cmd('toggle')" title="Afspil/pause"><div class="lbl" id="lbl"></div><div class="hole"></div></div><div class="sheen"></div></div>
   <div class="pt" id="pt">Vinyl</div>
   <div class="pa" id="pa"></div>
 </div>
@@ -110,6 +116,7 @@ body.plate .disc .hole{background:#c9a06a}
 <div class="strip" id="strip"></div>
 <div class="foot" id="foot"></div>
 
+<script>document.write('<script src="reol.js?v='+Date.now()+'"><\/script>')</script>
 <script>
 var B=location.protocol==='http:'?location.origin:'http://localhost:8787';
 var S={},W={pos:0,len:0,ts:0,playing:false},volDrag=false,TAB='recent',Q='',ITEMS=[],cache={},TIDAL=false,artistNow='',req=0;
@@ -126,7 +133,7 @@ function poll(){
   get('/wiim/status').then(function(s){
     S=s;W={pos:s.pos||0,len:s.len||0,ts:Date.now(),playing:!!s.playing};
     $('t').textContent=s.title||'Stille';$('a').textContent=s.artist||'';$('al').textContent=s.album||'';
-    $('pp').textContent=s.playing?'❚❚':'▶';$('pt').textContent=s.title||'Stille';$('pa').textContent=[s.artist,s.album].filter(Boolean).join(' · ');
+    $('pp').textContent=s.playing?'❚❚':'▶';document.body.classList.toggle('playing',!!s.playing);$('pt').textContent=s.title||'Stille';$('pa').textContent=[s.artist,s.album].filter(Boolean).join(' · ');
     if(!volDrag&&typeof s.vol==='number'&&!isNaN(s.vol))$('vol').value=s.vol;
     if(s.art!==lastArt){lastArt=s.art;$('cov').style.backgroundImage=s.art?'url("'+s.art+'")':'none';$('cov').textContent=s.art?'':'♪';
       $('bg').style.backgroundImage=s.art?'url("'+s.art+'")':'none';$('lbl').style.backgroundImage=s.art?'url("'+s.art+'")':'none';vinylColor(s.art,(s.album||'')+'|'+(s.artist||''));$('bg').classList.toggle('on',!!s.art);}
@@ -230,8 +237,10 @@ document.addEventListener('keydown',function(e){
   if(document.activeElement&&document.activeElement.id==='q')return;
   if(e.key===' '){e.preventDefault();cmd('toggle');}
   else if(e.key==='p'||e.key==='P')toggleMode();
+  else if(e.key==='r'||e.key==='R')openReol();
   else if(e.key==='ArrowRight')cmd('next');else if(e.key==='ArrowLeft')cmd('prev');
 });
+function openReol(){Reol.init({base:B});Reol.open();}
 applyMode();
 get('/tidal/status').then(function(j){TIDAL=!!j.ok;}).catch(function(){}).finally(function(){tabs();poll();});
 </script>

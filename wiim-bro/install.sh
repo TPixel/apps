@@ -1,9 +1,9 @@
 #!/bin/bash
 # Installerer WiiM-bro som en launchd-agent på Mac'en, så den starter selv ved login og genstarter hvis den dør.
-# Brug:  ./install.sh 192.168.1.50        (IP'en på WiiM Ultra — ses i WiiM Home → enhed → indstillinger)
+# Brug:  ./install.sh [WiiM-navn eller IP]   (standard: DITZEL-Ultra.local — enhedens navn med bindestreg + .local)
 set -e
 WIIM_IP="$1"
-if [ -z "$WIIM_IP" ]; then echo "Brug: ./install.sh <WiiM-IP>"; exit 1; fi
+WIIM_IP="${WIIM_IP:-DITZEL-Ultra.local}"   # navn (mDNS) frem for IP — så overlever den nyt wifi/router
 if ! command -v node >/dev/null; then echo "Node.js mangler. Installér fx med: brew install node"; exit 1; fi
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
