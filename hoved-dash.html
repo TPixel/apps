@@ -87,6 +87,9 @@ h1{font-size:26px;margin-top:2px}
 const API = 'https://lightcrew-api.thomas-5c5.workers.dev';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const FUNK = { send: '📤 send', slaaop: '🔎 slå op', koeb: '🛒 køb', undersoeg: '🔬 undersøg', projekt: '🛠 projekt' };
+// escaped tekst → klikbare links
+const linkify = t => t.replace(/(https?:\/\/[^\s<&]+)/g, '<a href="$1" target="_blank" style="color:#8ab4f8" onclick="event.stopPropagation()">$1</a>');
 const idag = new Date().toISOString().slice(0, 10);
 let CFG = { kategorier: [], handlinger: [], projekter: [] }, ROWS = [];
 const F = { status: 'aaben', kategori: '', projekt: '', q: '', view: 'kategori' };
@@ -145,8 +148,9 @@ function card(r) {
   return `<div class="card p${r.prioritet}${over ? ' over' : ''}${r.status === 'udfoert' ? ' done' : ''}" onclick="openSheet(${r.id})">
     <div class="t"><span>${esc(r.titel || r.tekst)}</span>${r.status === 'aaben' ? `<button class="ok" onclick="event.stopPropagation();udfoert(${r.id})" title="Udført">✓</button>` : ''}</div>
     ${r.titel && r.titel !== r.tekst && !r.tekst.startsWith(r.titel) ? `<div class="raw">${esc(r.tekst)}</div>` : ''}
-    ${r.resultat ? `<div class="raw" style="color:#8fd9a5;margin-top:5px">🤖 ${esc(r.resultat).slice(0, 220)}${r.resultat.length > 220 ? '…' : ''}</div>` : ''}
-    <div class="m">${r.handling ? `<span class="b">${esc(r.handling)}</span>` : ''}${r.projekt && F.view !== 'projekt' ? `<span class="b">${esc(r.projekt)}</span>` : ''}${r.kategori && F.view !== 'kategori' ? `<span class="b">${esc(r.kategori)}</span>` : ''}${r.deadline ? `<span class="b d${over ? ' over' : ''}">📅 ${esc(r.deadline)}</span>` : ''}${r.prioritet === 1 ? '<span class="b" style="color:#f87171">NU</span>' : ''}${r.kode ? '<span class="b" style="color:#8ab4f8">kode</span>' : ''}${r.behandlet ? '<span class="b ai">behandlet</span>' : ''}${r.github_issue ? `<a class="b" style="color:#8ab4f8;text-decoration:none" href="${esc(r.github_issue.replace('#lukket',''))}" target="_blank" onclick="event.stopPropagation()">🐙 issue${r.github_issue.endsWith('#lukket') ? ' ✓' : ''}</a>` : ''}<span class="b ${r.sorteret_af === 'ai' || r.sorteret_af === 'claude' ? 'ai' : r.sorteret_af === 'manuel' ? 'man' : 'reg'}">${r.sorteret_af || 'usorteret'}</span><span>${esc(r.kilde)} · ${esc((r.oprettet || '').slice(5, 16))}</span></div>
+    ${r.resultat ? `<div class="raw" style="color:#8fd9a5;margin-top:5px">🤖 ${linkify(esc(r.resultat).slice(0, 220))}${r.resultat.length > 220 ? '…' : ''}</div>` : ''}
+    ${r.rapport ? `<a class="b" style="display:inline-block;margin-top:6px;padding:5px 10px;background:#1a2333;color:#8ab4f8;font-size:12px;text-decoration:none" href="${esc(r.rapport)}" target="_blank" onclick="event.stopPropagation()">📄 Åbn rapport</a>` : ''}
+    <div class="m">${r.handling ? `<span class="b">${esc(r.handling)}</span>` : ''}${r.projekt && F.view !== 'projekt' ? `<span class="b">${esc(r.projekt)}</span>` : ''}${r.kategori && F.view !== 'kategori' ? `<span class="b">${esc(r.kategori)}</span>` : ''}${r.deadline ? `<span class="b d${over ? ' over' : ''}">📅 ${esc(r.deadline)}</span>` : ''}${r.prioritet === 1 ? '<span class="b" style="color:#f87171">NU</span>' : ''}${r.funktion ? `<span class="b" style="color:#E8820A">${FUNK[r.funktion] || esc(r.funktion)}</span>` : ''}${r.liste ? `<span class="b" style="color:#4ade80">📲 ${esc(r.liste)}</span>` : ''}${r.kode ? '<span class="b" style="color:#8ab4f8">kode</span>' : ''}${r.behandlet ? '<span class="b ai">behandlet</span>' : ''}${r.github_issue ? `<a class="b" style="color:#8ab4f8;text-decoration:none" href="${esc(r.github_issue.replace('#lukket',''))}" target="_blank" onclick="event.stopPropagation()">🐙 issue${r.github_issue.endsWith('#lukket') ? ' ✓' : ''}</a>` : ''}<span class="b ${r.sorteret_af === 'ai' || r.sorteret_af === 'claude' ? 'ai' : r.sorteret_af === 'manuel' ? 'man' : 'reg'}">${r.sorteret_af || 'usorteret'}</span><span>${esc(r.kilde)} · ${esc((r.oprettet || '').slice(5, 16))}</span></div>
   </div>`;
 }
 function setF(k, v) { F[k] = v; render(); }
@@ -183,7 +187,8 @@ function openSheet(id) {
   const projs = [...new Set([...CFG.projekter, ...ROWS.map(x => x.projekt)])].filter(Boolean);
   $('sheet').innerHTML = `<h3>#${r.id} · ${esc(r.kategori || 'Usorteret')}</h3>
     ${r.begrundelse ? `<div class="why">🤖 ${esc(r.begrundelse)}</div>` : ''}
-    ${r.resultat ? `<div class="why" style="white-space:pre-wrap"><b>Claude:</b> ${esc(r.resultat)}</div>` : ''}
+    ${r.resultat ? `<div class="why" style="white-space:pre-wrap"><b>Claude:</b> ${linkify(esc(r.resultat))}</div>` : ''}
+    ${r.rapport ? `<div class="why" style="background:#1a2333"><a style="color:#8ab4f8" href="${esc(r.rapport)}" target="_blank">📄 Åbn rapport</a></div>` : ''}
     <div class="field"><label>Titel</label><input id="e_titel" value="${esc(r.titel)}"></div>
     <div class="field"><label>Original tekst</label><textarea id="e_tekst">${esc(r.tekst)}</textarea></div>
     <div class="row"><div class="field"><label>Kategori</label><select id="e_kategori">${opts(CFG.kategorier, r.kategori)}</select></div>

@@ -89,7 +89,7 @@ const txt = $('txt'), toast = $('toast');
 
 // ---- Chips (grov-sortering) ----
 const HANDLING = ['#betal','#bestil','#hent','#ring','#køb','#tjek','#skriv','#undersøg'];
-const KAT = ['#nu','#idé','#projekt','#butik','#kalender','#personlig','#timeapp','#dmx','#lightcrew','#hjem','#familie','#bil','#engang'];
+const KAT = ['#nu','#morgen','#indkøb','#slåop','#idé','#projekt','#butik','#kalender','#personlig','#timeapp','#dmx','#lightcrew','#hjem','#familie','#bil','#tvl','#master','#engang'];
 function chip(t, parent) {
   const c = document.createElement('div'); c.className = 'chip' + (t === '#nu' ? ' p1' : ''); c.textContent = t;
   c.onclick = () => { toggleTag(t); syncChips(); txt.focus(); };
