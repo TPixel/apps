@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PWM LED-decoder til dæmperen — Hoved-rapport</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,Helvetica,Arial,sans-serif;background:#0C0C12;color:#eee;line-height:1.55;padding:20px 16px calc(40px + env(safe-area-inset-bottom));max-width:760px;margin:0 auto}
+.logo{font-size:12px;color:#555;letter-spacing:1px;text-transform:uppercase;font-weight:bold}
+h1{font-size:26px;margin:4px 0 2px;color:#fff}
+.meta{font-size:12px;color:#777;margin-bottom:18px}
+.meta a{color:#E8820A;text-decoration:none}
+h2{font-size:16px;color:#E8820A;margin:26px 0 8px;text-transform:uppercase;letter-spacing:.5px}
+p{margin:0 0 10px;color:#ccc}
+ul,ol{margin:0 0 12px 20px;color:#ccc}
+li{margin-bottom:6px}
+a{color:#8ab4f8}
+.tldr{background:#16321f;border-left:4px solid #4ade80;border-radius:10px;padding:12px 14px;margin:14px 0;color:#d9f5e3;font-size:15px}
+.kort{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:12px 0}
+.k{background:#1a1a24;border-radius:14px;padding:12px;border-top:3px solid #E8820A}
+.k.best{border-top-color:#4ade80}
+.k img{width:100%;height:130px;object-fit:contain;background:#fff;border-radius:8px;margin-bottom:8px}
+.k .n{font-weight:bold;font-size:14px;color:#fff}
+.k .pris{color:#4ade80;font-weight:bold;font-size:15px;margin:4px 0}
+.k .d{font-size:12px;color:#999}
+.k a{display:inline-block;margin-top:8px;font-size:13px}
+.anbefaling{background:#3a2a12;border-left:4px solid #E8820A;border-radius:10px;padding:12px 14px;margin:14px 0;color:#ffd9a8}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #26263a;color:#ccc}
+th{color:#888;font-size:11px;text-transform:uppercase}
+td b{color:#fff}
+.ok{color:#4ade80}.nej{color:#f87171}
+.kilder{font-size:12px;color:#777;margin-top:26px;border-top:1px solid #26263a;padding-top:12px}
+.kilder a{color:#6a8ec9}
+</style>
+</head>
+<body>
+<div class="logo">Ditzel &amp; Co · Hoved</div>
+<h1>PWM LED-decoder til dæmperen</h1>
+<div class="meta">🔬 Undersøgelse · 28. oktober 2026 · Hoved #60 · DMX-dæmper (WIPPER) · <a href="../hoved-dash.html">← dashboard</a></div>
+
+<div class="tldr">💡 <b>Kort sagt:</b> Køb en <b>Sunricher SR-2108B-M5</b> (~80 € på eBay.de) — frit indstillelig 500 Hz–35 kHz PWM, gamma-kurve 0,1–9,9, 16-bit og RDM. Til én enkelt tungsten-kanal er <b>Skydance D1-L</b> (~20 €) et glimrende budget-valg med 32 kHz.</div>
+
+<h2>Hvorfor</h2>
+<p>Skydance S1-D1 (triac) har fast blød optoning i firmwaren — instant on/off er umuligt. Løsningen er PWM-decoder + lavvolt-LED: ved høj PWM-frekvens snapper lyset øjeblikkeligt, og WIPPER'ens <code>FADE_TIME</code> styrer al fade. Krav: DMX512 ind, CV 12/24V ud, ≥2 kHz (gerne 25–35 kHz for high-speed-optagelse), indstillelig adresse og helst indstillelig kurve.</p>
+
+<h2>Muligheder</h2>
+<div class="kort">
+  <div class="k best"><img src="https://www.superlightingled.com/images/led-strip-light-image/SR-2108B-M5-DC-5CH-RDM-DMX512-RGBW-LED-Controller-Decoder.jpg" alt="Sunricher SR-2108B-M5" loading="lazy"><div class="n">⭐ Sunricher SR-2108B-M5</div><div class="pris">~80 € / ~600 kr</div><div class="d">5 kanaler · <b>500 Hz–35 kHz frit indstillelig</b> · gamma 0,1–9,9 · 16-bit · RDM · 8 A/kanal</div><a href="https://www.ebay.de/itm/389078329523" target="_blank">eBay.de (Lemona) →</a> <a href="https://www.ultraleds.co.uk" target="_blank">ultraleds.co.uk →</a></div>
+  <div class="k"><img src="https://www.superlightingled.com/images/SKYDANCE/D1-L.png" alt="Skydance D1-L" loading="lazy"><div class="n">Skydance D1-L</div><div class="pris">~20 € / ~150 kr</div><div class="d">1 kanal · 250 Hz–<b>32 kHz</b> (8 trin) · 15 A (8 A @16k, 6 A @32k) · lin/log · RDM · display</div><a href="https://www.ebay.de/itm/376379208047" target="_blank">eBay.de →</a></div>
+  <div class="k"><img src="https://www.superlightingled.com/images/SKYDANCE/D4-L.jpg" alt="Skydance D4-L" loading="lazy"><div class="n">Skydance D4-L</div><div class="pris">~18 € / ~135 kr</div><div class="d">4 kanaler · 250 Hz–<b>16 kHz</b> (manual; 32k-påstande er ikke bekræftet) · 4×5 A · lin/log · RDM</div><a href="https://www.ebay.de/itm/326147045418" target="_blank">eBay.de →</a></div>
+  <div class="k"><div class="n">AUTLED LC-035-004</div><div class="pris">pris på forespørgsel</div><div class="d">4 kanaler · <b>500 Hz–30 kHz</b> i 1 kHz-trin · gamma 0,1–9,9 · RDM · østrigsk/EU</div><a href="https://www.autled.com/daten/datenblatt/Datenblatt_LED-DMX-RDM-Decoder-RGBW-4CH_v1.pdf" target="_blank">Datasheet →</a></div>
+  <div class="k"><img src="https://static4.unilight.com.pl/hpeciai/9e6b70d15dbccb274b4d36cb543ae00b/eng_pm_SUNRICHER-SR-2102B-WP-Waterproof-DMX512-Decoder-IP67-4-Channel-CV-CC-with-Digital-Display-RDM-241434_1.png" alt="Sunricher SR-2102B-WP" loading="lazy"><div class="n">Sunricher SR-2102B(WP)</div><div class="pris">~50–70 €</div><div class="d">4 kanaler · <b>fast 2 kHz</b> · IP67 (udendørs!) · gamma 0,1–9,9 · RDM</div><a href="https://unilight.com.pl" target="_blank">unilight.com.pl →</a></div>
+  <div class="k"><img src="https://masterlight.ee/wp-content/uploads/2022/07/eldoled-lineardrive-100-a-4ch-4-out-100w-dmx-dali-1-1.jpg" alt="eldoLED LINEARdrive 100/A" loading="lazy"><div class="n">eldoLED LINEARdrive 100/A</div><div class="pris">~244 € / ~1.820 kr</div><div class="d">4 kanaler · ~2,5 kHz hybrid-dimming (0,1 %) · <b>230 V ind, PSU indbygget</b> · proff/CE · 5 års garanti</div><a href="https://masterlight.ee" target="_blank">masterlight.ee →</a> <a href="https://dk.rs-online.com" target="_blank">RS DK →</a></div>
+</div>
+
+<h2>Sammenligning</h2>
+<table>
+<tr><th>Model</th><th>Kanaler</th><th>Maks PWM</th><th>≥2 kHz</th><th>High-speed (≥25 kHz)</th><th>Kurve</th><th>Pris</th></tr>
+<tr><td><b>SR-2108B-M5</b></td><td>5</td><td>35 kHz (frit)</td><td class="ok">✓</td><td class="ok">✓</td><td>gamma 0,1–9,9</td><td>~80 €</td></tr>
+<tr><td><b>Skydance D1-L</b></td><td>1</td><td>32 kHz</td><td class="ok">✓</td><td class="ok">✓ (6 A)</td><td>lin/log</td><td>~20 €</td></tr>
+<tr><td>Skydance D4-L</td><td>4</td><td>16 kHz</td><td class="ok">✓</td><td class="nej">÷</td><td>lin/log</td><td>~18 €</td></tr>
+<tr><td>AUTLED LC-035-004</td><td>4</td><td>30 kHz</td><td class="ok">✓</td><td class="ok">✓</td><td>gamma 0,1–9,9</td><td>forespørgsel</td></tr>
+<tr><td>SR-2102B(WP)</td><td>4</td><td>2 kHz (fast)</td><td class="ok">✓</td><td class="nej">÷</td><td>gamma 0,1–9,9</td><td>~50–70 €</td></tr>
+<tr><td>eldoLED 100/A</td><td>4</td><td>~2,5 kHz</td><td class="ok">✓</td><td class="nej">÷</td><td>hybrid 0,1 %</td><td>~244 €</td></tr>
+</table>
+
+<div class="anbefaling">⭐ <b>Anbefaling:</b> <b>SR-2108B-M5</b> som reference-decoder til WIPPER-testbænken — frit indstillelig frekvens gør den perfekt til at finde den rigtige balance mellem flimmerfrihed og strøm, og gamma-kurven kan matche tungsten-respons. Suppler med en <b>D1-L</b> (~20 €) som billig én-kanals enhed til "én pære"-opsætningen. eldoLED er proff-referencen (CE, indbygget PSU) hvis produktet skal den vej senere — men toppet ved 2,5 kHz, så kun til normal framerate. Husk strøm-derating på D1-L over 8 kHz.</div>
+
+<p style="font-size:12px;color:#888">Forbehold: eBay-priser svinger; D4-L's "32 kHz" hos enkelte forhandlere modsiges af producentens manual (16 kHz). Datasheets (D1-L, D4-L, SR-2108B) ligger gemt lokalt i projektets research-mappe.</p>
+
+<div class="kilder"><b>Kilder:</b> <a href="https://signliteled.com/wp-content/uploads/2025/08/D1-L-Datasheet.pdf" target="_blank">D1-L datasheet</a> · <a href="https://ledyilighting.com/wp-content/uploads/2022/04/D4-L.pdf" target="_blank">D4-L datasheet</a> · <a href="https://www.autled.com/daten/datenblatt/Datenblatt_LED-DMX-RDM-Decoder-RGBW-4CH_v1.pdf" target="_blank">AUTLED datasheet</a> · <a href="https://unilight.com.pl" target="_blank">unilight.com.pl</a> · <a href="https://masterlight.ee" target="_blank">masterlight.ee</a> · <a href="https://store.waveformlighting.com" target="_blank">Waveform (US-alternativ)</a></div>
+</body>
+</html>

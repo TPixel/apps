@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{TITEL}} — Hoved-rapport</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,Helvetica,Arial,sans-serif;background:#0C0C12;color:#eee;line-height:1.55;padding:20px 16px calc(40px + env(safe-area-inset-bottom));max-width:760px;margin:0 auto}
+.logo{font-size:12px;color:#555;letter-spacing:1px;text-transform:uppercase;font-weight:bold}
+h1{font-size:26px;margin:4px 0 2px;color:#fff}
+.meta{font-size:12px;color:#777;margin-bottom:18px}
+.meta a{color:#E8820A;text-decoration:none}
+h2{font-size:16px;color:#E8820A;margin:26px 0 8px;text-transform:uppercase;letter-spacing:.5px}
+p{margin:0 0 10px;color:#ccc}
+ul,ol{margin:0 0 12px 20px;color:#ccc}
+li{margin-bottom:6px}
+a{color:#8ab4f8}
+.tldr{background:#16321f;border-left:4px solid #4ade80;border-radius:10px;padding:12px 14px;margin:14px 0;color:#d9f5e3;font-size:15px}
+.kort{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:12px 0}
+.k{background:#1a1a24;border-radius:14px;padding:12px;border-top:3px solid #E8820A}
+.k img{width:100%;height:130px;object-fit:contain;background:#fff;border-radius:8px;margin-bottom:8px}
+.k .n{font-weight:bold;font-size:14px;color:#fff}
+.k .pris{color:#4ade80;font-weight:bold;font-size:15px;margin:4px 0}
+.k .d{font-size:12px;color:#999}
+.k a{display:inline-block;margin-top:8px;font-size:13px}
+.anbefaling{background:#3a2a12;border-left:4px solid #E8820A;border-radius:10px;padding:12px 14px;margin:14px 0;color:#ffd9a8}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #26263a;color:#ccc}
+th{color:#888;font-size:11px;text-transform:uppercase}
+.kilder{font-size:12px;color:#777;margin-top:26px;border-top:1px solid #26263a;padding-top:12px}
+.kilder a{color:#6a8ec9}
+img.foto{max-width:100%;border-radius:12px;margin:8px 0}
+</style>
+</head>
+<body>
+<div class="logo">Ditzel &amp; Co · Hoved</div>
+<h1>{{TITEL}}</h1>
+<div class="meta">🔬 Undersøgelse · {{DATO}} · Hoved #{{ID}} · <a href="../hoved-dash.html">← dashboard</a></div>
+
+<div class="tldr">💡 <b>Kort sagt:</b> {{TLDR}}</div>
+
+<!-- SEKTIONER:
+  <h2>Overblik</h2><p>…</p>
+  <h2>Muligheder</h2>
+  <div class="kort">
+    <div class="k"><img src="…produktbillede-url…" alt=""><div class="n">Navn</div><div class="pris">1.234 kr</div><div class="d">kort hvorfor</div><a href="…" target="_blank">Se hos forhandler →</a></div>
+  </div>
+  <h2>Sammenligning</h2><table>…</table>
+  <div class="anbefaling">⭐ <b>Anbefaling:</b> …</div>
+-->
+{{INDHOLD}}
+
+<div class="kilder"><b>Kilder:</b> {{KILDER}}</div>
+</body>
+</html>
