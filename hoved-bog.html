@@ -10,17 +10,17 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --papir:#15151f; --linje:#ffffff0e; --margen:#E8820A66;
-  --blaek:#e8e8f0; --svag:#9a9aa8; --orange:#E8820A;
+  --papir:#faf6ec; --linje:#00000012; --margen:#E8820A55;
+  --blaek:#2a2a30; --svag:#8d8679; --orange:#E8820A;
 }
 html,body{height:100%}
 body{
   font-family:-apple-system,Helvetica,Arial,sans-serif;
-  background:radial-gradient(1200px 700px at 50% -10%, #1a1a28 0%, #0C0C12 60%);
+  background:radial-gradient(1200px 700px at 50% -10%, #efe9dc 0%, #ddd6c7 60%);
   color:var(--blaek); display:flex; flex-direction:column; align-items:center;
   padding:18px 46px 28px 14px; min-height:100%;
 }
-.top{font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;font-weight:bold;margin-bottom:10px}
+.top{font-size:11px;color:#a89f8e;letter-spacing:2px;text-transform:uppercase;font-weight:bold;margin-bottom:10px}
 
 /* ---------- BOGEN ---------- */
 .bogholder{position:relative;width:100%;max-width:430px;flex:1;display:flex}
@@ -28,18 +28,18 @@ body{
   position:relative; flex:1; display:flex; flex-direction:column;
   background:var(--papir);
   border-radius:10px 20px 20px 10px;
-  box-shadow:0 24px 60px #000c, 0 4px 14px #0009, inset -1px 0 0 #ffffff08;
+  box-shadow:0 20px 50px #00000038, 0 3px 10px #00000022, inset -1px 0 0 #00000008;
   min-height:620px; overflow:hidden;
 }
 /* ryg + syning */
 .bog::before{
   content:""; position:absolute; left:0; top:0; bottom:0; width:22px;
-  background:linear-gradient(90deg,#08080d, #10101a 60%, #1c1c2a 100%);
-  border-right:1px solid #00000080; z-index:3;
+  background:linear-gradient(90deg,#c9c0ad, #ddd4c1 60%, #ece5d4 100%);
+  border-right:1px solid #00000018; z-index:3;
 }
 .bog::after{
   content:""; position:absolute; left:10px; top:14px; bottom:14px; width:2px;
-  background:repeating-linear-gradient(#0000 0 10px, #ffffff2e 10px 16px);
+  background:repeating-linear-gradient(#0000 0 10px, #00000030 10px 16px);
   border-radius:2px; z-index:4;
 }
 /* papirlinjer + margenstreg */
@@ -51,8 +51,8 @@ body{
     repeating-linear-gradient(var(--papir) 0 27px, var(--linje) 27px 28px);
 }
 .sidefod{
-  text-align:center; font-family:'Caveat',cursive; font-size:17px; color:#55556a;
-  padding:6px 0 10px; letter-spacing:2px; background:var(--papir); border-top:1px solid #ffffff08;
+  text-align:center; font-family:'Caveat',cursive; font-size:17px; color:#b4ab99;
+  padding:6px 0 10px; letter-spacing:2px; background:var(--papir); border-top:1px solid #00000010;
 }
 
 /* ---------- INDEKS-FANER ---------- */
@@ -62,22 +62,22 @@ body{
   padding:11px 7px 11px 8px; min-height:74px;
   border-radius:0 9px 9px 0; border:none; cursor:pointer;
   font-family:Tahoma,sans-serif; font-weight:bold; font-size:11px; letter-spacing:.6px;
-  color:#0e0e14; box-shadow:2px 3px 8px #0008;
+  color:#2a2a30; box-shadow:2px 3px 8px #00000030;
   transform:translateX(-4px); transition:transform .18s ease, filter .18s ease;
-  filter:brightness(.72) saturate(.85);
+  filter:brightness(.92) saturate(.55) opacity(.85);
   display:flex; align-items:center; gap:4px;
 }
 .fane .em{font-size:13px}
 .fane.aktiv{transform:translateX(2px); filter:none}
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f4c04e}
-.fane:nth-child(3){background:#4ade80}
-.fane:nth-child(4){background:#8ab4f8}
-.fane:nth-child(5){background:#b7b7c6}
-.fane .antal{font-size:10px;background:#0e0e14;color:#fff;border-radius:8px;padding:3px 2px;margin-top:2px}
+.fane:nth-child(3){background:#6fd793}
+.fane:nth-child(4){background:#9dbff5}
+.fane:nth-child(5){background:#cfccc2}
+.fane .antal{font-size:10px;background:#2a2a30;color:#fff;border-radius:8px;padding:3px 2px;margin-top:2px}
 
 /* ---------- SIDE-INDHOLD ---------- */
-h1.rubrik{font-family:'Caveat',cursive;font-size:34px;font-weight:700;color:#fff;line-height:1}
+h1.rubrik{font-family:'Caveat',cursive;font-size:34px;font-weight:700;color:#1d1d22;line-height:1}
 .dato{font-family:'Caveat',cursive;font-size:19px;color:var(--orange);margin-bottom:14px}
 .sektion{display:none}
 .sektion.aktiv{display:block}
@@ -87,44 +87,52 @@ textarea{
   width:100%; min-height:112px; background:transparent; border:none; resize:none; outline:none;
   color:var(--blaek); font-family:'Caveat',cursive; font-size:24px; line-height:28px; caret-color:var(--orange);
 }
-textarea::placeholder{color:#50505f}
+textarea::placeholder{color:#b8b0a0}
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 14px}
 .chip{
-  font-size:12px;font-weight:bold;color:#d9d9e4;background:#ffffff10;border:1px solid #ffffff1c;
+  font-size:12px;font-weight:bold;color:#55503f;background:#00000008;border:1px solid #00000018;
   border-radius:20px;padding:6px 11px;cursor:pointer;user-select:none
 }
-.chip.valgt{background:var(--orange);color:#111;border-color:var(--orange)}
+.chip.valgt{background:var(--orange);color:#fff;border-color:var(--orange)}
 .knapper{display:flex;gap:10px;align-items:center}
 .gem{
-  flex:1;background:var(--orange);color:#111;font-family:Tahoma,sans-serif;font-weight:bold;
-  font-size:15px;border:none;border-radius:12px;padding:14px;cursor:pointer
+  flex:1;background:var(--orange);color:#fff;font-family:Tahoma,sans-serif;font-weight:bold;
+  font-size:15px;border:none;border-radius:12px;padding:14px;cursor:pointer;box-shadow:0 3px 8px #e8820a44
 }
 .gem:disabled{opacity:.5}
 .mik{
-  width:50px;height:50px;border-radius:50%;border:1px solid #ffffff22;background:#ffffff10;
-  font-size:20px;cursor:pointer;color:#fff
+  width:50px;height:50px;border-radius:50%;border:1px solid #00000020;background:#ffffffa0;
+  font-size:20px;cursor:pointer;color:#2a2a30
 }
 .mik.lytter{background:#f87171;border-color:#f87171;animation:puls 1.1s infinite}
 @keyframes puls{50%{box-shadow:0 0 0 10px #f8717133}}
 .kvittering{
-  margin-top:14px;font-size:13px;color:#d9f5e3;background:#16321f;border-left:3px solid #4ade80;
+  margin-top:14px;font-size:13px;color:#1c5c2e;background:#e2f3e4;border-left:3px solid #35b85e;
   border-radius:8px;padding:10px 12px;display:none
 }
 
-/* notelister */
-.note{padding:9px 0 10px;border-bottom:1px dashed #ffffff14}
-.note .t{font-size:14.5px;font-weight:600;color:#fff}
-.note .t .em{margin-right:6px}
-.note .m{font-size:11.5px;color:var(--svag);margin-top:2px}
-.note .r{font-size:12.5px;color:#c9c9d6;margin-top:4px}
-.note .r a{color:#8ab4f8}
-.note .rapportknap{
-  display:inline-block;margin-top:6px;font-size:12px;font-weight:bold;color:#111;
-  background:#4ade80;border-radius:8px;padding:5px 10px;text-decoration:none
+/* ---------- NOTER: kun overskrifter, fold ud ved klik ---------- */
+.note{border-bottom:1px dashed #00000018}
+.nt{
+  display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
+  padding:10px 0; min-height:28px;
 }
-.note .issueknap{display:inline-block;margin-top:6px;font-size:12px;font-weight:bold;color:#111;background:#8ab4f8;border-radius:8px;padding:5px 10px;text-decoration:none}
-.tom{font-family:'Caveat',cursive;font-size:22px;color:#55556a;margin-top:18px}
-.hent{font-size:12px;color:#55556a}
+.nt .em{font-size:15px;flex:0 0 auto}
+.nt .ti{flex:1;font-size:14.5px;font-weight:600;color:#1d1d22;line-height:1.25}
+.nt .pil{flex:0 0 auto;font-size:11px;color:#b4ab99;transition:transform .15s ease}
+.note.aaben .nt .pil{transform:rotate(90deg)}
+.nb{display:none;padding:0 2px 12px 25px}
+.note.aaben .nb{display:block}
+.nb .m{font-size:11.5px;color:var(--svag);margin-bottom:5px}
+.nb .r{font-size:13px;color:#43433f;line-height:1.45}
+.nb .r a{color:#2563c4}
+.nb .rapportknap{
+  display:inline-block;margin-top:8px;font-size:12px;font-weight:bold;color:#fff;
+  background:#2aa35a;border-radius:8px;padding:6px 11px;text-decoration:none
+}
+.nb .issueknap{display:inline-block;margin-top:8px;font-size:12px;font-weight:bold;color:#fff;background:#4a7fd6;border-radius:8px;padding:6px 11px;text-decoration:none}
+.tom{font-family:'Caveat',cursive;font-size:22px;color:#b4ab99;margin-top:18px}
+.hent{font-size:12px;color:#b4ab99}
 
 @media(min-width:700px){ body{padding-top:34px} .bogholder{max-width:460px} }
 </style>
@@ -152,7 +160,7 @@ textarea::placeholder{color:#50505f}
       <!-- 📥 ÅBNE -->
       <div class="sektion" id="s-aabne">
         <h1 class="rubrik">Åbne noter</h1>
-        <div class="dato">det der venter</div>
+        <div class="dato">det der venter — klik for detaljer</div>
         <div id="l-aabne" class="hent">Henter…</div>
       </div>
 
@@ -220,17 +228,23 @@ document.getElementById('faner').addEventListener('click',e=>{
   if(s!=='skriv') hentNoter();
 });
 
+/* fold ud/ind ved klik på overskrift */
+document.getElementById('side').addEventListener('click',e=>{
+  const t=e.target.closest('.nt'); if(!t) return;
+  t.parentElement.classList.toggle('aaben');
+});
+
 function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
 function linkify(t){return esc(t).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">link</a>')}
-function noteHtml(r,visResultat=true){
+function noteHtml(r){
   const em=FUNK[r.funktion]||'📌';
   const meta=[r.projekt,r.liste?('📲 '+r.liste):null,r.kategori,(r.oprettet||'').slice(0,10)].filter(Boolean).join(' · ');
-  let h='<div class="note"><div class="t"><span class="em">'+em+'</span>'+esc(r.titel||r.tekst)+'</div>';
-  if(meta) h+='<div class="m">'+esc(meta)+'</div>';
-  if(visResultat&&r.resultat) h+='<div class="r">'+linkify(r.resultat)+'</div>';
-  if(r.rapport) h+='<a class="rapportknap" href="'+esc(r.rapport)+'" target="_blank">📄 Åbn rapport</a>';
-  if(r.github_issue) h+=' <a class="issueknap" href="'+esc(String(r.github_issue).split('#')[0])+'" target="_blank">🛠 Issue</a>';
-  return h+'</div>';
+  let krop='';
+  if(meta) krop+='<div class="m">'+esc(meta)+'</div>';
+  if(r.resultat) krop+='<div class="r">'+linkify(r.resultat)+'</div>';
+  if(r.rapport) krop+='<a class="rapportknap" href="'+esc(r.rapport)+'" target="_blank">📄 Åbn rapport</a>';
+  if(r.github_issue) krop+=' <a class="issueknap" href="'+esc(String(r.github_issue).split('#')[0])+'" target="_blank">🛠 Issue</a>';
+  return '<div class="note"><div class="nt"><span class="em">'+em+'</span><span class="ti">'+esc(r.titel||r.tekst)+'</span><span class="pil">▶</span></div><div class="nb">'+(krop||'<div class="m">ingen detaljer endnu</div>')+'</div></div>';
 }
 async function hentNoter(){
   if(alleNoter) return visLister();
