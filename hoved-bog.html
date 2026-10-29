@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hovedet — notesbog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --papir:#15151f; --linje:#ffffff0e; --margen:#E8820A66;
+  --blaek:#e8e8f0; --svag:#9a9aa8; --orange:#E8820A;
+}
+html,body{height:100%}
+body{
+  font-family:-apple-system,Helvetica,Arial,sans-serif;
+  background:radial-gradient(1200px 700px at 50% -10%, #1a1a28 0%, #0C0C12 60%);
+  color:var(--blaek); display:flex; flex-direction:column; align-items:center;
+  padding:18px 46px 28px 14px; min-height:100%;
+}
+.top{font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;font-weight:bold;margin-bottom:10px}
+
+/* ---------- BOGEN ---------- */
+.bogholder{position:relative;width:100%;max-width:430px;flex:1;display:flex}
+.bog{
+  position:relative; flex:1; display:flex; flex-direction:column;
+  background:var(--papir);
+  border-radius:10px 20px 20px 10px;
+  box-shadow:0 24px 60px #000c, 0 4px 14px #0009, inset -1px 0 0 #ffffff08;
+  min-height:620px; overflow:hidden;
+}
+/* ryg + syning */
+.bog::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:22px;
+  background:linear-gradient(90deg,#08080d, #10101a 60%, #1c1c2a 100%);
+  border-right:1px solid #00000080; z-index:3;
+}
+.bog::after{
+  content:""; position:absolute; left:10px; top:14px; bottom:14px; width:2px;
+  background:repeating-linear-gradient(#0000 0 10px, #ffffff2e 10px 16px);
+  border-radius:2px; z-index:4;
+}
+/* papirlinjer + margenstreg */
+.side{
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:20px 18px 26px 46px; position:relative;
+  background:
+    linear-gradient(90deg, transparent 37px, var(--margen) 37px, var(--margen) 38.5px, transparent 38.5px),
+    repeating-linear-gradient(var(--papir) 0 27px, var(--linje) 27px 28px);
+}
+.sidefod{
+  text-align:center; font-family:'Caveat',cursive; font-size:17px; color:#55556a;
+  padding:6px 0 10px; letter-spacing:2px; background:var(--papir); border-top:1px solid #ffffff08;
+}
+
+/* ---------- INDEKS-FANER ---------- */
+.faner{position:absolute; right:-36px; top:34px; display:flex; flex-direction:column; gap:9px; z-index:5}
+.fane{
+  writing-mode:vertical-rl; text-orientation:mixed;
+  padding:11px 7px 11px 8px; min-height:74px;
+  border-radius:0 9px 9px 0; border:none; cursor:pointer;
+  font-family:Tahoma,sans-serif; font-weight:bold; font-size:11px; letter-spacing:.6px;
+  color:#0e0e14; box-shadow:2px 3px 8px #0008;
+  transform:translateX(-4px); transition:transform .18s ease, filter .18s ease;
+  filter:brightness(.72) saturate(.85);
+  display:flex; align-items:center; gap:4px;
+}
+.fane .em{font-size:13px}
+.fane.aktiv{transform:translateX(2px); filter:none}
+.fane:nth-child(1){background:#E8820A}
+.fane:nth-child(2){background:#f4c04e}
+.fane:nth-child(3){background:#4ade80}
+.fane:nth-child(4){background:#8ab4f8}
+.fane:nth-child(5){background:#b7b7c6}
+.fane .antal{font-size:10px;background:#0e0e14;color:#fff;border-radius:8px;padding:3px 2px;margin-top:2px}
+
+/* ---------- SIDE-INDHOLD ---------- */
+h1.rubrik{font-family:'Caveat',cursive;font-size:34px;font-weight:700;color:#fff;line-height:1}
+.dato{font-family:'Caveat',cursive;font-size:19px;color:var(--orange);margin-bottom:14px}
+.sektion{display:none}
+.sektion.aktiv{display:block}
+
+/* Skriv-siden */
+textarea{
+  width:100%; min-height:112px; background:transparent; border:none; resize:none; outline:none;
+  color:var(--blaek); font-family:'Caveat',cursive; font-size:24px; line-height:28px; caret-color:var(--orange);
+}
+textarea::placeholder{color:#50505f}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 14px}
+.chip{
+  font-size:12px;font-weight:bold;color:#d9d9e4;background:#ffffff10;border:1px solid #ffffff1c;
+  border-radius:20px;padding:6px 11px;cursor:pointer;user-select:none
+}
+.chip.valgt{background:var(--orange);color:#111;border-color:var(--orange)}
+.knapper{display:flex;gap:10px;align-items:center}
+.gem{
+  flex:1;background:var(--orange);color:#111;font-family:Tahoma,sans-serif;font-weight:bold;
+  font-size:15px;border:none;border-radius:12px;padding:14px;cursor:pointer
+}
+.gem:disabled{opacity:.5}
+.mik{
+  width:50px;height:50px;border-radius:50%;border:1px solid #ffffff22;background:#ffffff10;
+  font-size:20px;cursor:pointer;color:#fff
+}
+.mik.lytter{background:#f87171;border-color:#f87171;animation:puls 1.1s infinite}
+@keyframes puls{50%{box-shadow:0 0 0 10px #f8717133}}
+.kvittering{
+  margin-top:14px;font-size:13px;color:#d9f5e3;background:#16321f;border-left:3px solid #4ade80;
+  border-radius:8px;padding:10px 12px;display:none
+}
+
+/* notelister */
+.note{padding:9px 0 10px;border-bottom:1px dashed #ffffff14}
+.note .t{font-size:14.5px;font-weight:600;color:#fff}
+.note .t .em{margin-right:6px}
+.note .m{font-size:11.5px;color:var(--svag);margin-top:2px}
+.note .r{font-size:12.5px;color:#c9c9d6;margin-top:4px}
+.note .r a{color:#8ab4f8}
+.note .rapportknap{
+  display:inline-block;margin-top:6px;font-size:12px;font-weight:bold;color:#111;
+  background:#4ade80;border-radius:8px;padding:5px 10px;text-decoration:none
+}
+.note .issueknap{display:inline-block;margin-top:6px;font-size:12px;font-weight:bold;color:#111;background:#8ab4f8;border-radius:8px;padding:5px 10px;text-decoration:none}
+.tom{font-family:'Caveat',cursive;font-size:22px;color:#55556a;margin-top:18px}
+.hent{font-size:12px;color:#55556a}
+
+@media(min-width:700px){ body{padding-top:34px} .bogholder{max-width:460px} }
+</style>
+</head>
+<body>
+<div class="top">Ditzel &amp; Co · Hovedet</div>
+
+<div class="bogholder">
+  <div class="bog">
+    <div class="side" id="side">
+
+      <!-- ✍️ SKRIV -->
+      <div class="sektion aktiv" id="s-skriv">
+        <h1 class="rubrik">Ud af hovedet…</h1>
+        <div class="dato" id="dato"></div>
+        <textarea id="tekst" placeholder="Skriv eller indtal en tanke…" rows="4"></textarea>
+        <div class="chips" id="chips"></div>
+        <div class="knapper">
+          <button class="gem" id="gem">Gem i hovedet</button>
+          <button class="mik" id="mik" title="Indtal">🎙️</button>
+        </div>
+        <div class="kvittering" id="kvit"></div>
+      </div>
+
+      <!-- 📥 ÅBNE -->
+      <div class="sektion" id="s-aabne">
+        <h1 class="rubrik">Åbne noter</h1>
+        <div class="dato">det der venter</div>
+        <div id="l-aabne" class="hent">Henter…</div>
+      </div>
+
+      <!-- 🔬 RAPPORTER -->
+      <div class="sektion" id="s-rapporter">
+        <h1 class="rubrik">Rapporter</h1>
+        <div class="dato">undersøgelser</div>
+        <div id="l-rapporter" class="hent">Henter…</div>
+      </div>
+
+      <!-- 🛠 PROJEKTER -->
+      <div class="sektion" id="s-projekter">
+        <h1 class="rubrik">Projekter</h1>
+        <div class="dato">issues &amp; idéer</div>
+        <div id="l-projekter" class="hent">Henter…</div>
+      </div>
+
+      <!-- ✓ FÆRDIGE -->
+      <div class="sektion" id="s-faerdige">
+        <h1 class="rubrik">Færdige</h1>
+        <div class="dato">udført &amp; leveret</div>
+        <div id="l-faerdige" class="hent">Henter…</div>
+      </div>
+
+    </div>
+    <div class="sidefod" id="sidefod">— 1 —</div>
+  </div>
+
+  <div class="faner" id="faner">
+    <button class="fane aktiv" data-s="skriv"><span class="em">✍️</span>Skriv</button>
+    <button class="fane" data-s="aabne"><span class="em">📥</span>Åbne</button>
+    <button class="fane" data-s="rapporter"><span class="em">🔬</span>Rapport</button>
+    <button class="fane" data-s="projekter"><span class="em">🛠</span>Projekt</button>
+    <button class="fane" data-s="faerdige"><span class="em">✓</span>Færdig</button>
+  </div>
+</div>
+
+<script>
+const API='https://lightcrew-api.thomas-5c5.workers.dev';
+const FUNK={send:'📤',slaaop:'🔎',koeb:'🛒',undersoeg:'🔬',projekt:'🛠'};
+const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#projekt','#kalender','#tvl','#master','#engang'];
+const SIDETAL={skriv:1,aabne:2,rapporter:3,projekter:4,faerdige:5};
+
+document.getElementById('dato').textContent=new Date().toLocaleDateString('da-DK',{weekday:'long',day:'numeric',month:'long'});
+
+/* chips */
+const chipsEl=document.getElementById('chips');
+TAGS.forEach(t=>{
+  const c=document.createElement('span'); c.className='chip'; c.textContent=t;
+  c.onclick=()=>{ c.classList.toggle('valgt'); };
+  chipsEl.appendChild(c);
+});
+
+/* faner */
+let alleNoter=null;
+document.getElementById('faner').addEventListener('click',e=>{
+  const f=e.target.closest('.fane'); if(!f) return;
+  document.querySelectorAll('.fane').forEach(x=>x.classList.remove('aktiv'));
+  document.querySelectorAll('.sektion').forEach(x=>x.classList.remove('aktiv'));
+  f.classList.add('aktiv');
+  const s=f.dataset.s;
+  document.getElementById('s-'+s).classList.add('aktiv');
+  document.getElementById('sidefod').textContent='— '+SIDETAL[s]+' —';
+  document.getElementById('side').scrollTop=0;
+  if(s!=='skriv') hentNoter();
+});
+
+function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
+function linkify(t){return esc(t).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">link</a>')}
+function noteHtml(r,visResultat=true){
+  const em=FUNK[r.funktion]||'📌';
+  const meta=[r.projekt,r.liste?('📲 '+r.liste):null,r.kategori,(r.oprettet||'').slice(0,10)].filter(Boolean).join(' · ');
+  let h='<div class="note"><div class="t"><span class="em">'+em+'</span>'+esc(r.titel||r.tekst)+'</div>';
+  if(meta) h+='<div class="m">'+esc(meta)+'</div>';
+  if(visResultat&&r.resultat) h+='<div class="r">'+linkify(r.resultat)+'</div>';
+  if(r.rapport) h+='<a class="rapportknap" href="'+esc(r.rapport)+'" target="_blank">📄 Åbn rapport</a>';
+  if(r.github_issue) h+=' <a class="issueknap" href="'+esc(String(r.github_issue).split('#')[0])+'" target="_blank">🛠 Issue</a>';
+  return h+'</div>';
+}
+async function hentNoter(){
+  if(alleNoter) return visLister();
+  try{
+    const rs=await fetch(API+'/api/hoved?status=alle&limit=200');
+    const d=await rs.json(); alleNoter=Array.isArray(d)?d:(d.rows||[]);
+    visLister();
+  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
+}
+function visLister(){
+  const n=alleNoter.filter(r=>r.status!=='arkiv');
+  fyld('l-aabne',   n.filter(r=>r.status==='aaben'), 'Tomt — flot!');
+  fyld('l-rapporter',n.filter(r=>r.rapport), 'Ingen rapporter endnu');
+  fyld('l-projekter',n.filter(r=>r.funktion==='projekt'||r.kode===1), 'Ingen projekt-noter');
+  fyld('l-faerdige', n.filter(r=>r.status==='udfoert').slice(0,30), 'Intet udført endnu');
+  // fane-tæller på Åbne
+  const aabne=n.filter(r=>r.status==='aaben').length;
+  const f=document.querySelector('.fane[data-s="aabne"]');
+  let b=f.querySelector('.antal');
+  if(aabne){ if(!b){b=document.createElement('span');b.className='antal';f.appendChild(b);} b.textContent=aabne; }
+  else if(b) b.remove();
+}
+function fyld(id,rows,tomtekst){
+  const el=document.getElementById(id); el.classList.remove('hent');
+  el.innerHTML=rows.length?rows.map(r=>noteHtml(r)).join(''):'<div class="tom">'+tomtekst+'</div>';
+}
+hentNoter();
+
+/* gem */
+const ta=document.getElementById('tekst'), gem=document.getElementById('gem'), kvit=document.getElementById('kvit');
+gem.onclick=async()=>{
+  const tags=[...document.querySelectorAll('.chip.valgt')].map(c=>c.textContent).join(' ');
+  const tekst=(ta.value.trim()+' '+tags).trim();
+  if(!tekst) return;
+  gem.disabled=true; gem.textContent='Gemmer…';
+  try{
+    const rs=await fetch(API+'/api/hoved',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tekst,kilde:'bog'})});
+    const d=await rs.json(); const e=d.entry||{};
+    kvit.style.display='block';
+    kvit.innerHTML='✅ Gemt som <b>#'+e.id+'</b> · '+(FUNK[e.funktion]||'📌')+' '+esc(e.funktion||'sorteres')+
+      (e.liste?' → '+esc(e.liste):'')+(e.projekt?' · '+esc(e.projekt):'');
+    ta.value=''; document.querySelectorAll('.chip.valgt').forEach(c=>c.classList.remove('valgt'));
+    alleNoter=null; // genindlæs næste gang
+    setTimeout(()=>kvit.style.display='none',6000);
+  }catch(err){ kvit.style.display='block'; kvit.innerHTML='⚠️ Kunne ikke gemme — prøv igen'; }
+  gem.disabled=false; gem.textContent='Gem i hovedet';
+};
+
+/* diktering */
+const mik=document.getElementById('mik');
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SR){
+  const rec=new SR(); rec.lang='da-DK'; rec.interimResults=true; rec.continuous=false;
+  let lytter=false, basis='';
+  mik.onclick=()=>{ if(lytter){rec.stop();return;} basis=ta.value?ta.value+' ':''; rec.start(); };
+  rec.onstart=()=>{lytter=true;mik.classList.add('lytter')};
+  rec.onend=()=>{lytter=false;mik.classList.remove('lytter')};
+  rec.onresult=ev=>{ let s=''; for(const r of ev.results) s+=r[0].transcript; ta.value=basis+s; };
+}else mik.style.display='none';
+</script>
+</body>
+</html>
