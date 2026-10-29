@@ -56,10 +56,10 @@ body{
 }
 
 /* ---------- INDEKS-FANER ---------- */
-.faner{position:absolute; right:-36px; top:34px; display:flex; flex-direction:column; gap:9px; z-index:5}
+.faner{position:absolute; right:-36px; top:26px; display:flex; flex-direction:column; gap:8px; z-index:5}
 .fane{
   writing-mode:vertical-rl; text-orientation:mixed;
-  padding:11px 7px 11px 8px; min-height:74px;
+  padding:10px 7px 10px 8px; min-height:60px;
   border-radius:0 9px 9px 0; border:none; cursor:pointer;
   font-family:Tahoma,sans-serif; font-weight:bold; font-size:11px; letter-spacing:.6px;
   color:#2a2a30; box-shadow:2px 3px 8px #00000030;
@@ -70,10 +70,11 @@ body{
 .fane .em{font-size:13px}
 .fane.aktiv{transform:translateX(2px); filter:none}
 .fane:nth-child(1){background:#E8820A}
-.fane:nth-child(2){background:#f4c04e}
-.fane:nth-child(3){background:#6fd793}
-.fane:nth-child(4){background:#9dbff5}
-.fane:nth-child(5){background:#cfccc2}
+.fane:nth-child(2){background:#f2a2a2}
+.fane:nth-child(3){background:#f4c04e}
+.fane:nth-child(4){background:#6fd793}
+.fane:nth-child(5){background:#9dbff5}
+.fane:nth-child(6){background:#cfccc2}
 .fane .antal{font-size:10px;background:#2a2a30;color:#fff;border-radius:8px;padding:3px 2px;margin-top:2px}
 
 /* ---------- SIDE-INDHOLD ---------- */
@@ -119,7 +120,14 @@ textarea::placeholder{color:#b8b0a0}
 }
 .nt .em{font-size:15px;flex:0 0 auto}
 .nt .ti{flex:1;font-size:14.5px;font-weight:600;color:#1d1d22;line-height:1.25}
+.nt .fjern{
+  flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid #00000022;
+  background:#ffffff80;color:#8d8679;font-size:13px;line-height:23px;text-align:center;cursor:pointer
+}
+.nt .fjern:active{background:#2aa35a;color:#fff;border-color:#2aa35a}
 .nt .pil{flex:0 0 auto;font-size:11px;color:#b4ab99;transition:transform .15s ease}
+.grupperubrik{font-family:'Caveat',cursive;font-size:23px;color:#1d1d22;margin:16px 0 2px}
+.grupperubrik:first-child{margin-top:0}
 .note.aaben .nt .pil{transform:rotate(90deg)}
 .nb{display:none;padding:0 2px 12px 25px}
 .note.aaben .nb{display:block}
@@ -157,6 +165,16 @@ textarea::placeholder{color:#b8b0a0}
         <div class="kvittering" id="kvit"></div>
       </div>
 
+      <!-- 🕐 SENESTE -->
+      <div class="sektion" id="s-seneste">
+        <h1 class="rubrik">Seneste</h1>
+        <div class="dato">sidste døgn</div>
+        <div class="grupperubrik">🆕 Nye input</div>
+        <div id="l-nye" class="hent">Henter…</div>
+        <div class="grupperubrik">⏳ Forfalder</div>
+        <div id="l-forfalder" class="hent">Henter…</div>
+      </div>
+
       <!-- 📥 ÅBNE -->
       <div class="sektion" id="s-aabne">
         <h1 class="rubrik">Åbne noter</h1>
@@ -191,6 +209,7 @@ textarea::placeholder{color:#b8b0a0}
 
   <div class="faner" id="faner">
     <button class="fane aktiv" data-s="skriv"><span class="em">✍️</span>Skriv</button>
+    <button class="fane" data-s="seneste"><span class="em">🕐</span>Seneste</button>
     <button class="fane" data-s="aabne"><span class="em">📥</span>Åbne</button>
     <button class="fane" data-s="rapporter"><span class="em">🔬</span>Rapport</button>
     <button class="fane" data-s="projekter"><span class="em">🛠</span>Projekt</button>
@@ -202,7 +221,7 @@ textarea::placeholder{color:#b8b0a0}
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 const FUNK={send:'📤',slaaop:'🔎',koeb:'🛒',undersoeg:'🔬',projekt:'🛠'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#projekt','#kalender','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,aabne:2,rapporter:3,projekter:4,faerdige:5};
+const SIDETAL={skriv:1,seneste:2,aabne:3,rapporter:4,projekter:5,faerdige:6};
 
 document.getElementById('dato').textContent=new Date().toLocaleDateString('da-DK',{weekday:'long',day:'numeric',month:'long'});
 
@@ -228,11 +247,22 @@ document.getElementById('faner').addEventListener('click',e=>{
   if(s!=='skriv') hentNoter();
 });
 
-/* fold ud/ind ved klik på overskrift */
+/* fold ud/ind ved klik på overskrift — eller fjern fra listen med ✓ */
 document.getElementById('side').addEventListener('click',e=>{
+  const fj=e.target.closest('.fjern');
+  if(fj){ e.stopPropagation(); fjernNote(fj.closest('.note').dataset.id); return; }
   const t=e.target.closest('.nt'); if(!t) return;
   t.parentElement.classList.toggle('aaben');
 });
+async function fjernNote(id){
+  const r=alleNoter.find(x=>String(x.id)===String(id)); if(!r) return;
+  const nyStatus = r.status==='udfoert' ? 'arkiv' : 'udfoert';
+  try{
+    await fetch(API+'/api/hoved/'+id,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({status:nyStatus,behandlet:1})});
+    r.status=nyStatus; visLister();
+  }catch(e){ alert('Kunne ikke fjerne — prøv igen'); }
+}
 
 function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
 function linkify(t){return esc(t).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">link</a>')}
@@ -244,7 +274,7 @@ function noteHtml(r){
   if(r.resultat) krop+='<div class="r">'+linkify(r.resultat)+'</div>';
   if(r.rapport) krop+='<a class="rapportknap" href="'+esc(r.rapport)+'" target="_blank">📄 Åbn rapport</a>';
   if(r.github_issue) krop+=' <a class="issueknap" href="'+esc(String(r.github_issue).split('#')[0])+'" target="_blank">🛠 Issue</a>';
-  return '<div class="note"><div class="nt"><span class="em">'+em+'</span><span class="ti">'+esc(r.titel||r.tekst)+'</span><span class="pil">▶</span></div><div class="nb">'+(krop||'<div class="m">ingen detaljer endnu</div>')+'</div></div>';
+  return '<div class="note" data-id="'+r.id+'"><div class="nt"><span class="em">'+em+'</span><span class="ti">'+esc(r.titel||r.tekst)+'</span><span class="fjern" title="Fjern fra listen">✓</span><span class="pil">▶</span></div><div class="nb">'+(krop||'<div class="m">ingen detaljer endnu</div>')+'</div></div>';
 }
 async function hentNoter(){
   if(alleNoter) return visLister();
@@ -256,6 +286,13 @@ async function hentNoter(){
 }
 function visLister(){
   const n=alleNoter.filter(r=>r.status!=='arkiv');
+  const nu=Date.now(), DOGN=24*3600*1000;
+  const opr=r=>{const d=new Date(String(r.oprettet||'').replace(' ','T')+'Z');return isNaN(d)?0:d.getTime()};
+  fyld('l-nye', n.filter(r=>nu-opr(r)<DOGN), 'Intet nyt siden i går');
+  fyld('l-forfalder', n.filter(r=>{
+    if(r.status!=='aaben'||!r.deadline) return false;
+    const d=new Date(r.deadline+'T23:59:59'); return !isNaN(d)&&d.getTime()<nu+DOGN;
+  }), 'Intet forfalder');
   fyld('l-aabne',   n.filter(r=>r.status==='aaben'), 'Tomt — flot!');
   fyld('l-rapporter',n.filter(r=>r.rapport), 'Ingen rapporter endnu');
   fyld('l-projekter',n.filter(r=>r.funktion==='projekt'||r.kode===1), 'Ingen projekt-noter');
