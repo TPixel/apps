@@ -16,20 +16,22 @@
 html,body{height:100%}
 body{
   font-family:-apple-system,Helvetica,Arial,sans-serif;
-  background:radial-gradient(1200px 700px at 50% -10%, #efe9dc 0%, #ddd6c7 60%);
-  color:var(--blaek); display:flex; flex-direction:column; align-items:center;
-  padding:18px 46px 28px 14px; min-height:100%;
+  background:#0C0C12;
+  color:var(--blaek); display:flex; justify-content:center;
+  height:100dvh; overflow:hidden;
+  padding:8px 40px 8px 8px;
+  padding-top:max(8px, env(safe-area-inset-top));
+  padding-bottom:max(8px, env(safe-area-inset-bottom));
 }
-.top{font-size:11px;color:#a89f8e;letter-spacing:2px;text-transform:uppercase;font-weight:bold;margin-bottom:10px}
 
 /* ---------- BOGEN ---------- */
-.bogholder{position:relative;width:100%;max-width:430px;display:flex}
+.bogholder{position:relative;width:100%;max-width:520px;height:100%;display:flex}
 .bog{
   position:relative; flex:1; display:flex; flex-direction:column;
   background:var(--papir);
   border-radius:10px 20px 20px 10px;
-  box-shadow:0 20px 50px #00000038, 0 3px 10px #00000022, inset -1px 0 0 #00000008;
-  min-height:452px; overflow:hidden;
+  box-shadow:0 10px 36px #00000066, inset -1px 0 0 #00000008;
+  height:100%; overflow:hidden;
 }
 /* ryg + syning */
 .bog::before{
@@ -44,7 +46,7 @@ body{
 }
 /* papirlinjer + margenstreg */
 .side{
-  flex:1;
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; min-height:0;
   padding:20px 18px 26px 46px; position:relative;
   background:
     linear-gradient(90deg, transparent 37px, var(--margen) 37px, var(--margen) 38.5px, transparent 38.5px),
@@ -72,9 +74,34 @@ body{
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f2a2a2}
 .fane:nth-child(3){background:#f4c04e}
-.fane:nth-child(4){background:#6fd793}
-.fane:nth-child(5){background:#9dbff5}
-.fane:nth-child(6){background:#cfccc2}
+.fane:nth-child(4){background:#c9a6e8}
+.fane:nth-child(5){background:#6fd793}
+.fane:nth-child(6){background:#9dbff5}
+.fane:nth-child(7){background:#cfccc2}
+
+/* ---------- FORSIDE ---------- */
+.forside{
+  position:absolute; inset:0; z-index:20; cursor:pointer;
+  background:linear-gradient(145deg,#2a2a3a 0%,#17171f 55%,#0e0e14 100%);
+  border-radius:10px 20px 20px 10px;
+  box-shadow:0 10px 36px #00000088;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  transform-origin:left center; transition:transform .55s ease, opacity .4s ease .15s;
+  backface-visibility:hidden;
+}
+.forside::before{
+  content:""; position:absolute; inset:14px; border:1.5px dashed #ffffff22; border-radius:8px 14px 14px 8px;
+}
+.forside::after{ /* elastik */
+  content:""; position:absolute; top:0; bottom:0; right:34px; width:9px;
+  background:linear-gradient(90deg,#c96f08,#E8820A 50%,#a85c06); opacity:.9;
+  box-shadow:0 0 8px #00000066;
+}
+.forside .fs-logo{font-size:11px;color:#8d8679;letter-spacing:3px;text-transform:uppercase;font-weight:bold}
+.forside .fs-titel{font-family:'Caveat',cursive;font-size:64px;font-weight:700;color:#f5f1e6;line-height:1}
+.forside .fs-under{font-family:'Caveat',cursive;font-size:22px;color:var(--orange)}
+.forside .fs-aabn{margin-top:26px;font-size:12px;color:#8d8679;letter-spacing:1px}
+.forside.aaben{transform:perspective(1400px) rotateY(-125deg); opacity:0; pointer-events:none}
 .fane .antal{font-size:10px;background:#2a2a30;color:#fff;border-radius:8px;padding:3px 2px;margin-top:2px}
 
 /* ---------- SIDE-INDHOLD ---------- */
@@ -146,8 +173,6 @@ textarea::placeholder{color:#b8b0a0}
 </style>
 </head>
 <body>
-<div class="top">Ditzel &amp; Co · Hovedet</div>
-
 <div class="bogholder">
   <div class="bog">
     <div class="side" id="side">
@@ -182,6 +207,13 @@ textarea::placeholder{color:#b8b0a0}
         <div id="l-aabne" class="hent">Henter…</div>
       </div>
 
+      <!-- 💡 IDÉER -->
+      <div class="sektion" id="s-ideer">
+        <h1 class="rubrik">Idéer</h1>
+        <div class="dato">løse tanker &amp; indfald</div>
+        <div id="l-ideer" class="hent">Henter…</div>
+      </div>
+
       <!-- 🔬 RAPPORTER -->
       <div class="sektion" id="s-rapporter">
         <h1 class="rubrik">Rapporter</h1>
@@ -207,10 +239,18 @@ textarea::placeholder{color:#b8b0a0}
     <div class="sidefod" id="sidefod">— 1 —</div>
   </div>
 
+  <div class="forside" id="forside">
+    <div class="fs-logo">Ditzel &amp; Co</div>
+    <div class="fs-titel">Hovedet</div>
+    <div class="fs-under">alt ud af hovedet</div>
+    <div class="fs-aabn">tryk for at åbne</div>
+  </div>
+
   <div class="faner" id="faner">
     <button class="fane aktiv" data-s="skriv"><span class="em">✍️</span>Skriv</button>
     <button class="fane" data-s="seneste"><span class="em">🕐</span>Seneste</button>
     <button class="fane" data-s="aabne"><span class="em">📥</span>Åbne</button>
+    <button class="fane" data-s="ideer"><span class="em">💡</span>Idé</button>
     <button class="fane" data-s="rapporter"><span class="em">🔬</span>Rapport</button>
     <button class="fane" data-s="projekter"><span class="em">🛠</span>Projekt</button>
     <button class="fane" data-s="faerdige"><span class="em">✓</span>Færdig</button>
@@ -221,18 +261,12 @@ textarea::placeholder{color:#b8b0a0}
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 const FUNK={send:'📤',slaaop:'🔎',koeb:'🛒',undersoeg:'🔬',projekt:'🛠'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#projekt','#kalender','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,seneste:2,aabne:3,rapporter:4,projekter:5,faerdige:6};
+const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7};
 
 document.getElementById('dato').textContent=new Date().toLocaleDateString('da-DK',{weekday:'long',day:'numeric',month:'long'});
 
-/* bogen skal præcis nå den nederste fane */
-function tilpasHoejde(){
-  const f=document.getElementById('faner'), b=document.querySelector('.bog');
-  b.style.minHeight=(f.offsetTop+f.offsetHeight+14)+'px';
-}
-window.addEventListener('resize',tilpasHoejde);
-window.addEventListener('load',tilpasHoejde);
-tilpasHoejde();
+/* forside: tryk for at åbne bogen */
+document.getElementById('forside').addEventListener('click',function(){ this.classList.add('aaben'); });
 
 /* chips */
 const chipsEl=document.getElementById('chips');
@@ -252,7 +286,7 @@ document.getElementById('faner').addEventListener('click',e=>{
   const s=f.dataset.s;
   document.getElementById('s-'+s).classList.add('aktiv');
   document.getElementById('sidefod').textContent='— '+SIDETAL[s]+' —';
-  window.scrollTo(0,0);
+  document.getElementById('side').scrollTop=0;
   if(s!=='skriv') hentNoter();
 });
 
@@ -303,6 +337,7 @@ function visLister(){
     const d=new Date(r.deadline+'T23:59:59'); return !isNaN(d)&&d.getTime()<nu+DOGN;
   }), 'Intet forfalder');
   fyld('l-aabne',   n.filter(r=>r.status==='aaben'), 'Tomt — flot!');
+  fyld('l-ideer',   n.filter(r=>r.kategori==='Idé'||/idé/i.test(r.handling||'')||/#id[eé]\b/i.test(r.tags||'')), 'Ingen idéer — endnu');
   fyld('l-rapporter',n.filter(r=>r.rapport), 'Ingen rapporter endnu');
   fyld('l-projekter',n.filter(r=>r.funktion==='projekt'||r.kode===1), 'Ingen projekt-noter');
   fyld('l-faerdige', n.filter(r=>r.status==='udfoert').slice(0,30), 'Intet udført endnu');
