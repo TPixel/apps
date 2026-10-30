@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blackout V3: OSC &amp; MIDI — Hoved-rapport</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,Helvetica,Arial,sans-serif;background:#0C0C12;color:#eee;line-height:1.55;padding:20px 16px calc(40px + env(safe-area-inset-bottom));max-width:760px;margin:0 auto}
+.logo{font-size:12px;color:#555;letter-spacing:1px;text-transform:uppercase;font-weight:bold}
+h1{font-size:26px;margin:4px 0 2px;color:#fff}
+.meta{font-size:12px;color:#777;margin-bottom:18px}
+.meta a{color:#E8820A;text-decoration:none}
+h2{font-size:16px;color:#E8820A;margin:26px 0 8px;text-transform:uppercase;letter-spacing:.5px}
+p{margin:0 0 10px;color:#ccc}
+ul,ol{margin:0 0 12px 20px;color:#ccc}
+li{margin-bottom:6px}
+a{color:#8ab4f8}
+.tldr{background:#16321f;border-left:4px solid #4ade80;border-radius:10px;padding:12px 14px;margin:14px 0;color:#d9f5e3;font-size:15px}
+.anbefaling{background:#3a2a12;border-left:4px solid #E8820A;border-radius:10px;padding:12px 14px;margin:14px 0;color:#ffd9a8}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #26263a;color:#ccc}
+th{color:#888;font-size:11px;text-transform:uppercase}
+.kilder{font-size:12px;color:#777;margin-top:26px;border-top:1px solid #26263a;padding-top:12px}
+.kilder a{color:#6a8ec9}
+code{background:#1a1a24;border-radius:5px;padding:1px 6px;font-size:12.5px;color:#ffd9a8}
+</style>
+</head>
+<body>
+<div class="logo">Ditzel &amp; Co · Hoved</div>
+<h1>Blackout V3: OSC &amp; MIDI</h1>
+<div class="meta">🔬 Undersøgelse · 30. oktober 2026 · Hoved #73 · <a href="../hoved-dash.html">← dashboard</a></div>
+
+<div class="tldr">💡 <b>Kort sagt: Ja.</b> Blackout V3 (udkom 7. okt 2026, nu v3.0.3) er en helt ny app, og OSC/MIDI er markant bedre end i V2/Next: fuld OSC-kommandoreference med <code>/blk/…</code>-adresser, Learn Mode der mapper både MIDI <i>og</i> OSC ved at trykke på kontrollen, netværks-MIDI, motoriseret fader-feedback, MTC-timecode og native Stream Deck. OSC-output er dog stadig kun fader-bevægelser, og TCP er "in development".</div>
+
+<h2>Overblik</h2>
+<p>V3 er en separat app på App Store (ikke en opdatering af Blackout Next — Next er officielt "legacy"/V2-beta). Kræver iPadOS 18+, abonnement fra $24,99/md. (Core/Pro/Command-tiers, 2 ugers gratis prøve, trade-in-tilbud til V2-folk). Udgivelsestempo lige nu: 3.0.0 → 3.0.3 på to uger.</p>
+
+<h2>OSC i V3</h2>
+<ul>
+<li><b>OSC 1.1 over UDP</b> (TCP er på vej). Ind: port <code>9999</code> · ud: port <code>8888</code>, flere navngivne forbindelser med tænd/sluk.</li>
+<li><b>Fuld kommandoreference</b> — alt kan rammes direkte: <code>/blk/fader/global/1/level</code> (0-255), keys/actions (<code>float 0/1</code>), encodere (<code>float ±4</code>), macros, grupper, effekter, favoritter, LivePlot, view states og sideskift.</li>
+<li><b>Learn Mode tager OSC</b>: tænd Learn, tryk på kontrollen i Blackout, send en OSC-kommando — færdig. Mapping-presets kan gemmes/deles.</li>
+<li><b>OSC-timecode</b>: <code>/blackout/tc</code> med "HH:MM:SS:FF" — kan drive timecode-triggers.</li>
+<li>Begrænsning: OSC-<i>output</i> er kun fader-bevægelser (knapper er envejs).</li>
+</ul>
+
+<h2>MIDI i V3</h2>
+<ul>
+<li><b>USB-C, Bluetooth og netværks-bridge</b> — auto-reconnect ("When Last Connected" som standard).</li>
+<li><b>Learn Mode</b> (hed "MIDI Learn" før): tryk på kontrollen, rør hardwaren. Global (følger slot) eller Local (følger objekt) mapping.</li>
+<li><b>Rigtige encoder-modes</b>: Absolute, Relative (2s Complement / Offset 64 / Sign Bit / Raw Delta) og Cycling — endeløse encodere virker endelig ordentligt.</li>
+<li><b>Motoriserede fadere</b>: Blackout sender niveauer tilbage til hardwaren.</li>
+<li><b>MTC-timecode ind</b> fra enhver MIDI-enhed, framerate læses af signalet; timecode- og DMX-triggers kan affyre cues (stemples live med "+ Trigger").</li>
+<li>3.0.3 fiksede: hardware-taster affyrer ikke MIDI-actions mens man skriver i et felt; MIDI Learn på Stream Deck-taster kan nu erstatte/køre/annullere.</li>
+</ul>
+
+<h2>V3 vs. V2 (Next)</h2>
+<table>
+<tr><th></th><th>V2 / Next</th><th>V3</th></tr>
+<tr><td>OSC-mapping</td><td>Begrænset</td><td>Learn Mode + fuld /blk/-reference + presets</td></tr>
+<tr><td>MIDI-forbindelse</td><td>USB/Bluetooth</td><td>+ netværks-bridge, auto-reconnect, fader-feedback</td></tr>
+<tr><td>Encoder-håndtering</td><td>Hop/jumps (fikset sent i 2.x)</td><td>5 CC-modes til endeløse encodere</td></tr>
+<tr><td>Timecode</td><td>—</td><td>MTC + OSC-TC + triggers</td></tr>
+<tr><td>Stream Deck</td><td>Via 2.6-opdatering</td><td>Native, gemmes i showfilen</td></tr>
+</table>
+<p>Ingen officiel "OSC/MIDI changelog V2→V3" findes — sammenligningen er bygget af V3-manualen, hjælpeartiklerne og release notes.</p>
+
+<div class="anbefaling">⭐ <b>Anbefaling:</b> Er OSC/MIDI grunden til at opgradere, så ja — Learn Mode + den fulde OSC-reference er et reelt løft, især med Companion/Stream Deck eller en MIDI-fadercontroller. Tjek <a href="https://help.blackout-app.com/en/" target="_blank">"v2 and v3 side by side" + trade-in-tilbuddet</a> i hjælpecentret, og husk: det er abonnement, og OSC-feedback ud er stadig kun fadere.</div>
+
+<div class="kilder"><b>Kilder:</b>
+<a href="https://docs.blackout-app.com/v3/manual/introduction/link-status-devices.html" target="_blank">V3-manual: External Controllers</a> ·
+<a href="https://docs.blackout-app.com/v3/manual/introduction/link-status-osc.html" target="_blank">OSC Command Reference</a> ·
+<a href="https://docs.blackout-app.com/v3/manual/introduction/link-status-triggers.html" target="_blank">Triggers/Timecode</a> ·
+<a href="https://help.blackout-app.com/en/articles/12191365-using-osc-input-with-blackout-lighting-console" target="_blank">Hjælp: OSC Input</a> ·
+<a href="https://apps.apple.com/us/app/blackout-lighting-console-v3/id6767651757" target="_blank">App Store: V3 (3.0.3)</a> ·
+<a href="https://blackout-app.com/" target="_blank">blackout-app.com</a></div>
+</body>
+</html>
