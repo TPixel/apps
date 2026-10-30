@@ -90,6 +90,7 @@ body{
 .fane:nth-child(7){--rot:-2.3deg;font-size:9.5px}
 .fane:nth-child(8){--rot:1.4deg; font-size:10px}
 .fane:nth-child(9){--rot:-1.6deg;font-size:10px}
+.fane:nth-child(10){--rot:1.9deg;font-size:9.5px}
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f2a2a2}
 .fane:nth-child(3){background:#f4c04e}
@@ -99,6 +100,7 @@ body{
 .fane:nth-child(7){background:#cfccc2}
 .fane:nth-child(8){background:#c9a27a}
 .fane:nth-child(9){background:#8fd4d1}
+.fane:nth-child(10){background:#f0b6d2}
 
 /* ---------- FORSIDE ---------- */
 .forside{
@@ -172,6 +174,11 @@ body{
 .gfane:nth-child(4){--rot:-1.4deg;font-size:9.5px}
 .gfane:nth-child(5){--rot:2deg;   font-size:10.5px}
 .gfane:nth-child(6){--rot:-2.2deg;font-size:10px}
+.soeg{width:100%;border:1px solid #00000020;border-radius:12px;padding:9px 13px;font-size:14px;background:#ffffff90;outline:none;margin:0 0 10px;color:var(--blaek);-webkit-appearance:none}
+.soeg::placeholder{color:#b8b0a0}
+.punktny{display:flex;gap:7px;margin:0 0 14px}
+.punktny input{flex:1;border:1px solid #00000020;border-radius:12px;padding:10px 13px;font-family:'Caveat',cursive;font-size:20px;background:#ffffff90;outline:none;color:var(--blaek)}
+.punktny button{width:44px;border:none;border-radius:12px;background:var(--orange);color:#fff;font-size:22px;font-weight:bold;cursor:pointer;box-shadow:0 3px 8px #e8820a44}
 .sorter{display:flex;gap:7px;margin:0 0 10px}
 .sorter button{font-size:11px;font-weight:bold;border:1px solid #00000020;background:#ffffff80;border-radius:14px;padding:5px 13px;color:#55503f;cursor:pointer}
 .sorter button.valgt{background:var(--orange);color:#fff;border-color:var(--orange)}
@@ -325,6 +332,17 @@ textarea::placeholder{color:#b8b0a0}
         <div id="l-links" class="hent">Henter…</div>
       </div>
 
+      <!-- 🤝 HOLD MEAT -->
+      <div class="sektion" id="s-holdmeat">
+        <h1 class="rubrik">Hold Meat</h1>
+        <div class="dato">dagsorden til husmødet — Maya &amp; Thomas</div>
+        <div class="punktny">
+          <input id="hmInput" placeholder="Nyt punkt til mødet…" enterkeyhint="done">
+          <button id="hmGem" title="Tilføj punkt">+</button>
+        </div>
+        <div id="l-holdmeat" class="hent">Henter…</div>
+      </div>
+
       <!-- 📞 ADRESSER -->
       <div class="sektion" id="s-adresser">
         <h1 class="rubrik">Adresser</h1>
@@ -334,6 +352,7 @@ textarea::placeholder{color:#b8b0a0}
           <button data-k="firma">Firma</button>
           <button data-k="stilling">Stilling</button>
         </div>
+        <input id="kontaktSoeg" class="soeg" type="search" placeholder="🔍 Søg navn, firma, nummer…">
         <div class="noeglebox" id="noeglebox" style="display:none">
           <div style="font-size:13px;color:#55503f;margin-bottom:8px">🔒 Adressebogen er låst — skriv din nøgle (gemmes kun på denne enhed):</div>
           <input id="noegleInput" type="password" placeholder="nøgle">
@@ -375,6 +394,7 @@ textarea::placeholder{color:#b8b0a0}
     <button class="fane" data-s="faerdige"><span class="em">✓</span>Færdig</button>
     <button class="fane" data-s="adresser"><span class="em">📞</span>Adresse</button>
     <button class="fane" data-s="links"><span class="em">🔗</span>Link</button>
+    <button class="fane" data-s="holdmeat"><span class="em">🤝</span>Hold Meat</button>
   </div>
   <div class="gfaner" id="gfaner"></div>
 </div>
@@ -382,9 +402,10 @@ textarea::placeholder{color:#b8b0a0}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 const FUNK={send:'📤',slaaop:'🔎',koeb:'🛒',undersoeg:'🔬',projekt:'🛠'};
-const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9};
+const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#husmøde','#tvl','#master','#engang'];
+const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10};
 const erLink=r=>/https?:\/\/\S+/i.test(r.tekst||'');
+const erHoldMeat=r=>/#(holdmeat|husm[øo]de)/i.test((r.tags||'')+' '+(r.tekst||''));
 
 const erIde=r=>r.kategori==='Idé'||/idé/i.test(r.handling||'')||/#id[eé]\b/i.test(r.tags||'');
 const erKontakt=r=>/kontakt/i.test((r.tags||'')+' '+(r.kategori||''));
@@ -516,15 +537,16 @@ async function hentNoter(){
     const rs=await fetch(API+'/api/hoved?status=alle&limit=200');
     const d=await rs.json(); alleNoter=Array.isArray(d)?d:(d.rows||[]);
     visLister();
-  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige','l-links'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
+  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige','l-links','l-holdmeat'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
 }
 function visLister(){
   const alle=alleNoter.filter(r=>r.status!=='arkiv');
   const kontakter=alle.filter(erKontakt);
   const ikkeK=alle.filter(r=>!erKontakt(r));
-  const n=ikkeK.filter(r=>!erLink(r));
+  const n=ikkeK.filter(r=>!erLink(r)&&!erHoldMeat(r));
   visAdresser(kontakter);
-  fyld('l-links', ikkeK.filter(r=>erLink(r)&&r.status!=='udfoert'), 'Ingen links endnu — del fra Safari med Hoved-genvejen');
+  fyld('l-links', ikkeK.filter(r=>erLink(r)&&!erHoldMeat(r)&&r.status!=='udfoert'), 'Ingen links endnu — del fra Safari med Hoved-genvejen');
+  fyld('l-holdmeat', ikkeK.filter(r=>erHoldMeat(r)&&r.status!=='udfoert'), 'Ingen punkter — skriv det første herover');
   const nu=Date.now(), DOGN=24*3600*1000;
   const opr=r=>{const d=new Date(String(r.oprettet||'').replace(' ','T')+'Z');return isNaN(d)?0:d.getTime()};
   fyld('l-nye', ikkeK.filter(r=>nu-opr(r)<DOGN), 'Intet nyt siden i går');
@@ -537,15 +559,23 @@ function visLister(){
   fyld('l-rapporter',n.filter(r=>r.rapport), 'Ingen rapporter endnu');
   fyld('l-projekter',n.filter(r=>r.funktion==='projekt'||r.kode===1), 'Ingen projekt-noter');
   fyld('l-faerdige', n.filter(r=>r.status==='udfoert').slice(0,30), 'Intet udført endnu');
-  // fane-tæller på Åbne
+  // fane-tæller på Åbne + Hold Meat
   const aabne=n.filter(r=>r.status==='aaben').length;
   const f=document.querySelector('.fane[data-s="aabne"]');
   let b=f.querySelector('.antal');
   if(aabne){ if(!b){b=document.createElement('span');b.className='antal';f.appendChild(b);} b.textContent=aabne; }
   else if(b) b.remove();
+  const hmAntal=ikkeK.filter(r=>erHoldMeat(r)&&r.status!=='udfoert').length;
+  const fh=document.querySelector('.fane[data-s="holdmeat"]');
+  let bh=fh.querySelector('.antal');
+  if(hmAntal){ if(!bh){bh=document.createElement('span');bh.className='antal';fh.appendChild(bh);} bh.textContent=hmAntal; }
+  else if(bh) bh.remove();
 }
 /* ---------- adressebog: rigtige kontakter + #kontakt-noter ---------- */
-let kontaktListe=null, kontaktSort='navn', kontaktNoteListe=[], kontaktGruppe='alle';
+let kontaktListe=null, kontaktSort='navn', kontaktNoteListe=[], kontaktGruppe='alle', kontaktSoegeTekst='';
+document.getElementById('kontaktSoeg').addEventListener('input',function(){
+  kontaktSoegeTekst=this.value.trim().toLowerCase(); visAdresser();
+});
 const GRUPPE_ORDEN=['familie','filmbranche','motorcykel','takeaway','restauranter'];
 const GRUPPE_FARVER=['#f2d7ae','#f6caca','#cfe6c3','#cddcf4','#e6d4f0','#f4e8b8'];
 function gfanerSynlighed(){
@@ -652,7 +682,13 @@ function visAdresser(noter){
   let alle=[...(kontaktListe||[]),...ekstra];
   if(!alle.length){ el.innerHTML='<div class="tom">Ingen kontakter — kør synk-kontakter.sh på Mac’en</div>'; return; }
   if(kontaktGruppe!=='alle') alle=alle.filter(k=>(k.gruppe||'').split('|').includes(kontaktGruppe));
-  if(!alle.length){ el.innerHTML='<div class="tom">Ingen i denne gruppe endnu</div>'; return; }
+  if(kontaktSoegeTekst){
+    const q=kontaktSoegeTekst, qd=q.replace(/[^\d+]/g,'');
+    alle=alle.filter(k=>
+      ((k.navn||'')+' '+(k.firma||'')+' '+(k.stilling||'')+' '+(k.email||'')).toLowerCase().includes(q)
+      || (qd.length>2 && (k.telefon||'').replace(/[^\d+]/g,'').includes(qd)));
+  }
+  if(!alle.length){ el.innerHTML='<div class="tom">'+(kontaktSoegeTekst?'Ingen træffere':'Ingen i denne gruppe endnu')+'</div>'; return; }
   const key=k=>(((k[kontaktSort]||'')+'').trim()||'—');
   alle.sort((a,b)=>key(a).localeCompare(key(b),'da'));
   let h='', sidste='';
@@ -668,6 +704,21 @@ function fyld(id,rows,tomtekst){
   el.innerHTML=rows.length?rows.map(r=>noteHtml(r)).join(''):'<div class="tom">'+tomtekst+'</div>';
 }
 hentNoter();
+
+/* Hold Meat: nyt punkt direkte på siden */
+const hmInput=document.getElementById('hmInput'), hmGem=document.getElementById('hmGem');
+async function hmTilfoej(){
+  const t=hmInput.value.trim(); if(!t) return;
+  hmGem.disabled=true;
+  try{
+    await fetch(API+'/api/hoved',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({tekst:t+' #husmøde',kilde:'bog'})});
+    hmInput.value=''; alleNoter=null; await hentNoter();
+  }catch(e){ alert('Kunne ikke gemme punktet — prøv igen'); }
+  hmGem.disabled=false;
+}
+hmGem.addEventListener('click',hmTilfoej);
+hmInput.addEventListener('keydown',e=>{ if(e.key==='Enter') hmTilfoej(); });
 
 /* gem */
 const ta=document.getElementById('tekst'), gem=document.getElementById('gem'), kvit=document.getElementById('kvit');
