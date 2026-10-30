@@ -78,6 +78,7 @@ body{
 .fane:nth-child(5){background:#6fd793}
 .fane:nth-child(6){background:#9dbff5}
 .fane:nth-child(7){background:#cfccc2}
+.fane:nth-child(8){background:#c9a27a}
 
 /* ---------- FORSIDE ---------- */
 .forside{
@@ -102,6 +103,26 @@ body{
 .forside .fs-under{font-family:'Caveat',cursive;font-size:22px;color:var(--orange)}
 .forside .fs-aabn{margin-top:26px;font-size:12px;color:#8d8679;letter-spacing:1px}
 .forside.aaben{transform:perspective(1400px) rotateY(-125deg); opacity:0; pointer-events:none}
+.design{
+  position:absolute; top:22px; right:56px; z-index:22; width:32px; height:32px; border-radius:50%;
+  background:#ffffff14; border:1px solid #ffffff2a; color:#d8d2c4; font-size:15px; line-height:30px; text-align:center; cursor:pointer
+}
+.designpanel{
+  position:absolute; left:50%; bottom:40px; transform:translateX(-50%); z-index:23;
+  background:#000000a8; backdrop-filter:blur(8px); border:1px solid #ffffff22; border-radius:14px;
+  padding:14px 16px; display:none; flex-direction:column; gap:12px; align-items:center; cursor:default
+}
+.designpanel.vis{display:flex}
+.farver{display:flex;gap:9px}
+.farve{width:27px;height:27px;border-radius:50%;border:2px solid #ffffff44;cursor:pointer}
+.farve.valgt{border-color:#fff;box-shadow:0 0 0 2px var(--orange)}
+.designpanel input{
+  background:#ffffff12;border:1px solid #ffffff22;border-radius:9px;color:#fff;
+  padding:7px 10px;font-family:'Caveat',cursive;font-size:21px;text-align:center;outline:none;width:180px
+}
+/* bullet journal-nøgle + adressebog */
+.noegle{font-size:11px;color:#b4ab99;margin:-9px 0 10px;letter-spacing:.4px}
+.bogstav{font-family:'Caveat',cursive;font-size:24px;color:var(--orange);border-bottom:1.5px solid #e8820a33;margin-top:12px;line-height:1.2}
 .fane .antal{font-size:10px;background:#2a2a30;color:#fff;border-radius:8px;padding:3px 2px;margin-top:2px}
 
 /* ---------- SIDE-INDHOLD ---------- */
@@ -145,7 +166,8 @@ textarea::placeholder{color:#b8b0a0}
   display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
   padding:10px 0; min-height:28px;
 }
-.nt .em{font-size:15px;flex:0 0 auto}
+.nt .em{font-size:16px;font-weight:800;color:#1d1d22;flex:0 0 auto;width:15px;text-align:center}
+.nt .em.prio{color:var(--orange)}
 .nt .ti{flex:1;font-size:14.5px;font-weight:600;color:#1d1d22;line-height:1.25}
 .nt .fjern{
   flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid #00000022;
@@ -193,6 +215,7 @@ textarea::placeholder{color:#b8b0a0}
       <div class="sektion" id="s-seneste">
         <h1 class="rubrik">Seneste</h1>
         <div class="dato">sidste døgn</div>
+        <div class="noegle">• opgave · ○ aftale · – idé · &gt; videre · ✕ udført · <span style="color:#E8820A">★</span> haster</div>
         <div class="grupperubrik">🆕 Nye input</div>
         <div id="l-nye" class="hent">Henter…</div>
         <div class="grupperubrik">⏳ Forfalder</div>
@@ -203,6 +226,7 @@ textarea::placeholder{color:#b8b0a0}
       <div class="sektion" id="s-aabne">
         <h1 class="rubrik">Åbne noter</h1>
         <div class="dato">det der venter — klik for detaljer</div>
+        <div class="noegle">• opgave · ○ aftale · – idé · &gt; videre · <span style="color:#E8820A">★</span> haster</div>
         <div id="l-aabne" class="hent">Henter…</div>
       </div>
 
@@ -234,15 +258,34 @@ textarea::placeholder{color:#b8b0a0}
         <div id="l-faerdige" class="hent">Henter…</div>
       </div>
 
+      <!-- 📞 ADRESSER -->
+      <div class="sektion" id="s-adresser">
+        <h1 class="rubrik">Adresser</h1>
+        <div class="dato">navne, numre &amp; adresser — tilføj med #kontakt</div>
+        <div id="l-adresser" class="hent">Henter…</div>
+      </div>
+
     </div>
     <div class="sidefod" id="sidefod">— 1 —</div>
   </div>
 
   <div class="forside" id="forside">
+    <div class="design" id="designKnap" title="Design forsiden">✎</div>
     <div class="fs-logo">Ditzel &amp; Co</div>
     <div class="fs-titel">Hovedet</div>
     <div class="fs-under">alt ud af hovedet</div>
     <div class="fs-aabn">tryk for at åbne</div>
+    <div class="designpanel" id="designPanel">
+      <div class="farver">
+        <div class="farve" data-t="sort" style="background:#17171f"></div>
+        <div class="farve" data-t="laeder" style="background:#5b3a24"></div>
+        <div class="farve" data-t="bordeaux" style="background:#581f29"></div>
+        <div class="farve" data-t="groen" style="background:#1f4029"></div>
+        <div class="farve" data-t="blaa" style="background:#1f2a4a"></div>
+        <div class="farve" data-t="orange" style="background:#9a5c08"></div>
+      </div>
+      <input id="titelInput" maxlength="18" placeholder="Titel på bogen">
+    </div>
   </div>
 
   <div class="faner" id="faner">
@@ -253,19 +296,62 @@ textarea::placeholder{color:#b8b0a0}
     <button class="fane" data-s="rapporter"><span class="em">🔬</span>Rapport</button>
     <button class="fane" data-s="projekter"><span class="em">🛠</span>Projekt</button>
     <button class="fane" data-s="faerdige"><span class="em">✓</span>Færdig</button>
+    <button class="fane" data-s="adresser"><span class="em">📞</span>Adresse</button>
   </div>
 </div>
 
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 const FUNK={send:'📤',slaaop:'🔎',koeb:'🛒',undersoeg:'🔬',projekt:'🛠'};
-const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#projekt','#kalender','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7};
+const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#tvl','#master','#engang'];
+const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8};
+
+const erIde=r=>r.kategori==='Idé'||/idé/i.test(r.handling||'')||/#id[eé]\b/i.test(r.tags||'');
+const erKontakt=r=>/kontakt/i.test((r.tags||'')+' '+(r.kategori||''));
+const kontaktNavn=r=>(r.tekst.replace(/#\S+/g,'').trim().split(/[,·|]/)[0].trim()||'?');
+/* bullet journal-symboler */
+function bullet(r){
+  if(r.status==='udfoert') return '✕';
+  if(r.funktion==='send'||r.liste) return '&gt;';
+  if(erIde(r)) return '–';
+  if(r.deadline) return '○';
+  return '•';
+}
 
 document.getElementById('dato').textContent=new Date().toLocaleDateString('da-DK',{weekday:'long',day:'numeric',month:'long'});
 
-/* forside: tryk for at åbne bogen */
-document.getElementById('forside').addEventListener('click',function(){ this.classList.add('aaben'); });
+/* forside: tryk for at åbne bogen (ikke på design-knap/panel) */
+document.getElementById('forside').addEventListener('click',function(e){
+  if(e.target.closest('.design')||e.target.closest('.designpanel')) return;
+  this.classList.add('aaben');
+});
+
+/* design af forsiden */
+const TEMAER={
+  sort:['#2a2a3a','#17171f','#0e0e14'], laeder:['#7a4a2b','#5b3a24','#3a2416'],
+  bordeaux:['#7a2b38','#581f29','#38141b'], groen:['#2b5a3a','#1f4029','#132a1b'],
+  blaa:['#2b3a6a','#1f2a4a','#131a30'], orange:['#c9821a','#9a5c08','#5e3804']
+};
+let design={tema:'sort',titel:'Hovedet'};
+try{Object.assign(design,JSON.parse(localStorage.getItem('bogDesign')||'{}'))}catch(e){}
+function anvendDesign(){
+  const t=TEMAER[design.tema]||TEMAER.sort;
+  document.getElementById('forside').style.background='linear-gradient(145deg,'+t[0]+' 0%,'+t[1]+' 55%,'+t[2]+' 100%)';
+  document.querySelector('.fs-titel').textContent=design.titel||'Hovedet';
+  document.querySelectorAll('.farve').forEach(f=>f.classList.toggle('valgt',f.dataset.t===design.tema));
+}
+function gemDesign(){try{localStorage.setItem('bogDesign',JSON.stringify(design))}catch(e){}}
+document.getElementById('designKnap').addEventListener('click',e=>{
+  e.stopPropagation(); document.getElementById('designPanel').classList.toggle('vis');
+});
+document.getElementById('designPanel').addEventListener('click',e=>{
+  e.stopPropagation();
+  const f=e.target.closest('.farve'); if(f){design.tema=f.dataset.t; anvendDesign(); gemDesign();}
+});
+const titelInput=document.getElementById('titelInput');
+titelInput.value=design.titel||'Hovedet';
+titelInput.addEventListener('input',()=>{design.titel=titelInput.value.trim(); anvendDesign(); gemDesign();});
+anvendDesign();
 
 /* chips */
 const chipsEl=document.getElementById('chips');
@@ -313,15 +399,24 @@ async function fjernNote(id){
 
 function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
 function linkify(t){return esc(t).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">link</a>')}
+function telify(t){
+  return esc(t.replace(/#\S+/g,'').trim()).replace(/((?:\+45[ ]?)?(?:\d{2}[ .]?){3}\d{2})(?!\d)/g,
+    m=>'<a href="tel:'+m.replace(/[ .]/g,'')+'">'+m+'</a>');
+}
 function noteHtml(r){
-  const em=FUNK[r.funktion]||'📌';
-  const meta=[r.projekt,r.liste?('📲 '+r.liste):null,r.kategori,(r.oprettet||'').slice(0,10)].filter(Boolean).join(' · ');
+  const em=bullet(r), prio=(r.prioritet==1&&r.status!=='udfoert')?' prio':'';
+  const titel=erKontakt(r)?esc(kontaktNavn(r)):esc((r.titel||r.tekst).replace(/#\S+/g,'').trim()||r.tekst);
   let krop='';
-  if(meta) krop+='<div class="m">'+esc(meta)+'</div>';
-  if(r.resultat) krop+='<div class="r">'+linkify(r.resultat)+'</div>';
-  if(r.rapport) krop+='<a class="rapportknap" href="'+esc(r.rapport)+'" target="_blank">📄 Åbn rapport</a>';
-  if(r.github_issue) krop+=' <a class="issueknap" href="'+esc(String(r.github_issue).split('#')[0])+'" target="_blank">🛠 Issue</a>';
-  return '<div class="note" data-id="'+r.id+'"><div class="nt"><span class="em">'+em+'</span><span class="ti">'+esc(r.titel||r.tekst)+'</span><span class="fjern" title="Fjern fra listen">✓</span><span class="pil">▶</span></div><div class="nb">'+(krop||'<div class="m">ingen detaljer endnu</div>')+'</div></div>';
+  if(erKontakt(r)){
+    krop='<div class="r">'+telify(r.tekst)+'</div>';
+  }else{
+    const meta=[FUNK[r.funktion],r.projekt,r.liste?('📲 '+r.liste):null,r.kategori,(r.oprettet||'').slice(0,10)].filter(Boolean).join(' · ');
+    if(meta) krop+='<div class="m">'+esc(meta)+'</div>';
+    if(r.resultat) krop+='<div class="r">'+linkify(r.resultat)+'</div>';
+    if(r.rapport) krop+='<a class="rapportknap" href="'+esc(r.rapport)+'" target="_blank">📄 Åbn rapport</a>';
+    if(r.github_issue) krop+=' <a class="issueknap" href="'+esc(String(r.github_issue).split('#')[0])+'" target="_blank">🛠 Issue</a>';
+  }
+  return '<div class="note" data-id="'+r.id+'"><div class="nt"><span class="em'+prio+'">'+((r.prioritet==1&&r.status!=='udfoert')?'★':em)+'</span><span class="ti">'+titel+'</span><span class="fjern" title="Fjern fra listen">✓</span><span class="pil">▶</span></div><div class="nb">'+(krop||'<div class="m">ingen detaljer endnu</div>')+'</div></div>';
 }
 async function hentNoter(){
   if(alleNoter) return visLister();
@@ -332,7 +427,10 @@ async function hentNoter(){
   }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
 }
 function visLister(){
-  const n=alleNoter.filter(r=>r.status!=='arkiv');
+  const alle=alleNoter.filter(r=>r.status!=='arkiv');
+  const kontakter=alle.filter(erKontakt);
+  const n=alle.filter(r=>!erKontakt(r));
+  visAdresser(kontakter);
   const nu=Date.now(), DOGN=24*3600*1000;
   const opr=r=>{const d=new Date(String(r.oprettet||'').replace(' ','T')+'Z');return isNaN(d)?0:d.getTime()};
   fyld('l-nye', n.filter(r=>nu-opr(r)<DOGN), 'Intet nyt siden i går');
@@ -341,7 +439,7 @@ function visLister(){
     const d=new Date(r.deadline+'T23:59:59'); return !isNaN(d)&&d.getTime()<nu+DOGN;
   }), 'Intet forfalder');
   fyld('l-aabne',   n.filter(r=>r.status==='aaben'), 'Tomt — flot!');
-  fyld('l-ideer',   n.filter(r=>r.kategori==='Idé'||/idé/i.test(r.handling||'')||/#id[eé]\b/i.test(r.tags||'')), 'Ingen idéer — endnu');
+  fyld('l-ideer',   n.filter(erIde), 'Ingen idéer — endnu');
   fyld('l-rapporter',n.filter(r=>r.rapport), 'Ingen rapporter endnu');
   fyld('l-projekter',n.filter(r=>r.funktion==='projekt'||r.kode===1), 'Ingen projekt-noter');
   fyld('l-faerdige', n.filter(r=>r.status==='udfoert').slice(0,30), 'Intet udført endnu');
@@ -351,6 +449,19 @@ function visLister(){
   let b=f.querySelector('.antal');
   if(aabne){ if(!b){b=document.createElement('span');b.className='antal';f.appendChild(b);} b.textContent=aabne; }
   else if(b) b.remove();
+}
+function visAdresser(rows){
+  const el=document.getElementById('l-adresser'); el.classList.remove('hent');
+  if(!rows.length){ el.innerHTML='<div class="tom">Ingen kontakter endnu — skriv navn, nummer og adresse med #kontakt</div>'; return; }
+  rows.sort((a,b)=>kontaktNavn(a).localeCompare(kontaktNavn(b),'da'));
+  const navn=kontaktNavn;
+  let h='', sidste='';
+  for(const r of rows){
+    const B=navn(r).charAt(0).toUpperCase();
+    if(B!==sidste){ h+='<div class="bogstav">'+esc(B)+'</div>'; sidste=B; }
+    h+=noteHtml(r);
+  }
+  el.innerHTML=h;
 }
 function fyld(id,rows,tomtekst){
   const el=document.getElementById(id); el.classList.remove('hent');
