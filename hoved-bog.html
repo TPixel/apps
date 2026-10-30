@@ -141,6 +141,14 @@ body{
 /* bullet journal-nøgle + adressebog */
 .noegle{font-size:11px;color:#b4ab99;margin:-9px 0 10px;letter-spacing:.4px}
 .bogstav{font-family:'Caveat',cursive;font-size:24px;color:var(--orange);border-bottom:1.5px solid #e8820a33;margin-top:12px;line-height:1.2}
+.sorter{display:flex;gap:7px;margin:0 0 10px}
+.sorter button{font-size:11px;font-weight:bold;border:1px solid #00000020;background:#ffffff80;border-radius:14px;padding:5px 13px;color:#55503f;cursor:pointer}
+.sorter button.valgt{background:var(--orange);color:#fff;border-color:var(--orange)}
+.noeglebox{background:#ffffff80;border:1px solid #00000015;border-radius:12px;padding:12px;margin-bottom:12px}
+.noeglebox input{border:1px solid #00000022;border-radius:8px;padding:8px 10px;font-size:14px;outline:none;background:#fff;width:130px}
+.noeglebox button{background:var(--orange);color:#fff;font-weight:bold;border:none;border-radius:8px;padding:8px 14px;margin-left:6px;cursor:pointer}
+.kont .ti{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kont .fir{font-size:11.5px;color:#8d8679;font-weight:normal}
 .fane .antal{font-size:9px;background:#2a2a30;color:#fff;border-radius:9px;padding:2px 5px;margin-left:2px}
 
 /* ---------- SIDE-INDHOLD ---------- */
@@ -279,7 +287,17 @@ textarea::placeholder{color:#b8b0a0}
       <!-- 📞 ADRESSER -->
       <div class="sektion" id="s-adresser">
         <h1 class="rubrik">Adresser</h1>
-        <div class="dato">navne, numre &amp; adresser — tilføj med #kontakt</div>
+        <div class="dato">dine kontakter — hurtig-noter med #kontakt</div>
+        <div class="sorter" id="sorter">
+          <button data-k="navn" class="valgt">Navn</button>
+          <button data-k="firma">Firma</button>
+          <button data-k="stilling">Stilling</button>
+        </div>
+        <div class="noeglebox" id="noeglebox" style="display:none">
+          <div style="font-size:13px;color:#55503f;margin-bottom:8px">🔒 Adressebogen er låst — skriv din nøgle (gemmes kun på denne enhed):</div>
+          <input id="noegleInput" type="password" placeholder="nøgle">
+          <button id="noegleGem">Lås op</button>
+        </div>
         <div id="l-adresser" class="hent">Henter…</div>
       </div>
 
@@ -468,16 +486,58 @@ function visLister(){
   if(aabne){ if(!b){b=document.createElement('span');b.className='antal';f.appendChild(b);} b.textContent=aabne; }
   else if(b) b.remove();
 }
-function visAdresser(rows){
+/* ---------- adressebog: rigtige kontakter + #kontakt-noter ---------- */
+let kontaktListe=null, kontaktSort='navn', kontaktNoteListe=[];
+function kontaktNoegle(){ try{return localStorage.getItem('kontaktNoegle')||''}catch(e){return ''} }
+async function hentKontakter(){
+  const boks=document.getElementById('noeglebox');
+  if(!kontaktNoegle()){ boks.style.display='block'; document.getElementById('l-adresser').textContent=''; return; }
+  try{
+    const rs=await fetch(API+'/api/kontakter',{headers:{'Authorization':'Bearer '+kontaktNoegle()}});
+    if(rs.status===401){ boks.style.display='block'; document.getElementById('l-adresser').textContent=''; return; }
+    if(!rs.ok){ document.getElementById('l-adresser').innerHTML='<div class="tom">Adressebogen er ikke sat op på serveren endnu</div>'; return; }
+    kontaktListe=await rs.json(); boks.style.display='none';
+  }catch(e){ document.getElementById('l-adresser').textContent='Kunne ikke hente kontakter'; return; }
+  visAdresser();
+}
+document.getElementById('noegleGem').addEventListener('click',()=>{
+  const v=document.getElementById('noegleInput').value.trim(); if(!v) return;
+  try{localStorage.setItem('kontaktNoegle',v)}catch(e){}
+  kontaktListe=null; hentKontakter();
+});
+document.getElementById('sorter').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  kontaktSort=b.dataset.k;
+  document.querySelectorAll('#sorter button').forEach(x=>x.classList.toggle('valgt',x===b));
+  visAdresser();
+});
+function kontaktHtml(k){
+  const under=[k.stilling,k.firma].filter(Boolean).join(' · ');
+  let krop='';
+  if(under) krop+='<div class="m">'+esc(under)+'</div>';
+  if(k.telefon) krop+='<div class="r">📞 '+telify(k.telefon)+'</div>';
+  if(k.email) krop+='<div class="r">✉️ '+esc(k.email).replace(/([^\s·,;]+@[^\s·,;]+)/g,'<a href="mailto:$1">$1</a>')+'</div>';
+  if(k.adresse) krop+='<div class="r">📍 '+esc(k.adresse)+'</div>';
+  const fir=k.firma&&kontaktSort==='navn'?' <span class="fir">'+esc(k.firma)+'</span>':'';
+  const vis=kontaktSort==='navn'?'<b>'+esc(k.navn)+'</b>'+fir
+    :kontaktSort==='firma'?'<b>'+esc(k.firma||'—')+'</b> <span class="fir">'+esc(k.navn)+'</span>'
+    :'<b>'+esc(k.stilling||'—')+'</b> <span class="fir">'+esc(k.navn)+'</span>';
+  return '<div class="note kont"><div class="nt"><span class="em">☎</span><span class="ti">'+vis+'</span><span class="pil">▶</span></div><div class="nb">'+(krop||'<div class="m">ingen detaljer</div>')+'</div></div>';
+}
+function visAdresser(noter){
+  if(noter) kontaktNoteListe=noter;
   const el=document.getElementById('l-adresser'); el.classList.remove('hent');
-  if(!rows.length){ el.innerHTML='<div class="tom">Ingen kontakter endnu — skriv navn, nummer og adresse med #kontakt</div>'; return; }
-  rows.sort((a,b)=>kontaktNavn(a).localeCompare(kontaktNavn(b),'da'));
-  const navn=kontaktNavn;
+  if(kontaktListe===null){ hentKontakter(); return; }
+  const ekstra=kontaktNoteListe.map(r=>({navn:kontaktNavn(r),firma:'',stilling:'',telefon:'',email:'',adresse:'',_note:r}));
+  const alle=[...(kontaktListe||[]),...ekstra];
+  if(!alle.length){ el.innerHTML='<div class="tom">Ingen kontakter — kør synk-kontakter.sh på Mac’en</div>'; return; }
+  const key=k=>(((k[kontaktSort]||'')+'').trim()||'—');
+  alle.sort((a,b)=>key(a).localeCompare(key(b),'da'));
   let h='', sidste='';
-  for(const r of rows){
-    const B=navn(r).charAt(0).toUpperCase();
+  for(const k of alle){
+    const B=key(k).charAt(0).toUpperCase();
     if(B!==sidste){ h+='<div class="bogstav">'+esc(B)+'</div>'; sidste=B; }
-    h+=noteHtml(r);
+    h+=k._note?noteHtml(k._note):kontaktHtml(k);
   }
   el.innerHTML=h;
 }
