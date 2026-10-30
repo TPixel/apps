@@ -89,6 +89,7 @@ body{
 .fane:nth-child(6){--rot:1deg;   font-size:10.5px}
 .fane:nth-child(7){--rot:-2.3deg;font-size:9.5px}
 .fane:nth-child(8){--rot:1.4deg; font-size:10px}
+.fane:nth-child(9){--rot:-1.6deg;font-size:10px}
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f2a2a2}
 .fane:nth-child(3){background:#f4c04e}
@@ -97,6 +98,7 @@ body{
 .fane:nth-child(6){background:#9dbff5}
 .fane:nth-child(7){background:#cfccc2}
 .fane:nth-child(8){background:#c9a27a}
+.fane:nth-child(9){background:#8fd4d1}
 
 /* ---------- FORSIDE ---------- */
 .forside{
@@ -316,6 +318,13 @@ textarea::placeholder{color:#b8b0a0}
         <div id="l-faerdige" class="hent">Henter…</div>
       </div>
 
+      <!-- 🔗 LINKS -->
+      <div class="sektion" id="s-links">
+        <h1 class="rubrik">Links</h1>
+        <div class="dato">delt fra Safari, Facebook, Instagram … via Hoved-genvejen</div>
+        <div id="l-links" class="hent">Henter…</div>
+      </div>
+
       <!-- 📞 ADRESSER -->
       <div class="sektion" id="s-adresser">
         <h1 class="rubrik">Adresser</h1>
@@ -365,6 +374,7 @@ textarea::placeholder{color:#b8b0a0}
     <button class="fane" data-s="projekter"><span class="em">🛠</span>Projekt</button>
     <button class="fane" data-s="faerdige"><span class="em">✓</span>Færdig</button>
     <button class="fane" data-s="adresser"><span class="em">📞</span>Adresse</button>
+    <button class="fane" data-s="links"><span class="em">🔗</span>Link</button>
   </div>
   <div class="gfaner" id="gfaner"></div>
 </div>
@@ -373,7 +383,8 @@ textarea::placeholder{color:#b8b0a0}
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 const FUNK={send:'📤',slaaop:'🔎',koeb:'🛒',undersoeg:'🔬',projekt:'🛠'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8};
+const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9};
+const erLink=r=>/https?:\/\/\S+/i.test(r.tekst||'');
 
 const erIde=r=>r.kategori==='Idé'||/idé/i.test(r.handling||'')||/#id[eé]\b/i.test(r.tags||'');
 const erKontakt=r=>/kontakt/i.test((r.tags||'')+' '+(r.kategori||''));
@@ -475,15 +486,24 @@ function telify(t){
   return esc(t.replace(/#\S+/g,'').trim()).replace(/((?:\+45[ ]?)?(?:\d{2}[ .]?){3}\d{2})(?!\d)/g,
     m=>'<a href="tel:'+m.replace(/[ .]/g,'')+'">'+m+'</a>');
 }
+function linkTitel(r){
+  const t=(r.titel||'').trim();
+  if(t&&!/^https?:/i.test(t)) return t;
+  const u=(r.tekst||'').replace(/https?:\/\/\S+/gi,'').replace(/#\S+/g,'').trim();
+  if(u) return u;
+  const m=(r.tekst||'').match(/https?:\/\/(?:www\.)?([^\/\s]+)/i);
+  return m?m[1]:'link';
+}
 function noteHtml(r){
   const em=bullet(r), prio=(r.prioritet==1&&r.status!=='udfoert')?' prio':'';
-  const titel=erKontakt(r)?esc(kontaktNavn(r)):esc((r.titel||r.tekst).replace(/#\S+/g,'').trim()||r.tekst);
+  const titel=erKontakt(r)?esc(kontaktNavn(r)):erLink(r)?esc(linkTitel(r)):esc((r.titel||r.tekst).replace(/#\S+/g,'').trim()||r.tekst);
   let krop='';
   if(erKontakt(r)){
     krop='<div class="r">'+telify(r.tekst)+'</div>';
   }else{
     const meta=[FUNK[r.funktion],r.projekt,r.liste?('📲 '+r.liste):null,r.kategori,(r.oprettet||'').slice(0,10)].filter(Boolean).join(' · ');
     if(meta) krop+='<div class="m">'+esc(meta)+'</div>';
+    if(erLink(r)) krop+='<div class="r">🔗 '+linkify(r.tekst)+'</div>';
     if(r.resultat) krop+='<div class="r">'+linkify(r.resultat)+'</div>';
     if(r.rapport) krop+='<a class="rapportknap" href="'+esc(r.rapport)+'" target="_blank">📄 Åbn rapport</a>';
     if(r.github_issue) krop+=' <a class="issueknap" href="'+esc(String(r.github_issue).split('#')[0])+'" target="_blank">🛠 Issue</a>';
@@ -496,16 +516,18 @@ async function hentNoter(){
     const rs=await fetch(API+'/api/hoved?status=alle&limit=200');
     const d=await rs.json(); alleNoter=Array.isArray(d)?d:(d.rows||[]);
     visLister();
-  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
+  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige','l-links'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
 }
 function visLister(){
   const alle=alleNoter.filter(r=>r.status!=='arkiv');
   const kontakter=alle.filter(erKontakt);
-  const n=alle.filter(r=>!erKontakt(r));
+  const ikkeK=alle.filter(r=>!erKontakt(r));
+  const n=ikkeK.filter(r=>!erLink(r));
   visAdresser(kontakter);
+  fyld('l-links', ikkeK.filter(r=>erLink(r)&&r.status!=='udfoert'), 'Ingen links endnu — del fra Safari med Hoved-genvejen');
   const nu=Date.now(), DOGN=24*3600*1000;
   const opr=r=>{const d=new Date(String(r.oprettet||'').replace(' ','T')+'Z');return isNaN(d)?0:d.getTime()};
-  fyld('l-nye', n.filter(r=>nu-opr(r)<DOGN), 'Intet nyt siden i går');
+  fyld('l-nye', ikkeK.filter(r=>nu-opr(r)<DOGN), 'Intet nyt siden i går');
   fyld('l-forfalder', n.filter(r=>{
     if(r.status!=='aaben'||!r.deadline) return false;
     const d=new Date(r.deadline+'T23:59:59'); return !isNaN(d)&&d.getTime()<nu+DOGN;
