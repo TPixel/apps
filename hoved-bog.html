@@ -279,6 +279,11 @@ TAGS.forEach(t=>{
 let alleNoter=null;
 document.getElementById('faner').addEventListener('click',e=>{
   const f=e.target.closest('.fane'); if(!f) return;
+  const forside=document.getElementById('forside');
+  if(f.classList.contains('aktiv') && forside.classList.contains('aaben')){
+    forside.classList.remove('aaben'); return;   // samme fane igen → luk bogen
+  }
+  forside.classList.add('aaben');                 // fane på lukket bog → åbn på den side
   document.querySelectorAll('.fane').forEach(x=>x.classList.remove('aktiv'));
   document.querySelectorAll('.sektion').forEach(x=>x.classList.remove('aktiv'));
   f.classList.add('aktiv');
