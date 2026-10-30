@@ -141,9 +141,28 @@ body{
 /* bullet journal-nøgle + adressebog */
 .noegle{font-size:11px;color:#b4ab99;margin:-9px 0 10px;letter-spacing:.4px}
 .bogstav{font-family:'Caveat',cursive;font-size:24px;color:var(--orange);border-bottom:1.5px solid #e8820a33;margin-top:12px;line-height:1.2}
-.gfaner{display:flex;gap:3px;align-items:flex-end;border-bottom:2px solid #d8cfb8;margin:0 0 10px;flex-wrap:wrap}
-.gfane{font-size:10px;font-weight:bold;letter-spacing:.3px;padding:4px 9px 3px;border:1px solid #d0c6ac;border-bottom:none;border-radius:6px 6px 0 0;background:#f1ead8;color:#5d5743;cursor:pointer}
-.gfane.valgt{background:var(--orange) !important;border-color:var(--orange);color:#fff}
+/* gruppe-faner: sidder på bogens kant under indeks-fanerne, kun når Adresser er slået op */
+.gfaner{
+  position:absolute; left:100%; margin-left:-30px; top:298px;
+  display:none; flex-direction:column; gap:5px; z-index:4; align-items:flex-start;
+}
+.gfaner.vis{display:flex}
+.gfane{
+  padding:3px 9px 3px 11px; border-radius:0 8px 8px 0; border:none; cursor:pointer;
+  font-family:Tahoma,sans-serif; font-weight:bold; letter-spacing:.3px; font-size:9px;
+  color:#2a2a30; box-shadow:2px 3px 8px #00000030;
+  transform:rotate(var(--rot,0deg)); transform-origin:left center;
+  transition:transform .18s ease, filter .18s ease;
+  filter:brightness(.92) saturate(.55) opacity(.85);
+}
+.gfane.valgt{transform:translateX(5px) rotate(var(--rot,0deg)); filter:none; background:var(--orange) !important; color:#fff}
+.gfane[data-g="alle"]{background:#d8cfb6}
+.gfane:nth-child(1){--rot:1.5deg}
+.gfane:nth-child(2){--rot:-1.8deg;font-size:8.5px}
+.gfane:nth-child(3){--rot:1deg}
+.gfane:nth-child(4){--rot:-1.4deg;font-size:8.5px}
+.gfane:nth-child(5){--rot:2deg}
+.gfane:nth-child(6){--rot:-2.2deg;font-size:8.5px}
 .sorter{display:flex;gap:7px;margin:0 0 10px}
 .sorter button{font-size:11px;font-weight:bold;border:1px solid #00000020;background:#ffffff80;border-radius:14px;padding:5px 13px;color:#55503f;cursor:pointer}
 .sorter button.valgt{background:var(--orange);color:#fff;border-color:var(--orange)}
@@ -294,7 +313,6 @@ textarea::placeholder{color:#b8b0a0}
       <div class="sektion" id="s-adresser">
         <h1 class="rubrik">Adresser</h1>
         <div class="dato">dine kontakter — hurtig-noter med #kontakt</div>
-        <div class="gfaner" id="gfaner" style="display:none"></div>
         <div class="sorter" id="sorter">
           <button data-k="navn" class="valgt">Navn</button>
           <button data-k="firma">Firma</button>
@@ -341,6 +359,7 @@ textarea::placeholder{color:#b8b0a0}
     <button class="fane" data-s="faerdige"><span class="em">✓</span>Færdig</button>
     <button class="fane" data-s="adresser"><span class="em">📞</span>Adresse</button>
   </div>
+  <div class="gfaner" id="gfaner"></div>
 </div>
 
 <script>
@@ -367,6 +386,7 @@ document.getElementById('dato').textContent=new Date().toLocaleDateString('da-DK
 document.getElementById('forside').addEventListener('click',function(e){
   if(e.target.closest('.design')||e.target.closest('.designpanel')) return;
   this.classList.add('aaben');
+  gfanerSynlighed();
 });
 
 /* design af forsiden */
@@ -410,7 +430,7 @@ document.getElementById('faner').addEventListener('click',e=>{
   const f=e.target.closest('.fane'); if(!f) return;
   const forside=document.getElementById('forside');
   if(f.classList.contains('aktiv') && forside.classList.contains('aaben')){
-    forside.classList.remove('aaben'); return;   // samme fane igen → luk bogen
+    forside.classList.remove('aaben'); gfanerSynlighed(); return;   // samme fane igen → luk bogen
   }
   forside.classList.add('aaben');                 // fane på lukket bog → åbn på den side
   document.querySelectorAll('.fane').forEach(x=>x.classList.remove('aktiv'));
@@ -420,6 +440,7 @@ document.getElementById('faner').addEventListener('click',e=>{
   document.getElementById('s-'+s).classList.add('aktiv');
   document.getElementById('sidefod').textContent='— '+SIDETAL[s]+' —';
   document.getElementById('side').scrollTop=0;
+  gfanerSynlighed();
   if(s!=='skriv') hentNoter();
 });
 
@@ -498,17 +519,23 @@ function visLister(){
 let kontaktListe=null, kontaktSort='navn', kontaktNoteListe=[], kontaktGruppe='alle';
 const GRUPPE_ORDEN=['familie','filmbranche','motorcykel','takeaway','restauranter'];
 const GRUPPE_FARVER=['#f2d7ae','#f6caca','#cfe6c3','#cddcf4','#e6d4f0','#f4e8b8'];
+function gfanerSynlighed(){
+  const vis=document.getElementById('gfaner').children.length>0
+    && document.getElementById('s-adresser').classList.contains('aktiv')
+    && document.getElementById('forside').classList.contains('aaben');
+  document.getElementById('gfaner').classList.toggle('vis',vis);
+}
 function visGruppeFaner(){
   const r=document.getElementById('gfaner');
   const fundet=new Set();
   (kontaktListe||[]).forEach(k=>(k.gruppe||'').split('|').forEach(g=>g&&fundet.add(g)));
   const grupper=[...GRUPPE_ORDEN.filter(g=>fundet.has(g)),...[...fundet].filter(g=>!GRUPPE_ORDEN.includes(g)).sort((a,b)=>a.localeCompare(b,'da'))];
-  if(!grupper.length){ r.style.display='none'; kontaktGruppe='alle'; return; }
+  if(!grupper.length){ r.innerHTML=''; kontaktGruppe='alle'; gfanerSynlighed(); return; }
   if(kontaktGruppe!=='alle'&&!grupper.includes(kontaktGruppe)) kontaktGruppe='alle';
-  r.style.display='flex';
   r.innerHTML=['alle',...grupper].map((g,i)=>'<button class="gfane'+(g===kontaktGruppe?' valgt':'')+'" data-g="'+esc(g)+'"'
     +(g==='alle'||g===kontaktGruppe?'':' style="background:'+GRUPPE_FARVER[(i-1)%GRUPPE_FARVER.length]+'"')
     +'>'+esc(g==='alle'?'Alle':g.charAt(0).toUpperCase()+g.slice(1))+'</button>').join('');
+  gfanerSynlighed();
 }
 document.getElementById('gfaner').addEventListener('click',e=>{
   const b=e.target.closest('.gfane'); if(!b) return;
