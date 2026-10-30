@@ -141,6 +141,9 @@ body{
 /* bullet journal-nøgle + adressebog */
 .noegle{font-size:11px;color:#b4ab99;margin:-9px 0 10px;letter-spacing:.4px}
 .bogstav{font-family:'Caveat',cursive;font-size:24px;color:var(--orange);border-bottom:1.5px solid #e8820a33;margin-top:12px;line-height:1.2}
+.gfaner{display:flex;gap:3px;align-items:flex-end;border-bottom:2px solid #d8cfb8;margin:0 0 10px;flex-wrap:wrap}
+.gfane{font-size:10px;font-weight:bold;letter-spacing:.3px;padding:4px 9px 3px;border:1px solid #d0c6ac;border-bottom:none;border-radius:6px 6px 0 0;background:#f1ead8;color:#5d5743;cursor:pointer}
+.gfane.valgt{background:var(--orange) !important;border-color:var(--orange);color:#fff}
 .sorter{display:flex;gap:7px;margin:0 0 10px}
 .sorter button{font-size:11px;font-weight:bold;border:1px solid #00000020;background:#ffffff80;border-radius:14px;padding:5px 13px;color:#55503f;cursor:pointer}
 .sorter button.valgt{background:var(--orange);color:#fff;border-color:var(--orange)}
@@ -288,6 +291,7 @@ textarea::placeholder{color:#b8b0a0}
       <div class="sektion" id="s-adresser">
         <h1 class="rubrik">Adresser</h1>
         <div class="dato">dine kontakter — hurtig-noter med #kontakt</div>
+        <div class="gfaner" id="gfaner" style="display:none"></div>
         <div class="sorter" id="sorter">
           <button data-k="navn" class="valgt">Navn</button>
           <button data-k="firma">Firma</button>
@@ -487,7 +491,25 @@ function visLister(){
   else if(b) b.remove();
 }
 /* ---------- adressebog: rigtige kontakter + #kontakt-noter ---------- */
-let kontaktListe=null, kontaktSort='navn', kontaktNoteListe=[];
+let kontaktListe=null, kontaktSort='navn', kontaktNoteListe=[], kontaktGruppe='alle';
+const GRUPPE_ORDEN=['familie','filmbranche','motorcykel','takeaway','restauranter'];
+const GRUPPE_FARVER=['#f2d7ae','#f6caca','#cfe6c3','#cddcf4','#e6d4f0','#f4e8b8'];
+function visGruppeFaner(){
+  const r=document.getElementById('gfaner');
+  const fundet=new Set();
+  (kontaktListe||[]).forEach(k=>(k.gruppe||'').split('|').forEach(g=>g&&fundet.add(g)));
+  const grupper=[...GRUPPE_ORDEN.filter(g=>fundet.has(g)),...[...fundet].filter(g=>!GRUPPE_ORDEN.includes(g)).sort((a,b)=>a.localeCompare(b,'da'))];
+  if(!grupper.length){ r.style.display='none'; kontaktGruppe='alle'; return; }
+  if(kontaktGruppe!=='alle'&&!grupper.includes(kontaktGruppe)) kontaktGruppe='alle';
+  r.style.display='flex';
+  r.innerHTML=['alle',...grupper].map((g,i)=>'<button class="gfane'+(g===kontaktGruppe?' valgt':'')+'" data-g="'+esc(g)+'"'
+    +(g==='alle'||g===kontaktGruppe?'':' style="background:'+GRUPPE_FARVER[(i-1)%GRUPPE_FARVER.length]+'"')
+    +'>'+esc(g==='alle'?'Alle':g.charAt(0).toUpperCase()+g.slice(1))+'</button>').join('');
+}
+document.getElementById('gfaner').addEventListener('click',e=>{
+  const b=e.target.closest('.gfane'); if(!b) return;
+  kontaktGruppe=b.dataset.g; visAdresser();
+});
 function kontaktNoegle(){ try{return localStorage.getItem('kontaktNoegle')||''}catch(e){return ''} }
 async function hentKontakter(){
   const boks=document.getElementById('noeglebox');
@@ -528,9 +550,12 @@ function visAdresser(noter){
   if(noter) kontaktNoteListe=noter;
   const el=document.getElementById('l-adresser'); el.classList.remove('hent');
   if(kontaktListe===null){ hentKontakter(); return; }
+  visGruppeFaner();
   const ekstra=kontaktNoteListe.map(r=>({navn:kontaktNavn(r),firma:'',stilling:'',telefon:'',email:'',adresse:'',_note:r}));
-  const alle=[...(kontaktListe||[]),...ekstra];
+  let alle=[...(kontaktListe||[]),...ekstra];
   if(!alle.length){ el.innerHTML='<div class="tom">Ingen kontakter — kør synk-kontakter.sh på Mac’en</div>'; return; }
+  if(kontaktGruppe!=='alle') alle=alle.filter(k=>(k.gruppe||'').split('|').includes(kontaktGruppe));
+  if(!alle.length){ el.innerHTML='<div class="tom">Ingen i denne gruppe endnu</div>'; return; }
   const key=k=>(((k[kontaktSort]||'')+'').trim()||'—');
   alle.sort((a,b)=>key(a).localeCompare(key(b),'da'));
   let h='', sidste='';
