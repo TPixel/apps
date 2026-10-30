@@ -26,7 +26,7 @@ body{
   background:#0C0C12;
   color:var(--blaek); display:flex; justify-content:center; align-items:center;
   height:100dvh; overflow:hidden;
-  padding:8px 40px 8px 8px;
+  padding:8px 62px 8px 8px;
   padding-top:max(8px, env(safe-area-inset-top));
   padding-bottom:max(8px, env(safe-area-inset-bottom));
 }
@@ -65,19 +65,30 @@ body{
 }
 
 /* ---------- INDEKS-FANER ---------- */
-.faner{position:absolute; right:-36px; top:26px; display:flex; flex-direction:column; gap:8px; z-index:5}
-.fane{
-  writing-mode:vertical-rl; text-orientation:mixed;
-  padding:10px 7px 10px 8px; min-height:60px;
-  border-radius:0 9px 9px 0; border:none; cursor:pointer;
-  font-family:Tahoma,sans-serif; font-weight:bold; font-size:11px; letter-spacing:.6px;
-  color:#2a2a30; box-shadow:2px 3px 8px #00000030;
-  transform:translateX(-4px); transition:transform .18s ease, filter .18s ease;
-  filter:brightness(.92) saturate(.55) opacity(.85);
-  display:flex; align-items:center; gap:4px;
+.faner{
+  position:absolute; left:100%; margin-left:-30px; top:34px;
+  display:flex; flex-direction:column; gap:7px; z-index:5; align-items:flex-start;
 }
-.fane .em{font-size:13px}
-.fane.aktiv{transform:translateX(2px); filter:none}
+.fane{
+  padding:5px 11px 5px 12px;
+  border-radius:0 9px 9px 0; border:none; cursor:pointer;
+  font-family:Tahoma,sans-serif; font-weight:bold; letter-spacing:.3px;
+  color:#2a2a30; box-shadow:2px 3px 8px #00000030;
+  transform:rotate(var(--rot,0deg)); transform-origin:left center;
+  transition:transform .18s ease, filter .18s ease;
+  filter:brightness(.92) saturate(.55) opacity(.85);
+  display:flex; align-items:center; gap:5px;
+}
+.fane .em{font-size:12px}
+.fane.aktiv{transform:translateX(5px) rotate(var(--rot,0deg)); filter:none}
+.fane:nth-child(1){--rot:-2deg;  font-size:11px}
+.fane:nth-child(2){--rot:1.6deg; font-size:9.5px}
+.fane:nth-child(3){--rot:-1deg;  font-size:10.5px}
+.fane:nth-child(4){--rot:2.2deg; font-size:10px}
+.fane:nth-child(5){--rot:-1.8deg;font-size:9.5px}
+.fane:nth-child(6){--rot:1deg;   font-size:10.5px}
+.fane:nth-child(7){--rot:-2.3deg;font-size:9.5px}
+.fane:nth-child(8){--rot:1.4deg; font-size:10px}
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f2a2a2}
 .fane:nth-child(3){background:#f4c04e}
@@ -130,7 +141,7 @@ body{
 /* bullet journal-nøgle + adressebog */
 .noegle{font-size:11px;color:#b4ab99;margin:-9px 0 10px;letter-spacing:.4px}
 .bogstav{font-family:'Caveat',cursive;font-size:24px;color:var(--orange);border-bottom:1.5px solid #e8820a33;margin-top:12px;line-height:1.2}
-.fane .antal{font-size:10px;background:#2a2a30;color:#fff;border-radius:8px;padding:3px 2px;margin-top:2px}
+.fane .antal{font-size:9px;background:#2a2a30;color:#fff;border-radius:9px;padding:2px 5px;margin-left:2px}
 
 /* ---------- SIDE-INDHOLD ---------- */
 h1.rubrik{font-family:'Caveat',cursive;font-size:34px;font-weight:700;color:#1d1d22;line-height:1}
