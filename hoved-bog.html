@@ -150,8 +150,11 @@ body{
 .noeglebox{background:#ffffff80;border:1px solid #00000015;border-radius:12px;padding:12px;margin-bottom:12px}
 .noeglebox input{border:1px solid #00000022;border-radius:8px;padding:8px 10px;font-size:14px;outline:none;background:#fff;width:130px}
 .noeglebox button{background:var(--orange);color:#fff;font-weight:bold;border:none;border-radius:8px;padding:8px 14px;margin-left:6px;cursor:pointer}
-.kont .ti{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kont .fir{font-size:11.5px;color:#8d8679;font-weight:normal}
+.kont .ti{display:flex;align-items:baseline;min-width:0}
+.kont .nvn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:40px}
+.kont .fir{font-size:11.5px;color:#8d8679;font-weight:normal;margin-left:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:4;min-width:0}
+.kont .ldr{flex:1 0 10px;border-bottom:2px dotted #c9c0a9;margin:0 5px 3px}
+.kont .tlf{font-size:12.5px;font-weight:600;color:#55503f;white-space:nowrap;text-decoration:none}
 .fane .antal{font-size:9px;background:#2a2a30;color:#fff;border-radius:9px;padding:2px 5px;margin-left:2px}
 
 /* ---------- SIDE-INDHOLD ---------- */
@@ -424,6 +427,7 @@ document.getElementById('faner').addEventListener('click',e=>{
 document.getElementById('side').addEventListener('click',e=>{
   const fj=e.target.closest('.fjern');
   if(fj){ e.stopPropagation(); fjernNote(fj.closest('.note').dataset.id); return; }
+  if(e.target.closest('a')) return;              /* tel:-link i linjen → ring, fold ikke ud */
   const t=e.target.closest('.nt'); if(!t) return;
   t.parentElement.classList.toggle('aaben');
 });
@@ -540,10 +544,12 @@ function kontaktHtml(k){
   if(k.telefon) krop+='<div class="r">📞 '+telify(k.telefon)+'</div>';
   if(k.email) krop+='<div class="r">✉️ '+esc(k.email).replace(/([^\s·,;]+@[^\s·,;]+)/g,'<a href="mailto:$1">$1</a>')+'</div>';
   if(k.adresse) krop+='<div class="r">📍 '+esc(k.adresse)+'</div>';
-  const fir=k.firma&&kontaktSort==='navn'?' <span class="fir">'+esc(k.firma)+'</span>':'';
-  const vis=kontaktSort==='navn'?'<b>'+esc(k.navn)+'</b>'+fir
-    :kontaktSort==='firma'?'<b>'+esc(k.firma||'—')+'</b> <span class="fir">'+esc(k.navn)+'</span>'
-    :'<b>'+esc(k.stilling||'—')+'</b> <span class="fir">'+esc(k.navn)+'</span>';
+  const fir=k.firma&&kontaktSort==='navn'?'<span class="fir">'+esc(k.firma)+'</span>':'';
+  const tlf1=(k.telefon||'').split('·')[0].trim();
+  const nr=tlf1?'<span class="ldr"></span><a class="tlf" href="tel:'+tlf1.replace(/[^\d+]/g,'')+'">'+esc(tlf1)+'</a>':'';
+  const vis=(kontaktSort==='navn'?'<span class="nvn"><b>'+esc(k.navn)+'</b></span>'+fir
+    :kontaktSort==='firma'?'<span class="nvn"><b>'+esc(k.firma||'—')+'</b></span><span class="fir">'+esc(k.navn)+'</span>'
+    :'<span class="nvn"><b>'+esc(k.stilling||'—')+'</b></span><span class="fir">'+esc(k.navn)+'</span>')+nr;
   return '<div class="note kont"><div class="nt"><span class="em">☎</span><span class="ti">'+vis+'</span><span class="pil">▶</span></div><div class="nb">'+(krop||'<div class="m">ingen detaljer</div>')+'</div></div>';
 }
 function visAdresser(noter){
