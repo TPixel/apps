@@ -160,6 +160,10 @@ body{
 .gfane .em{font-size:12px}
 .gfane.valgt{transform:translateX(5px) rotate(var(--rot,0deg)); filter:none; background:var(--orange) !important; color:#fff}
 .gfane[data-g="alle"]{background:#d8cfb6}
+.gruppevalg{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.gchip{font-size:10.5px;font-weight:bold;border:1px solid #00000022;background:#ffffff80;border-radius:11px;padding:3px 9px;color:#55503f;cursor:pointer}
+.gchip.med{background:var(--orange);border-color:var(--orange);color:#fff}
+.gchip.ny{border-style:dashed;color:#8d8679}
 .gfane:nth-child(1){--rot:1.5deg; font-size:11px}
 .gfane:nth-child(2){--rot:-1.8deg;font-size:10px}
 .gfane:nth-child(3){--rot:1deg;   font-size:10.5px}
@@ -529,11 +533,14 @@ function gfanerSynlighed(){
   document.getElementById('gfaner').classList.toggle('vis',vis);
   document.querySelector('.bogholder').classList.toggle('adressebog',vis);
 }
-function visGruppeFaner(){
-  const r=document.getElementById('gfaner');
+function alleGrupper(){
   const fundet=new Set();
   (kontaktListe||[]).forEach(k=>(k.gruppe||'').split('|').forEach(g=>g&&fundet.add(g)));
-  const grupper=[...GRUPPE_ORDEN.filter(g=>fundet.has(g)),...[...fundet].filter(g=>!GRUPPE_ORDEN.includes(g)).sort((a,b)=>a.localeCompare(b,'da'))];
+  return [...GRUPPE_ORDEN.filter(g=>fundet.has(g)),...[...fundet].filter(g=>!GRUPPE_ORDEN.includes(g)).sort((a,b)=>a.localeCompare(b,'da'))];
+}
+function visGruppeFaner(){
+  const r=document.getElementById('gfaner');
+  const grupper=alleGrupper();
   if(!grupper.length){ r.innerHTML=''; kontaktGruppe='alle'; gfanerSynlighed(); return; }
   if(kontaktGruppe!=='alle'&&!grupper.includes(kontaktGruppe)) kontaktGruppe='alle';
   const IKON={alle:'📖',familie:'👨‍👩‍👧',filmbranche:'🎬',motorcykel:'🏍',takeaway:'🍕',restauranter:'🍽'};
@@ -563,12 +570,41 @@ document.getElementById('noegleGem').addEventListener('click',()=>{
   try{localStorage.setItem('kontaktNoegle',v)}catch(e){}
   kontaktListe=null; hentKontakter();
 });
+/* ret en kontakts faner i fold-ud'et — gemmes på serveren og overlever synk */
+document.getElementById('l-adresser').addEventListener('click',async e=>{
+  const chip=e.target.closest('.gchip'); if(!chip) return;
+  e.stopPropagation();
+  const holder=chip.closest('.gruppevalg'), navn=holder.dataset.navn;
+  const k=(kontaktListe||[]).find(x=>x.navn===navn); if(!k) return;
+  let g=chip.dataset.g;
+  if(chip.classList.contains('ny')){
+    g=(prompt('Navn på den nye fane:')||'').trim().toLowerCase();
+    if(!g) return;
+  }
+  const sg=new Set((k.gruppe||'').split('|').filter(Boolean));
+  sg.has(g)?sg.delete(g):sg.add(g);
+  k.gruppe=[...sg].join('|');
+  holder.outerHTML=gchipsHtml(k);
+  visGruppeFaner();
+  try{
+    await fetch(API+'/api/kontakter/ret',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+kontaktNoegle()},
+      body:JSON.stringify({navn:k.navn,gruppe:k.gruppe})});
+  }catch(err){}
+});
 document.getElementById('sorter').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
   kontaktSort=b.dataset.k;
   document.querySelectorAll('#sorter button').forEach(x=>x.classList.toggle('valgt',x===b));
   visAdresser();
 });
+function gchipsHtml(k){
+  const kg=(k.gruppe||'').split('|').filter(Boolean);
+  const kendte=[...new Set([...GRUPPE_ORDEN,...alleGrupper()])];
+  return '<div class="gruppevalg" data-navn="'+esc(k.navn)+'">'
+    +kendte.map(g=>'<span class="gchip'+(kg.includes(g)?' med':'')+'" data-g="'+esc(g)+'">'+esc(g)+'</span>').join('')
+    +'<span class="gchip ny">+ ny fane</span></div>';
+}
 function kontaktHtml(k){
   const under=[k.stilling,k.firma].filter(Boolean).join(' · ');
   let krop='';
@@ -576,6 +612,7 @@ function kontaktHtml(k){
   if(k.telefon) krop+='<div class="r">📞 '+telify(k.telefon)+'</div>';
   if(k.email) krop+='<div class="r">✉️ '+esc(k.email).replace(/([^\s·,;]+@[^\s·,;]+)/g,'<a href="mailto:$1">$1</a>')+'</div>';
   if(k.adresse) krop+='<div class="r">📍 '+esc(k.adresse)+'</div>';
+  krop+=gchipsHtml(k);
   const fir=k.firma&&kontaktSort==='navn'?'<span class="fir">'+esc(k.firma)+'</span>':'';
   const tlf1=(k.telefon||'').split('·')[0].trim();
   const nr=tlf1?'<span class="ldr"></span><a class="tlf" href="tel:'+tlf1.replace(/[^\d+]/g,'')+'">'+esc(tlf1)+'</a>':'';
