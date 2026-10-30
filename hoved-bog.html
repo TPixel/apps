@@ -141,28 +141,31 @@ body{
 /* bullet journal-nøgle + adressebog */
 .noegle{font-size:11px;color:#b4ab99;margin:-9px 0 10px;letter-spacing:.4px}
 .bogstav{font-family:'Caveat',cursive;font-size:24px;color:var(--orange);border-bottom:1.5px solid #e8820a33;margin-top:12px;line-height:1.2}
-/* gruppe-faner: sidder på bogens kant under indeks-fanerne, kun når Adresser er slået op */
+/* gruppe-faner: når adressebogen er slået op, viser kanten KUN Adresse-fanen + grupperne */
+.adressebog .fane:not([data-s="adresser"]){display:none}
 .gfaner{
-  position:absolute; left:100%; margin-left:-30px; top:298px;
-  display:none; flex-direction:column; gap:5px; z-index:4; align-items:flex-start;
+  position:absolute; left:100%; margin-left:-30px; top:72px;
+  display:none; flex-direction:column; gap:7px; z-index:4; align-items:flex-start;
 }
 .gfaner.vis{display:flex}
 .gfane{
-  padding:3px 9px 3px 11px; border-radius:0 8px 8px 0; border:none; cursor:pointer;
-  font-family:Tahoma,sans-serif; font-weight:bold; letter-spacing:.3px; font-size:9px;
+  padding:5px 11px 5px 12px; border-radius:0 9px 9px 0; border:none; cursor:pointer;
+  font-family:Tahoma,sans-serif; font-weight:bold; letter-spacing:.3px; font-size:10.5px;
   color:#2a2a30; box-shadow:2px 3px 8px #00000030;
   transform:rotate(var(--rot,0deg)); transform-origin:left center;
   transition:transform .18s ease, filter .18s ease;
   filter:brightness(.92) saturate(.55) opacity(.85);
+  display:flex; align-items:center; gap:5px;
 }
+.gfane .em{font-size:12px}
 .gfane.valgt{transform:translateX(5px) rotate(var(--rot,0deg)); filter:none; background:var(--orange) !important; color:#fff}
 .gfane[data-g="alle"]{background:#d8cfb6}
-.gfane:nth-child(1){--rot:1.5deg}
-.gfane:nth-child(2){--rot:-1.8deg;font-size:8.5px}
-.gfane:nth-child(3){--rot:1deg}
-.gfane:nth-child(4){--rot:-1.4deg;font-size:8.5px}
-.gfane:nth-child(5){--rot:2deg}
-.gfane:nth-child(6){--rot:-2.2deg;font-size:8.5px}
+.gfane:nth-child(1){--rot:1.5deg; font-size:11px}
+.gfane:nth-child(2){--rot:-1.8deg;font-size:10px}
+.gfane:nth-child(3){--rot:1deg;   font-size:10.5px}
+.gfane:nth-child(4){--rot:-1.4deg;font-size:9.5px}
+.gfane:nth-child(5){--rot:2deg;   font-size:10.5px}
+.gfane:nth-child(6){--rot:-2.2deg;font-size:10px}
 .sorter{display:flex;gap:7px;margin:0 0 10px}
 .sorter button{font-size:11px;font-weight:bold;border:1px solid #00000020;background:#ffffff80;border-radius:14px;padding:5px 13px;color:#55503f;cursor:pointer}
 .sorter button.valgt{background:var(--orange);color:#fff;border-color:var(--orange)}
@@ -524,6 +527,7 @@ function gfanerSynlighed(){
     && document.getElementById('s-adresser').classList.contains('aktiv')
     && document.getElementById('forside').classList.contains('aaben');
   document.getElementById('gfaner').classList.toggle('vis',vis);
+  document.querySelector('.bogholder').classList.toggle('adressebog',vis);
 }
 function visGruppeFaner(){
   const r=document.getElementById('gfaner');
@@ -532,9 +536,10 @@ function visGruppeFaner(){
   const grupper=[...GRUPPE_ORDEN.filter(g=>fundet.has(g)),...[...fundet].filter(g=>!GRUPPE_ORDEN.includes(g)).sort((a,b)=>a.localeCompare(b,'da'))];
   if(!grupper.length){ r.innerHTML=''; kontaktGruppe='alle'; gfanerSynlighed(); return; }
   if(kontaktGruppe!=='alle'&&!grupper.includes(kontaktGruppe)) kontaktGruppe='alle';
+  const IKON={alle:'📖',familie:'👨‍👩‍👧',filmbranche:'🎬',motorcykel:'🏍',takeaway:'🍕',restauranter:'🍽'};
   r.innerHTML=['alle',...grupper].map((g,i)=>'<button class="gfane'+(g===kontaktGruppe?' valgt':'')+'" data-g="'+esc(g)+'"'
     +(g==='alle'||g===kontaktGruppe?'':' style="background:'+GRUPPE_FARVER[(i-1)%GRUPPE_FARVER.length]+'"')
-    +'>'+esc(g==='alle'?'Alle':g.charAt(0).toUpperCase()+g.slice(1))+'</button>').join('');
+    +'>'+(IKON[g]?'<span class="em">'+IKON[g]+'</span>':'')+esc(g==='alle'?'Alle':g.charAt(0).toUpperCase()+g.slice(1))+'</button>').join('');
   gfanerSynlighed();
 }
 document.getElementById('gfaner').addEventListener('click',e=>{
