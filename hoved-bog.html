@@ -151,7 +151,7 @@ body{
 .bogstav{font-family:'Caveat',cursive;font-size:24px;color:var(--orange);border-bottom:1.5px solid #e8820a33;margin-top:12px;line-height:1.2}
 /* under-faner: når en side med egne faner er slået op, viser kanten KUN den aktive fane + underfanerne.
    .solofane = system-indstilling "kun den aktive fane" (alle faner vises når bogen er lukket) */
-.adressebog .fane:not(.aktiv),.solofane .fane:not(.aktiv){display:none}
+.adressebog .fane:not(.aktiv),.solofane .fane:not(.aktiv){visibility:hidden;pointer-events:none}
 /* system-siden */
 .indst{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px dashed #00000018}
 .indst .lbl{font-size:14px;font-weight:600;color:#1d1d22}
@@ -693,6 +693,10 @@ function gfanerSynlighed(){
   g.classList.toggle('vis',vis);
   document.querySelector('.bogholder').classList.toggle('adressebog',vis);
   document.querySelector('.bogholder').classList.toggle('solofane',indstilVal('solofane')&&aaben);
+  if(vis){ // under-fanerne starter lige under den aktive fane (fanerne bliver på deres plads)
+    const f=document.querySelector('.fane.aktiv');
+    g.style.top=f?(34+f.offsetTop+f.offsetHeight+7)+'px':'72px';
+  }
 }
 /* ---------- ⚙️ system-indstillinger (gemmes pr. enhed) ---------- */
 const INDSTILLINGER=[
