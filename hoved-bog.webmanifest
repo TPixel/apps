@@ -1,0 +1,13 @@
+{
+  "name": "Hovedet",
+  "short_name": "Hovedet",
+  "start_url": "./hoved-bog.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0C0C12",
+  "theme_color": "#0C0C12",
+  "icons": [
+    { "src": "hoved-ikon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "hoved-ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
