@@ -176,9 +176,9 @@ body{
 .gfane:nth-child(6){--rot:-2.2deg;font-size:10px}
 .soeg{width:100%;border:1px solid #00000020;border-radius:12px;padding:9px 13px;font-size:14px;background:#ffffff90;outline:none;margin:0 0 10px;color:var(--blaek);-webkit-appearance:none}
 .soeg::placeholder{color:#b8b0a0}
-.punktny{display:flex;gap:7px;margin:0 0 14px}
-.punktny input{flex:1;border:1px solid #00000020;border-radius:12px;padding:10px 13px;font-family:'Caveat',cursive;font-size:20px;background:#ffffff90;outline:none;color:var(--blaek)}
-.punktny button{width:44px;border:none;border-radius:12px;background:var(--orange);color:#fff;font-size:22px;font-weight:bold;cursor:pointer;box-shadow:0 3px 8px #e8820a44}
+.hmstyr{align-items:center}
+.hmdato{border:1px solid #00000022;border-radius:11px;padding:2px 8px;font-size:11px;background:#ffffff80;color:#55503f;font-family:inherit;outline:none}
+.hminfo{font-size:11px;font-weight:600;color:#a8690f;margin-left:6px;white-space:nowrap}
 .sorter{display:flex;gap:7px;margin:0 0 10px}
 .sorter button{font-size:11px;font-weight:bold;border:1px solid #00000020;background:#ffffff80;border-radius:14px;padding:5px 13px;color:#55503f;cursor:pointer}
 .sorter button.valgt{background:var(--orange);color:#fff;border-color:var(--orange)}
@@ -336,10 +336,7 @@ textarea::placeholder{color:#b8b0a0}
       <div class="sektion" id="s-holdmeat">
         <h1 class="rubrik">Hold Meat</h1>
         <div class="dato">dagsorden til husmødet — Maya &amp; Thomas</div>
-        <div class="punktny">
-          <input id="hmInput" placeholder="Nyt punkt til mødet…" enterkeyhint="done">
-          <button id="hmGem" title="Tilføj punkt">+</button>
-        </div>
+        <div class="noegle">nye punkter: skriv med #husmøde · fold ud og sæt hvem + deadline</div>
         <div id="l-holdmeat" class="hent">Henter…</div>
       </div>
 
@@ -515,9 +512,25 @@ function linkTitel(r){
   const m=(r.tekst||'').match(/https?:\/\/(?:www\.)?([^\/\s]+)/i);
   return m?m[1]:'link';
 }
+function hmStyr(r){
+  const an=(r.ansvar||'').split('|').filter(Boolean);
+  const chip=(n,l)=>'<span class="gchip hmchip'+(an.includes(n)?' med':'')+'" data-n="'+n+'">'+l+'</span>';
+  return '<div class="gruppevalg hmstyr" data-id="'+r.id+'">'
+    +chip('maya','👩 Maya')+chip('thomas','👨 Thomas')
+    +'<input type="date" class="hmdato" value="'+esc(r.deadline||'')+'" title="Deadline"></div>';
+}
+function hmInfo(r){
+  const an=(r.ansvar||'').split('|').filter(Boolean);
+  const navne=an.map(a=>a==='maya'?'Maya':a==='thomas'?'Thomas':a).join(' + ');
+  let dl='';
+  if(r.deadline){ const d=new Date(r.deadline+'T12:00'); if(!isNaN(d)) dl=d.toLocaleDateString('da-DK',{day:'numeric',month:'numeric'}); }
+  const dele=[navne,dl].filter(Boolean);
+  return dele.length?'<span class="hminfo">'+esc(dele.join(' · '))+'</span>':'';
+}
 function noteHtml(r){
   const em=bullet(r), prio=(r.prioritet==1&&r.status!=='udfoert')?' prio':'';
-  const titel=erKontakt(r)?esc(kontaktNavn(r)):erLink(r)?esc(linkTitel(r)):esc((r.titel||r.tekst).replace(/#\S+/g,'').trim()||r.tekst);
+  const titel=(erKontakt(r)?esc(kontaktNavn(r)):erLink(r)?esc(linkTitel(r)):esc((r.titel||r.tekst).replace(/#\S+/g,'').trim()||r.tekst))
+    +(erHoldMeat(r)?hmInfo(r):'');
   let krop='';
   if(erKontakt(r)){
     krop='<div class="r">'+telify(r.tekst)+'</div>';
@@ -528,6 +541,7 @@ function noteHtml(r){
     if(r.resultat) krop+='<div class="r">'+linkify(r.resultat)+'</div>';
     if(r.rapport) krop+='<a class="rapportknap" href="'+esc(r.rapport)+'" target="_blank">📄 Åbn rapport</a>';
     if(r.github_issue) krop+=' <a class="issueknap" href="'+esc(String(r.github_issue).split('#')[0])+'" target="_blank">🛠 Issue</a>';
+    if(erHoldMeat(r)&&r.status!=='udfoert') krop+=hmStyr(r);
   }
   return '<div class="note" data-id="'+r.id+'"><div class="nt"><span class="em'+prio+'">'+((r.prioritet==1&&r.status!=='udfoert')?'★':em)+'</span><span class="ti">'+titel+'</span><span class="fjern" title="Fjern fra listen">✓</span><span class="pil">▶</span></div><div class="nb">'+(krop||'<div class="m">ingen detaljer endnu</div>')+'</div></div>';
 }
@@ -550,7 +564,7 @@ function visLister(){
   const nu=Date.now(), DOGN=24*3600*1000;
   const opr=r=>{const d=new Date(String(r.oprettet||'').replace(' ','T')+'Z');return isNaN(d)?0:d.getTime()};
   fyld('l-nye', ikkeK.filter(r=>nu-opr(r)<DOGN), 'Intet nyt siden i går');
-  fyld('l-forfalder', n.filter(r=>{
+  fyld('l-forfalder', ikkeK.filter(r=>!erLink(r)).filter(r=>{
     if(r.status!=='aaben'||!r.deadline) return false;
     const d=new Date(r.deadline+'T23:59:59'); return !isNaN(d)&&d.getTime()<nu+DOGN;
   }), 'Intet forfalder');
@@ -705,20 +719,24 @@ function fyld(id,rows,tomtekst){
 }
 hentNoter();
 
-/* Hold Meat: nyt punkt direkte på siden */
-const hmInput=document.getElementById('hmInput'), hmGem=document.getElementById('hmGem');
-async function hmTilfoej(){
-  const t=hmInput.value.trim(); if(!t) return;
-  hmGem.disabled=true;
-  try{
-    await fetch(API+'/api/hoved',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({tekst:t+' #husmøde',kilde:'bog'})});
-    hmInput.value=''; alleNoter=null; await hentNoter();
-  }catch(e){ alert('Kunne ikke gemme punktet — prøv igen'); }
-  hmGem.disabled=false;
-}
-hmGem.addEventListener('click',hmTilfoej);
-hmInput.addEventListener('keydown',e=>{ if(e.key==='Enter') hmTilfoej(); });
+/* Hold Meat: delegér (Maya/Thomas/begge) + deadline på hvert punkt */
+document.getElementById('side').addEventListener('click',async e=>{
+  const c=e.target.closest('.hmchip'); if(!c) return;
+  const id=c.closest('.hmstyr').dataset.id, r=(alleNoter||[]).find(x=>String(x.id)===String(id)); if(!r) return;
+  const s=new Set((r.ansvar||'').split('|').filter(Boolean));
+  s.has(c.dataset.n)?s.delete(c.dataset.n):s.add(c.dataset.n);
+  r.ansvar=[...s].join('|');
+  c.classList.toggle('med');
+  try{ await fetch(API+'/api/hoved/'+id,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ansvar:r.ansvar})}); }catch(err){}
+});
+document.getElementById('side').addEventListener('change',async e=>{
+  const d=e.target.closest('.hmdato'); if(!d) return;
+  const id=d.closest('.hmstyr').dataset.id, r=(alleNoter||[]).find(x=>String(x.id)===String(id)); if(!r) return;
+  r.deadline=d.value||'';
+  try{ await fetch(API+'/api/hoved/'+id,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({deadline:r.deadline})}); }catch(err){}
+});
 
 /* gem */
 const ta=document.getElementById('tekst'), gem=document.getElementById('gem'), kvit=document.getElementById('kvit');
