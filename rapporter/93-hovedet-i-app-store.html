@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hovedet i App Store — Hoved-rapport</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,Helvetica,Arial,sans-serif;background:#0C0C12;color:#eee;line-height:1.55;padding:20px 16px calc(40px + env(safe-area-inset-bottom));max-width:760px;margin:0 auto}
+.logo{font-size:12px;color:#555;letter-spacing:1px;text-transform:uppercase;font-weight:bold}
+h1{font-size:26px;margin:4px 0 2px;color:#fff}
+.meta{font-size:12px;color:#777;margin-bottom:18px}
+.meta a{color:#E8820A;text-decoration:none}
+h2{font-size:16px;color:#E8820A;margin:26px 0 8px;text-transform:uppercase;letter-spacing:.5px}
+h3{font-size:14px;color:#fff;margin:14px 0 6px}
+p{margin:0 0 10px;color:#ccc}
+ul,ol{margin:0 0 12px 20px;color:#ccc}
+li{margin-bottom:6px}
+a{color:#8ab4f8}
+.tldr{background:#16321f;border-left:4px solid #4ade80;border-radius:10px;padding:12px 14px;margin:14px 0;color:#d9f5e3;font-size:15px}
+.anbefaling{background:#3a2a12;border-left:4px solid #E8820A;border-radius:10px;padding:12px 14px;margin:14px 0;color:#ffd9a8}
+.advarsel{background:#331a1a;border-left:4px solid #e05555;border-radius:10px;padding:12px 14px;margin:14px 0;color:#f3c7c7}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #26263a;color:#ccc;vertical-align:top}
+th{color:#888;font-size:11px;text-transform:uppercase}
+.fase{background:#1a1a24;border-radius:14px;padding:14px;margin:10px 0;border-top:3px solid #E8820A}
+.fase .n{font-weight:bold;font-size:15px;color:#fff}
+.fase .t{font-size:12px;color:#4ade80;font-weight:bold;margin:2px 0 6px}
+.fase p,.fase ul{font-size:13px}
+code{background:#1a1a24;border-radius:5px;padding:1px 6px;font-size:12.5px;color:#ffd9a8}
+.kilder{font-size:12px;color:#777;margin-top:26px;border-top:1px solid #26263a;padding-top:12px}
+.kilder a{color:#6a8ec9}
+</style>
+</head>
+<body>
+<div class="logo">Ditzel &amp; Co · Hoved</div>
+<h1>Hovedet i App Store: multi-bruger-planen</h1>
+<div class="meta">🔬 Undersøgelse · 31. oktober 2026 · Hoved #93 · <a href="../hoved-dash.html">← dashboard</a></div>
+
+<div class="tldr">💡 <b>Kort sagt: Det kan lade sig gøre, i fire faser.</b> Teknisk er den største opgave at give hver bruger sin egen bog (login + <code>bruger_id</code> i databasen — ca. en uges arbejde fordelt på backend og app). Dertil kræver Apple: Developer-konto (99 USD/år), at appen er mere end en indpakket hjemmeside (guideline 4.2 — vi skal bygge offline-visning, del-til-Hovedet og widgets), konto-sletning i appen og en privatlivspolitik. Din personlige Claude-automatik følger IKKE med til andre — produktet til dem er bogen + den automatiske sortering.</div>
+
+<h2>Hvad systemet er i dag — og hvad der skal skilles ad</h2>
+<p>Hovedet består i dag af tre lag, og kun de to kan sælges med:</p>
+<table>
+<tr><th>Lag</th><th>Hvad</th><th>Kan andre få det?</th></tr>
+<tr><td><b>Bogen</b> (app/web-UI)</td><td>Notesbog, faner, lister, Hold Meat, adresser</td><td>✅ Ja — det er produktet</td></tr>
+<tr><td><b>Worker + D1</b> (API)</td><td>Gemmer noter, regel- + AI-sortering, deadlines, rapport-felter</td><td>✅ Ja — efter multi-bruger-ombygning</td></tr>
+<tr><td><b>Din Mac-automatik</b></td><td>Claude der behandler noter hver 2. time: undersøg-rapporter, Påmindelser, Apple Notes, GitHub-issues, kontakt-synk</td><td>❌ Nej — den kører på din Mac med dine konti. Andre får "kun" bog + sortering i v1</td></tr>
+</table>
+<div class="advarsel">⚠️ <b>Vigtigst af alt:</b> I dag har API'et ingen bruger-adskillelse — alle noter er dine. Appen kan IKKE udgives før hver bruger har sin egen, låste bog. Det er fase 1, og intet andet giver mening før den er på plads.</div>
+
+<h2>Fase 1 — Multi-bruger i backend (fundamentet)</h2>
+<div class="fase"><div class="n">Databasen og API'et får brugere</div><div class="t">Omfang: 2-3 dage · Pris: 0 kr</div>
+<ul>
+<li><b>Ny tabel <code>brugere</code></b> (id, apple-id-hash, navn, oprettet) + kolonnen <code>bruger_id</code> på <code>hoved</code>, <code>boglister</code>, <code>kontakter</code> og <code>kontakt_ret</code> (dine eksisterende rækker = bruger 1).</li>
+<li><b>Token i stedet for én nøgle:</b> login udsteder et signeret token (JWT) som appen sender med; hvert endpoint filtrerer på brugerens id. Din nuværende <code>KONTAKT_NOEGLE</code>-model udgår for nye brugere.</li>
+<li><b>Onboarding:</b> ny bruger = tom bog + 3-4 eksempelnoter der viser hashtags og faner.</li>
+<li><b>Cloudflare kan bære det:</b> D1 og Workers' gratis-niveau rækker til hundredvis af brugere; derefter ca. 5 USD/md. Ingen serverdrift.</li>
+</ul></div>
+
+<h2>Fase 2 — Login med Apple</h2>
+<div class="fase"><div class="n">"Log ind med Apple" i appen og på web</div><div class="t">Omfang: 1-2 dage · Kræver Developer-kontoen</div>
+<ul>
+<li>Ét tryk, intet password, og Apple-reviewere elsker det. Fungerer også på web-udgaven (Apple JS-SDK), så bogen stadig kan bruges i browser.</li>
+<li>Worker'en verificerer Apples token og udsteder sit eget. Brugeren kan skjule sin e-mail — vi behøver kun Apple-id'et.</li>
+<li><b>App Store-krav der følger med:</b> konto-sletning <i>inde i appen</i> (guideline 5.1.1) — en "Slet min bog"-knap på System-siden der sletter brugerens rækker.</li>
+</ul></div>
+
+<h2>Fase 3 — Fra wrapper til rigtig app (guideline 4.2)</h2>
+<div class="fase"><div class="n">De native funktioner der får appen gennem review — og gør den bedre</div><div class="t">Omfang: 3-5 dage · Det sjove arbejde</div>
+<ul>
+<li><b>Del til Hovedet</b> (share extension): markér tekst/link hvor som helst på telefonen → del → havner i bogen. Erstatter din Genvej — og er guld for alle brugere.</li>
+<li><b>Offline:</b> appen cacher bogen og viser den uden net (reviewere tester med flytilstand — en wrapper der viser fejlside bliver afvist).</li>
+<li><b>Widget</b> på hjemmeskærmen: "Forfalder i dag" / seneste noter.</li>
+<li><b>Notifikationer</b> ved deadlines (worker'en ved allerede hvornår).</li>
+<li><b>Adresser via telefonens egne kontakter</b> (Contacts-framework) i stedet for din Mac-synk — løser både privatliv og 4.2 på én gang.</li>
+<li>Evt. Siri/App Intents: "Hej Siri, skriv i Hovedet …".</li>
+</ul></div>
+
+<h2>Fase 4 — Selve udgivelsen</h2>
+<div class="fase"><div class="n">Papirarbejdet og review</div><div class="t">Omfang: 1-2 dage + 1-3 dages ventetid på review</div>
+<ul>
+<li><b>Apple Developer Program:</b> 99 USD/år (~700 kr). Løser samtidig 7-dages-signeringen permanent og giver TestFlight.</li>
+<li><b>TestFlight først:</b> Maya + venner tester i op til 90 dage pr. build — godt generalprøve-trin før review.</li>
+<li><b>App Store Connect:</b> navn ("Hovedet" — tjek ledighed), beskrivelse, skærmbilleder (iPhone + iPad),support-side og <b>privatlivspolitik-URL</b> (en side på tpixel.github.io), App Privacy-deklaration (vi gemmer: noter, e-mail-hash).</li>
+<li><b>GDPR:</b> privatlivspolitik + konto-sletning dækker det meste for en note-app uden tracking.</li>
+</ul></div>
+
+<h2>Økonomien</h2>
+<table>
+<tr><th>Post</th><th>Beløb</th><th>Note</th></tr>
+<tr><td>Developer-konto</td><td>99 USD/år</td><td>Eneste faste udgift</td></tr>
+<tr><td>Cloudflare</td><td>0 → 5 USD/md</td><td>Gratis-niveau rækker langt</td></tr>
+<tr><td>AI-sortering (Claude API)</td><td>~øre pr. note</td><td>Lille — men med mange brugere skal nogen betale den</td></tr>
+<tr><td>Hvis appen skal koste penge</td><td>Apple tager 15%</td><td>Small Business Program (under 1 mio. USD/år); abonnement via In-App Purchase</td></tr>
+</table>
+<p>Realistisk v1-model: <b>gratis app</b> (regel-sortering + bog) og evt. senere et lille abonnement for AI-sortering/rapporter. EU-reglerne (DMA) tillader i dag betaling uden om Apple, men gebyr-stakken er rodet og under forandring — ikke besværet værd før appen har rigtige brugere.</p>
+
+<h2>Rækkefølgen</h2>
+<ol>
+<li><b>Gør appen færdig først</b> (dine egne ord) — bogen skal være god før den deles.</li>
+<li><b>Developer-konto</b> når du er klar: fjerner 7-dages-irritationen med det samme, og TestFlight til familien.</li>
+<li>Fase 1+2 (multi-bruger + login) — fundamentet.</li>
+<li>Fase 3 (native funktioner) — dem får du selv glæde af undervejs.</li>
+<li>TestFlight-beta → App Store-review.</li>
+</ol>
+
+<div class="anbefaling">⭐ <b>Anbefaling:</b> Planen er realistisk — samlet ca. 1½-2 ugers byggearbejde fordelt over faserne, og 99 USD/år er eneste faste udgift. Men tag den i den rækkefølge: færdiggør bogen, køb Developer-kontoen (den betaler sig alene i sparet besvær), og byg så multi-bruger-fundamentet FØR nogen anden får appen i hånden. Share-extension, offline og widgets er både Apples adgangskrav og reelle forbedringer for dig selv — intet af arbejdet er spildt, selv hvis App Store-planen ender på hylden.</div>
+
+<div class="kilder"><b>Kilder:</b>
+<a href="https://developer.apple.com/app-store/review/guidelines/" target="_blank">App Review Guidelines (4.2, 5.1.1)</a> ·
+<a href="https://newly.app/guides/minimum-functionality-rejection" target="_blank">Minimum functionality-afvisninger (4.2) i praksis</a> ·
+<a href="https://capgo.app/blog/how-to-pass-app-store-review-2026/" target="_blank">App Store review 2026-guide</a> ·
+<a href="https://adapty.io/blog/markdown/app-store-small-business-program.md" target="_blank">Small Business Program (15%)</a> ·
+<a href="https://richestsoft.com/blog/apple-developer-program-cost/" target="_blank">Developer Program-pris 2026</a> ·
+<a href="https://blog.funnelfox.com/apple-app-store-fees-2026-eu-dma/" target="_blank">App Store-gebyrer &amp; EU DMA 2026</a> ·
+<a href="https://developers.cloudflare.com/d1/platform/pricing/" target="_blank">Cloudflare D1-priser</a></div>
+</body>
+</html>
