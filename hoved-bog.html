@@ -94,6 +94,7 @@ body{
 .fane:nth-child(10){--rot:1.9deg;font-size:9.5px}
 .fane:nth-child(11){--rot:-1.2deg;font-size:10px}
 .fane:nth-child(12){--rot:1.3deg;font-size:9px}
+.fane:nth-child(13){--rot:-1.7deg;font-size:10px}
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f2a2a2}
 .fane:nth-child(3){background:#f4c04e}
@@ -106,6 +107,7 @@ body{
 .fane:nth-child(10){background:#f0b6d2}
 .fane:nth-child(11){background:#e8dd73}
 .fane:nth-child(12){background:#c4c4c4}
+.fane:nth-child(13){background:#f5a97f}
 
 /* ---------- FORSIDE ---------- */
 .forside{
@@ -263,11 +265,13 @@ textarea::placeholder{color:#b8b0a0}
 .nt .em{font-size:16px;font-weight:800;color:#1d1d22;flex:0 0 auto;width:15px;text-align:center}
 .nt .em.prio{color:var(--orange)}
 .nt .ti{flex:1;font-size:14.5px;font-weight:600;color:#1d1d22;line-height:1.25}
-.nt .fjern{
+.nt .fjern,.nt .evfjern{
   flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid #00000022;
   background:#ffffff80;color:#8d8679;font-size:13px;line-height:23px;text-align:center;cursor:pointer
 }
 .nt .fjern:active{background:#2aa35a;color:#fff;border-color:#2aa35a}
+.nt .evfjern:active{background:#c0392b;color:#fff;border-color:#c0392b}
+.evdag{font-family:'Caveat',cursive;font-size:21px;color:#a8690f;margin:12px 0 0}
 .nt .pil{flex:0 0 auto;font-size:11px;color:#b4ab99;transition:transform .15s ease}
 .grupperubrik{font-family:'Caveat',cursive;font-size:23px;color:#1d1d22;margin:16px 0 2px}
 .grupperubrik:first-child{margin-top:0}
@@ -378,6 +382,21 @@ textarea::placeholder{color:#b8b0a0}
         <div id="l-holdmeat" class="hent">Henter…</div>
       </div>
 
+      <!-- 🎭 EVENTS -->
+      <div class="sektion" id="s-events">
+        <h1 class="rubrik">Events</h1>
+        <div class="dato">følg bands, steder &amp; museer — og se hvad der er på plakaten</div>
+        <div class="grupperubrik">⭐ Følger</div>
+        <div id="l-foelger" class="hent">Henter…</div>
+        <div class="chips" id="evTyper" style="margin:8px 0 0"></div>
+        <div class="skrivlinje">
+          <span class="firk"></span>
+          <input id="evInput" placeholder="følg ny — navn + retur" enterkeyhint="done" autocomplete="off">
+        </div>
+        <div class="grupperubrik">🎫 På plakaten</div>
+        <div id="l-events" class="hent">Henter…</div>
+      </div>
+
       <!-- ⚙️ SYSTEM -->
       <div class="sektion" id="s-system">
         <h1 class="rubrik">System</h1>
@@ -439,6 +458,7 @@ textarea::placeholder{color:#b8b0a0}
     <button class="fane" data-s="holdmeat"><span class="em">🤝</span>Hold Meat</button>
     <button class="fane" data-s="opgaver"><span class="em">📋</span>Opgaver</button>
     <button class="fane" data-s="system"><span class="em">⚙️</span>System</button>
+    <button class="fane" data-s="events"><span class="em">🎭</span>Events</button>
   </div>
   <div class="gfaner" id="gfaner"></div>
 </div>
@@ -447,7 +467,7 @@ textarea::placeholder{color:#b8b0a0}
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 const FUNK={send:'📤',slaaop:'🔎',koeb:'🛒',undersoeg:'🔬',projekt:'🛠'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#husmøde','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12};
+const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13};
 const erLink=r=>/https?:\/\/\S+/i.test(r.tekst||'');
 const erHoldMeat=r=>/#(holdmeat|husm[øo]de)/i.test((r.tags||'')+' '+(r.tekst||''));
 const erOpgave=r=>/#opgave\b/i.test((r.tags||'')+' '+(r.tekst||''))||(!!r.bogliste&&!erHoldMeat(r));
@@ -525,7 +545,8 @@ document.getElementById('faner').addEventListener('click',e=>{
   document.getElementById('sidefod').textContent='— '+SIDETAL[s]+' —';
   document.getElementById('side').scrollTop=0;
   gfanerSynlighed();
-  if(s!=='skriv') hentNoter();
+  if(s==='events') hentEvents();
+  else if(s!=='skriv') hentNoter();
 });
 
 /* fold ud/ind ved klik på overskrift — eller fjern fra listen med ✓ */
@@ -918,6 +939,73 @@ document.getElementById('side').addEventListener('change',async e=>{
   r.deadline=d.value||'';
   try{ await fetch(API+'/api/hoved/'+id,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({deadline:r.deadline})}); }catch(err){}
+});
+
+/* 🎭 Events: fulgte + på plakaten */
+const EVTYPER={band:'🎸',spillested:'🏟',museum:'🖼',restaurant:'🍽',popup:'✨'};
+let evFoelger=[],evListe=[],evType='band';
+const evTyperEl=document.getElementById('evTyper');
+Object.keys(EVTYPER).forEach(t=>{
+  const c=document.createElement('span'); c.className='chip'+(t===evType?' valgt':''); c.textContent=EVTYPER[t]+' '+t;
+  c.onclick=()=>{ evType=t; [...evTyperEl.children].forEach(x=>x.classList.toggle('valgt',x===c)); };
+  evTyperEl.appendChild(c);
+});
+function evDato(d){
+  const x=new Date(d+'T12:00'); if(isNaN(x)) return d;
+  return x.toLocaleDateString('da-DK',{weekday:'short',day:'numeric',month:'numeric'}).replace('.','');
+}
+async function hentEvents(){
+  try{
+    const [f,e]=await Promise.all([
+      fetch(API+'/api/foelger').then(r=>r.json()),
+      fetch(API+'/api/events').then(r=>r.json())
+    ]);
+    evFoelger=Array.isArray(f)?f:[]; evListe=Array.isArray(e)?e:[];
+    visEvents();
+  }catch(err){ ['l-foelger','l-events'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
+}
+function visEvents(){
+  const lf=document.getElementById('l-foelger'); lf.classList.remove('hent');
+  lf.innerHTML=evFoelger.length?evFoelger.map(f=>{
+    const antal=evListe.filter(e=>e.foelger_id===f.id).length;
+    return '<div class="note" data-fid="'+f.id+'"><div class="nt"><span class="em">'+(EVTYPER[f.type]||'⭐')+'</span>'
+      +'<span class="ti">'+esc(f.navn)+(antal?' <span class="hminfo">'+antal+' på plakaten</span>':'')+'</span>'
+      +'<span class="evfjern" title="Følg ikke længere">✕</span><span class="pil">▶</span></div>'
+      +'<div class="nb"><div class="m">'+esc(f.type)+(f.note?' · '+esc(f.note):'')+' · fulgt siden '+esc((f.oprettet||'').slice(0,10))+'</div></div></div>';
+  }).join(''):'<div class="tom">Følger ingen endnu — skriv et navn nedenfor</div>';
+  const le=document.getElementById('l-events'); le.classList.remove('hent');
+  if(!evListe.length){ le.innerHTML='<div class="tom">Intet på plakaten endnu — agenten søger ud fra det du følger</div>'; return; }
+  let h='',sidste='';
+  for(const e of evListe){
+    if(e.dato!==sidste){ h+='<div class="evdag">'+esc(evDato(e.dato))+'</div>'; sidste=e.dato; }
+    const em=EVTYPER[e.foelger_type]||'🎫';
+    const meta=[e.sted,e.foelger_navn&&e.foelger_navn!==e.sted?e.foelger_navn:null,e.kilde].filter(Boolean).join(' · ');
+    h+='<div class="note"><div class="nt"><span class="em">'+em+'</span><span class="ti">'+esc(e.titel)+'</span><span class="pil">▶</span></div>'
+      +'<div class="nb">'+(meta?'<div class="m">'+esc(meta)+'</div>':'')
+      +(e.url?'<div class="r">🔗 <a href="'+esc(e.url)+'" target="_blank">'+esc(e.url.replace(/^https?:\/\/(www\.)?/,'').split('/')[0])+'</a></div>':'')
+      +'</div></div>';
+  }
+  le.innerHTML=h;
+}
+document.getElementById('l-foelger').addEventListener('click',async e=>{
+  const x=e.target.closest('.evfjern'); if(!x) return;
+  e.stopPropagation();
+  const id=x.closest('.note').dataset.fid;
+  try{
+    await fetch(API+'/api/foelger/'+id,{method:'DELETE'});
+    evFoelger=evFoelger.filter(f=>String(f.id)!==String(id)); visEvents();
+  }catch(err){ alert('Kunne ikke fjerne — prøv igen'); }
+});
+document.getElementById('evInput').addEventListener('keydown',async e=>{
+  if(e.key!=='Enter') return;
+  const inp=e.target, navn=inp.value.trim(); if(!navn) return;
+  inp.value=''; inp.disabled=true;
+  try{
+    await fetch(API+'/api/foelger',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({navn,type:evType})});
+    await hentEvents();
+  }catch(err){ alert('Kunne ikke gemme — prøv igen'); }
+  inp.disabled=false; inp.focus();
 });
 
 /* gem */
