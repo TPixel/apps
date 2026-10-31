@@ -92,6 +92,7 @@ body{
 .fane:nth-child(9){--rot:-1.6deg;font-size:10px}
 .fane:nth-child(10){--rot:1.9deg;font-size:9.5px}
 .fane:nth-child(11){--rot:-1.2deg;font-size:10px}
+.fane:nth-child(12){--rot:1.3deg;font-size:9px}
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f2a2a2}
 .fane:nth-child(3){background:#f4c04e}
@@ -103,6 +104,7 @@ body{
 .fane:nth-child(9){background:#8fd4d1}
 .fane:nth-child(10){background:#f0b6d2}
 .fane:nth-child(11){background:#e8dd73}
+.fane:nth-child(12){background:#c4c4c4}
 
 /* ---------- FORSIDE ---------- */
 .forside{
@@ -147,8 +149,17 @@ body{
 /* bullet journal-nøgle + adressebog */
 .noegle{font-size:11px;color:#b4ab99;margin:-9px 0 10px;letter-spacing:.4px}
 .bogstav{font-family:'Caveat',cursive;font-size:24px;color:var(--orange);border-bottom:1.5px solid #e8820a33;margin-top:12px;line-height:1.2}
-/* under-faner: når en side med egne faner er slået op, viser kanten KUN den aktive fane + underfanerne */
-.adressebog .fane:not(.aktiv){display:none}
+/* under-faner: når en side med egne faner er slået op, viser kanten KUN den aktive fane + underfanerne.
+   .solofane = system-indstilling "kun den aktive fane" (alle faner vises når bogen er lukket) */
+.adressebog .fane:not(.aktiv),.solofane .fane:not(.aktiv){display:none}
+/* system-siden */
+.indst{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px dashed #00000018}
+.indst .lbl{font-size:14px;font-weight:600;color:#1d1d22}
+.indst .sub{font-size:11.5px;color:var(--svag);margin-top:2px}
+.tnd{position:relative;width:46px;height:26px;border-radius:13px;background:#d8cfb6;border:1px solid #00000015;cursor:pointer;transition:background .15s;flex:0 0 auto}
+.tnd::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #00000040;transition:left .15s}
+.tnd.til{background:var(--orange)}
+.tnd.til::after{left:22px}
 .gfaner{
   position:absolute; left:100%; margin-left:-30px; top:72px;
   display:none; flex-direction:column; gap:7px; z-index:4; align-items:flex-start;
@@ -366,6 +377,13 @@ textarea::placeholder{color:#b8b0a0}
         <div id="l-holdmeat" class="hent">Henter…</div>
       </div>
 
+      <!-- ⚙️ SYSTEM -->
+      <div class="sektion" id="s-system">
+        <h1 class="rubrik">System</h1>
+        <div class="dato">indstillinger for bogen</div>
+        <div id="indstillinger"></div>
+      </div>
+
       <!-- 📞 ADRESSER -->
       <div class="sektion" id="s-adresser">
         <h1 class="rubrik">Adresser</h1>
@@ -419,6 +437,7 @@ textarea::placeholder{color:#b8b0a0}
     <button class="fane" data-s="links"><span class="em">🔗</span>Link</button>
     <button class="fane" data-s="holdmeat"><span class="em">🤝</span>Hold Meat</button>
     <button class="fane" data-s="opgaver"><span class="em">📋</span>Opgaver</button>
+    <button class="fane" data-s="system"><span class="em">⚙️</span>System</button>
   </div>
   <div class="gfaner" id="gfaner"></div>
 </div>
@@ -427,7 +446,7 @@ textarea::placeholder{color:#b8b0a0}
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 const FUNK={send:'📤',slaaop:'🔎',koeb:'🛒',undersoeg:'🔬',projekt:'🛠'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#husmøde','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11};
+const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12};
 const erLink=r=>/https?:\/\/\S+/i.test(r.tekst||'');
 const erHoldMeat=r=>/#(holdmeat|husm[øo]de)/i.test((r.tags||'')+' '+(r.tekst||''));
 const erOpgave=r=>/#opgave\b/i.test((r.tags||'')+' '+(r.tekst||''))||(!!r.bogliste&&!erHoldMeat(r));
@@ -669,10 +688,31 @@ function gfanerSynlighed(){
     else if(akt.id==='s-holdmeat') html=listeFanerHtml('husmoede');
   }
   g.innerHTML=html;
-  const vis=html!=='' && document.getElementById('forside').classList.contains('aaben');
+  const aaben=document.getElementById('forside').classList.contains('aaben');
+  const vis=html!=='' && aaben;
   g.classList.toggle('vis',vis);
   document.querySelector('.bogholder').classList.toggle('adressebog',vis);
+  document.querySelector('.bogholder').classList.toggle('solofane',indstilVal('solofane')&&aaben);
 }
+/* ---------- ⚙️ system-indstillinger (gemmes pr. enhed) ---------- */
+const INDSTILLINGER=[
+  {n:'solofane',lbl:'Kun den aktive fane på kanten',sub:'alle faner vises når bogen er lukket',std:true},
+];
+let indstil={};
+try{Object.assign(indstil,JSON.parse(localStorage.getItem('bogIndstil')||'{}'))}catch(e){}
+function indstilVal(n){const d=INDSTILLINGER.find(x=>x.n===n);return indstil[n]!==undefined?!!indstil[n]:!!(d&&d.std)}
+function visIndstillinger(){
+  document.getElementById('indstillinger').innerHTML=INDSTILLINGER.map(d=>
+    '<div class="indst"><div><div class="lbl">'+d.lbl+'</div>'+(d.sub?'<div class="sub">'+d.sub+'</div>':'')+'</div>'
+    +'<div class="tnd'+(indstilVal(d.n)?' til':'')+'" data-n="'+d.n+'"></div></div>').join('');
+}
+document.getElementById('indstillinger').addEventListener('click',e=>{
+  const t=e.target.closest('.tnd'); if(!t) return;
+  indstil[t.dataset.n]=!indstilVal(t.dataset.n);
+  try{localStorage.setItem('bogIndstil',JSON.stringify(indstil))}catch(e){}
+  visIndstillinger(); gfanerSynlighed();
+});
+visIndstillinger();
 function alleGrupper(){
   const fundet=new Set();
   (kontaktListe||[]).forEach(k=>(k.gruppe||'').split('|').forEach(g=>g&&fundet.add(g)));
@@ -781,6 +821,10 @@ function visAdresser(noter){
       || (qd.length>2 && (k.telefon||'').replace(/[^\d+]/g,'').includes(qd)));
   }
   if(!alle.length){ el.innerHTML='<div class="tom">'+(kontaktSoegeTekst?'Ingen træffere':'Ingen i denne gruppe endnu')+'</div>'; return; }
+  if(kontaktSort!=='navn'){
+    alle=alle.filter(k=>((k[kontaktSort]||'')+'').trim());
+    if(!alle.length){ el.innerHTML='<div class="tom">Ingen med '+(kontaktSort==='firma'?'firma':'stilling')+' i denne visning</div>'; return; }
+  }
   const key=k=>(((k[kontaktSort]||'')+'').trim()||'—');
   alle.sort((a,b)=>key(a).localeCompare(key(b),'da'));
   let h='', sidste='';
