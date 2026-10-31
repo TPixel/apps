@@ -91,6 +91,7 @@ body{
 .fane:nth-child(8){--rot:1.4deg; font-size:10px}
 .fane:nth-child(9){--rot:-1.6deg;font-size:10px}
 .fane:nth-child(10){--rot:1.9deg;font-size:9.5px}
+.fane:nth-child(11){--rot:-1.2deg;font-size:10px}
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f2a2a2}
 .fane:nth-child(3){background:#f4c04e}
@@ -101,6 +102,7 @@ body{
 .fane:nth-child(8){background:#c9a27a}
 .fane:nth-child(9){background:#8fd4d1}
 .fane:nth-child(10){background:#f0b6d2}
+.fane:nth-child(11){background:#e8dd73}
 
 /* ---------- FORSIDE ---------- */
 .forside{
@@ -145,8 +147,8 @@ body{
 /* bullet journal-nøgle + adressebog */
 .noegle{font-size:11px;color:#b4ab99;margin:-9px 0 10px;letter-spacing:.4px}
 .bogstav{font-family:'Caveat',cursive;font-size:24px;color:var(--orange);border-bottom:1.5px solid #e8820a33;margin-top:12px;line-height:1.2}
-/* gruppe-faner: når adressebogen er slået op, viser kanten KUN Adresse-fanen + grupperne */
-.adressebog .fane:not([data-s="adresser"]){display:none}
+/* under-faner: når en side med egne faner er slået op, viser kanten KUN den aktive fane + underfanerne */
+.adressebog .fane:not(.aktiv){display:none}
 .gfaner{
   position:absolute; left:100%; margin-left:-30px; top:72px;
   display:none; flex-direction:column; gap:7px; z-index:4; align-items:flex-start;
@@ -177,6 +179,19 @@ body{
 .soeg{width:100%;border:1px solid #00000020;border-radius:12px;padding:9px 13px;font-size:14px;background:#ffffff90;outline:none;margin:0 0 10px;color:var(--blaek);-webkit-appearance:none}
 .soeg::placeholder{color:#b8b0a0}
 .hmstyr{align-items:center}
+/* opgavelister: håndskrift + firkant-bullets (hul = ikke i gang, halv = i gang, sort = færdig) */
+.firk{flex:0 0 14px;width:14px;height:14px;border:2px solid #2a2a30;border-radius:2px;background:transparent}
+.firk.halv{background:linear-gradient(90deg,#2a2a30 0 50%,transparent 0)}
+.firk.fuld{background:#2a2a30}
+.opg{display:flex;align-items:center;gap:11px;padding:3px 0;min-height:30px;cursor:pointer}
+.opg .t{font-family:'Caveat',cursive;font-size:24px;line-height:1.05;color:#1d1d22;text-transform:uppercase;letter-spacing:.5px}
+.opg.fuld .t{text-decoration:line-through;text-decoration-thickness:2.5px;color:#6b6555}
+.opgrubrik{text-align:center;text-transform:uppercase;text-decoration:underline 2px;text-underline-offset:7px;letter-spacing:2px;font-size:30px}
+.skrivlinje{display:flex;align-items:center;gap:11px;margin-top:4px}
+.skrivlinje .firk{opacity:.35}
+.skrivlinje input{flex:1;border:none;background:transparent;outline:none;font-family:'Caveat',cursive;font-size:24px;text-transform:uppercase;color:var(--blaek);caret-color:var(--orange)}
+.skrivlinje input::placeholder{color:#c6bda8;text-transform:none;letter-spacing:0}
+.gfane.ny{background:#efe9d8 !important;border:1.5px dashed #00000033}
 .hmdato{border:1px solid #00000022;border-radius:11px;padding:2px 8px;font-size:11px;background:#ffffff80;color:#55503f;font-family:inherit;outline:none}
 .hminfo{font-size:11px;font-weight:600;color:#a8690f;margin-left:6px;white-space:nowrap}
 .sorter{display:flex;gap:7px;margin:0 0 10px}
@@ -332,9 +347,20 @@ textarea::placeholder{color:#b8b0a0}
         <div id="l-links" class="hent">Henter…</div>
       </div>
 
+      <!-- 📋 OPGAVER -->
+      <div class="sektion" id="s-opgaver">
+        <h1 class="rubrik opgrubrik" id="opgTitel">Opgaver</h1>
+        <div class="dato" style="text-align:center">en liste pr. gang — de gamle bliver stående på kanten</div>
+        <div id="l-opgaver" class="hent">Henter…</div>
+        <div class="skrivlinje" id="opgSkriv" style="display:none">
+          <span class="firk"></span>
+          <input id="opgInput" placeholder="nyt punkt — tryk retur" enterkeyhint="done" autocomplete="off">
+        </div>
+      </div>
+
       <!-- 🤝 HOLD MEAT -->
       <div class="sektion" id="s-holdmeat">
-        <h1 class="rubrik">Hold Meat</h1>
+        <h1 class="rubrik" id="hmTitel">Hold Meat</h1>
         <div class="dato">dagsorden til husmødet — Maya &amp; Thomas</div>
         <div class="noegle">nye punkter: skriv med #husmøde · fold ud og sæt hvem + deadline</div>
         <div id="l-holdmeat" class="hent">Henter…</div>
@@ -392,6 +418,7 @@ textarea::placeholder{color:#b8b0a0}
     <button class="fane" data-s="adresser"><span class="em">📞</span>Adresse</button>
     <button class="fane" data-s="links"><span class="em">🔗</span>Link</button>
     <button class="fane" data-s="holdmeat"><span class="em">🤝</span>Hold Meat</button>
+    <button class="fane" data-s="opgaver"><span class="em">📋</span>Opgaver</button>
   </div>
   <div class="gfaner" id="gfaner"></div>
 </div>
@@ -400,9 +427,10 @@ textarea::placeholder{color:#b8b0a0}
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 const FUNK={send:'📤',slaaop:'🔎',koeb:'🛒',undersoeg:'🔬',projekt:'🛠'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#husmøde','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10};
+const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11};
 const erLink=r=>/https?:\/\/\S+/i.test(r.tekst||'');
 const erHoldMeat=r=>/#(holdmeat|husm[øo]de)/i.test((r.tags||'')+' '+(r.tekst||''));
+const erOpgave=r=>/#opgave\b/i.test((r.tags||'')+' '+(r.tekst||''))||(!!r.bogliste&&!erHoldMeat(r));
 
 const erIde=r=>r.kategori==='Idé'||/idé/i.test(r.handling||'')||/#id[eé]\b/i.test(r.tags||'');
 const erKontakt=r=>/kontakt/i.test((r.tags||'')+' '+(r.kategori||''));
@@ -551,20 +579,21 @@ async function hentNoter(){
     const rs=await fetch(API+'/api/hoved?status=alle&limit=200');
     const d=await rs.json(); alleNoter=Array.isArray(d)?d:(d.rows||[]);
     visLister();
-  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige','l-links','l-holdmeat'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
+  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige','l-links','l-holdmeat','l-opgaver'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
 }
 function visLister(){
   const alle=alleNoter.filter(r=>r.status!=='arkiv');
   const kontakter=alle.filter(erKontakt);
   const ikkeK=alle.filter(r=>!erKontakt(r));
-  const n=ikkeK.filter(r=>!erLink(r)&&!erHoldMeat(r));
+  const n=ikkeK.filter(r=>!erLink(r)&&!erHoldMeat(r)&&!erOpgave(r));
   visAdresser(kontakter);
-  fyld('l-links', ikkeK.filter(r=>erLink(r)&&!erHoldMeat(r)&&r.status!=='udfoert'), 'Ingen links endnu — del fra Safari med Hoved-genvejen');
-  fyld('l-holdmeat', ikkeK.filter(r=>erHoldMeat(r)&&r.status!=='udfoert'), 'Ingen punkter — skriv det første herover');
+  fyld('l-links', ikkeK.filter(r=>erLink(r)&&!erHoldMeat(r)&&!erOpgave(r)&&r.status!=='udfoert'), 'Ingen links endnu — del fra Safari med Hoved-genvejen');
+  visHoldMeatListe(ikkeK);
+  visOpgaver();
   const nu=Date.now(), DOGN=24*3600*1000;
   const opr=r=>{const d=new Date(String(r.oprettet||'').replace(' ','T')+'Z');return isNaN(d)?0:d.getTime()};
-  fyld('l-nye', ikkeK.filter(r=>nu-opr(r)<DOGN), 'Intet nyt siden i går');
-  fyld('l-forfalder', ikkeK.filter(r=>!erLink(r)).filter(r=>{
+  fyld('l-nye', ikkeK.filter(r=>nu-opr(r)<DOGN&&!erOpgave(r)), 'Intet nyt siden i går');
+  fyld('l-forfalder', ikkeK.filter(r=>!erLink(r)&&!erOpgave(r)).filter(r=>{
     if(r.status!=='aaben'||!r.deadline) return false;
     const d=new Date(r.deadline+'T23:59:59'); return !isNaN(d)&&d.getTime()<nu+DOGN;
   }), 'Intet forfalder');
@@ -592,11 +621,56 @@ document.getElementById('kontaktSoeg').addEventListener('input',function(){
 });
 const GRUPPE_ORDEN=['familie','filmbranche','motorcykel','takeaway','restauranter'];
 const GRUPPE_FARVER=['#f2d7ae','#f6caca','#cfe6c3','#cddcf4','#e6d4f0','#f4e8b8'];
+/* under-faner på bogkanten: adresse-grupper, opgavelister og husmøder */
+let opgLister=[], hmLister=[], aktivOpgListe=null, aktivHmListe=null;
+async function hentLister(){
+  try{
+    const rs=await fetch(API+'/api/boglister'); const alle=await rs.json();
+    opgLister=alle.filter(l=>l.type==='opgaver'); hmLister=alle.filter(l=>l.type==='husmoede');
+    if(aktivOpgListe===null||!opgLister.find(l=>l.id===aktivOpgListe)) aktivOpgListe=opgLister[0]?opgLister[0].id:null;
+    if(aktivHmListe===null||!hmLister.find(l=>l.id===aktivHmListe)) aktivHmListe=hmLister[0]?hmLister[0].id:null;
+  }catch(e){}
+}
+function listeFanerHtml(type){
+  const lister=type==='opgaver'?opgLister:hmLister;
+  const aktiv=type==='opgaver'?aktivOpgListe:aktivHmListe;
+  return lister.slice(0,9).map((l,i)=>'<button class="gfane'+(l.id===aktiv?' valgt':'')+'" data-l="'+l.id+'" data-t="'+type+'"'
+    +(l.id===aktiv?'':' style="background:'+GRUPPE_FARVER[i%GRUPPE_FARVER.length]+'"')
+    +'>'+esc(l.navn.length>14?l.navn.slice(0,13)+'…':l.navn)+'</button>').join('')
+    +'<button class="gfane ny" data-nyliste="'+type+'">➕ Ny</button>';
+}
+async function nyListe(type){
+  const idag=new Date().toLocaleDateString('da-DK',{day:'numeric',month:'numeric'});
+  const forslag=type==='opgaver'?'Week end '+idag:'Husmøde '+idag;
+  const navn=(prompt('Navn på den nye liste:',forslag)||'').trim(); if(!navn) return;
+  // husmøde: lås løse punkter fast på den hidtil nyeste liste, så de ikke flytter med over
+  if(type==='husmoede'&&hmLister.length){
+    const gl=String(hmLister[0].id);
+    const u=(alleNoter||[]).filter(r=>erHoldMeat(r)&&!r.bogliste&&r.status!=='arkiv');
+    for(const r of u){ r.bogliste=gl;
+      try{ await fetch(API+'/api/hoved/'+r.id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bogliste:gl})}); }catch(e){}
+    }
+  }
+  try{
+    const rs=await fetch(API+'/api/boglister',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,navn})});
+    const d=await rs.json();
+    await hentLister();
+    if(type==='opgaver') aktivOpgListe=d.id; else aktivHmListe=d.id;
+    gfanerSynlighed(); if(alleNoter) visLister();
+  }catch(e){ alert('Kunne ikke oprette listen'); }
+}
 function gfanerSynlighed(){
-  const vis=document.getElementById('gfaner').children.length>0
-    && document.getElementById('s-adresser').classList.contains('aktiv')
-    && document.getElementById('forside').classList.contains('aaben');
-  document.getElementById('gfaner').classList.toggle('vis',vis);
+  const g=document.getElementById('gfaner');
+  const akt=document.querySelector('.sektion.aktiv');
+  let html='';
+  if(akt){
+    if(akt.id==='s-adresser') html=gruppeFanerHtml();
+    else if(akt.id==='s-opgaver') html=listeFanerHtml('opgaver');
+    else if(akt.id==='s-holdmeat') html=listeFanerHtml('husmoede');
+  }
+  g.innerHTML=html;
+  const vis=html!=='' && document.getElementById('forside').classList.contains('aaben');
+  g.classList.toggle('vis',vis);
   document.querySelector('.bogholder').classList.toggle('adressebog',vis);
 }
 function alleGrupper(){
@@ -604,19 +678,23 @@ function alleGrupper(){
   (kontaktListe||[]).forEach(k=>(k.gruppe||'').split('|').forEach(g=>g&&fundet.add(g)));
   return [...GRUPPE_ORDEN.filter(g=>fundet.has(g)),...[...fundet].filter(g=>!GRUPPE_ORDEN.includes(g)).sort((a,b)=>a.localeCompare(b,'da'))];
 }
-function visGruppeFaner(){
-  const r=document.getElementById('gfaner');
+function gruppeFanerHtml(){
   const grupper=alleGrupper();
-  if(!grupper.length){ r.innerHTML=''; kontaktGruppe='alle'; gfanerSynlighed(); return; }
+  if(!grupper.length){ kontaktGruppe='alle'; return ''; }
   if(kontaktGruppe!=='alle'&&!grupper.includes(kontaktGruppe)) kontaktGruppe='alle';
   const IKON={alle:'📖',familie:'👨‍👩‍👧',filmbranche:'🎬',motorcykel:'🏍',takeaway:'🍕',restauranter:'🍽'};
-  r.innerHTML=['alle',...grupper].map((g,i)=>'<button class="gfane'+(g===kontaktGruppe?' valgt':'')+'" data-g="'+esc(g)+'"'
+  return ['alle',...grupper].map((g,i)=>'<button class="gfane'+(g===kontaktGruppe?' valgt':'')+'" data-g="'+esc(g)+'"'
     +(g==='alle'||g===kontaktGruppe?'':' style="background:'+GRUPPE_FARVER[(i-1)%GRUPPE_FARVER.length]+'"')
     +'>'+(IKON[g]?'<span class="em">'+IKON[g]+'</span>':'')+esc(g==='alle'?'Alle':g.charAt(0).toUpperCase()+g.slice(1))+'</button>').join('');
-  gfanerSynlighed();
 }
+function visGruppeFaner(){ gfanerSynlighed(); }
 document.getElementById('gfaner').addEventListener('click',e=>{
   const b=e.target.closest('.gfane'); if(!b) return;
+  if(b.dataset.nyliste){ nyListe(b.dataset.nyliste); return; }
+  if(b.dataset.l){
+    if(b.dataset.t==='opgaver') aktivOpgListe=parseInt(b.dataset.l); else aktivHmListe=parseInt(b.dataset.l);
+    gfanerSynlighed(); if(alleNoter) visLister(); return;
+  }
   kontaktGruppe=b.dataset.g; visAdresser();
 });
 function kontaktNoegle(){ try{return localStorage.getItem('kontaktNoegle')||''}catch(e){return ''} }
@@ -713,10 +791,65 @@ function visAdresser(noter){
   }
   el.innerHTML=h;
 }
+/* 🤝 Hold Meat: vis den valgte mødeliste (punkter uden liste hører til den nyeste) */
+function visHoldMeatListe(ikkeK){
+  const el=document.getElementById('l-holdmeat'); el.classList.remove('hent');
+  const hm=(ikkeK||[]).filter(erHoldMeat);
+  const nyeste=hmLister[0]?hmLister[0].id:null;
+  let rows;
+  if(aktivHmListe===null) rows=hm.filter(r=>r.status!=='udfoert');
+  else rows=hm.filter(r=>r.bogliste===String(aktivHmListe)||(!r.bogliste&&aktivHmListe===nyeste));
+  rows.sort((a,b)=>a.id-b.id);
+  const liste=hmLister.find(l=>l.id===aktivHmListe);
+  document.getElementById('hmTitel').textContent=liste?liste.navn:'Hold Meat';
+  el.innerHTML=rows.length?rows.map(r=>noteHtml(r)).join(''):'<div class="tom">Ingen punkter — skriv med #husmøde</div>';
+}
+/* 📋 Opgaver: den valgte liste som håndskreven seddel */
+function visOpgaver(){
+  const el=document.getElementById('l-opgaver'); el.classList.remove('hent');
+  const liste=opgLister.find(l=>l.id===aktivOpgListe);
+  document.getElementById('opgTitel').textContent=liste?liste.navn:'Opgaver';
+  const sl=document.getElementById('opgSkriv');
+  if(!liste){ el.innerHTML='<div class="tom">Ingen lister endnu — tryk ➕ Ny på kanten</div>'; sl.style.display='none'; return; }
+  sl.style.display='flex';
+  const rows=(alleNoter||[]).filter(r=>erOpgave(r)&&r.bogliste===String(liste.id)&&r.status!=='arkiv');
+  rows.sort((a,b)=>a.id-b.id);
+  el.innerHTML=rows.map(r=>{
+    const st=r.status==='udfoert'?'fuld':r.status==='igang'?'halv':'hul';
+    return '<div class="opg '+st+'" data-id="'+r.id+'"><span class="firk '+st+'"></span><span class="t">'+esc((r.tekst||'').replace(/#\S+/g,'').trim())+'</span></div>';
+  }).join('')||'<div class="tom" style="font-size:19px">Tom liste — skriv nederst</div>';
+}
+/* klik på et punkt = næste tilstand: hul → halv (i gang) → sort (færdig) → hul */
+document.getElementById('l-opgaver').addEventListener('click',async e=>{
+  const o=e.target.closest('.opg'); if(!o) return;
+  const r=(alleNoter||[]).find(x=>String(x.id)===o.dataset.id); if(!r) return;
+  r.status=r.status==='aaben'?'igang':r.status==='igang'?'udfoert':'aaben';
+  visOpgaver();
+  try{ await fetch(API+'/api/hoved/'+r.id,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({status:r.status,behandlet:1})}); }catch(err){}
+});
+/* nyt punkt på skrivelinjen nederst */
+document.getElementById('opgInput').addEventListener('keydown',async e=>{
+  if(e.key!=='Enter') return;
+  const inp=e.target, t=inp.value.trim();
+  if(!t||aktivOpgListe===null) return;
+  inp.value=''; inp.disabled=true;
+  try{
+    const rs=await fetch(API+'/api/hoved',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({tekst:t+' #opgave',kilde:'bog',sorter:false})});
+    const d=await rs.json();
+    await fetch(API+'/api/hoved/'+d.id,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({bogliste:String(aktivOpgListe),behandlet:1,titel:t.slice(0,60),resultat:'📋 punkt på listen'})});
+    if(d.entry){ d.entry.bogliste=String(aktivOpgListe); d.entry.behandlet=1; (alleNoter||(alleNoter=[])).unshift(d.entry); }
+    visOpgaver();
+  }catch(err){ alert('Kunne ikke gemme punktet — prøv igen'); }
+  inp.disabled=false; inp.focus();
+});
 function fyld(id,rows,tomtekst){
   const el=document.getElementById(id); el.classList.remove('hent');
   el.innerHTML=rows.length?rows.map(r=>noteHtml(r)).join(''):'<div class="tom">'+tomtekst+'</div>';
 }
+hentLister().then(()=>{ gfanerSynlighed(); if(alleNoter) visLister(); });
 hentNoter();
 
 /* Hold Meat: delegér (Maya/Thomas/begge) + deadline på hvert punkt */
