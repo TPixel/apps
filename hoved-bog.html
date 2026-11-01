@@ -132,12 +132,8 @@ body{
 .forside .fs-logo{font-size:11px;color:#8d8679;letter-spacing:3px;text-transform:uppercase;font-weight:bold}
 .forside .fs-titel{font-family:'Caveat',cursive;font-size:64px;font-weight:700;color:#f5f1e6;line-height:1}
 .forside .fs-under{font-family:'Caveat',cursive;font-size:22px;color:var(--orange)}
-.forside .fs-aabn{margin-top:26px;font-size:12px;color:#8d8679;letter-spacing:1px}
 .forside.aaben{transform:perspective(1400px) rotateY(-125deg); opacity:0; pointer-events:none}
-.design{
-  position:absolute; top:22px; right:56px; z-index:22; width:32px; height:32px; border-radius:50%;
-  background:#ffffff14; border:1px solid #ffffff2a; color:#d8d2c4; font-size:15px; line-height:30px; text-align:center; cursor:pointer
-}
+.redigerknap{background:var(--orange);color:#fff;font-weight:bold;border:none;border-radius:10px;padding:9px 14px;cursor:pointer;font-size:13px;flex:0 0 auto}
 .designpanel{
   position:absolute; left:50%; bottom:40px; transform:translateX(-50%); z-index:23;
   background:#000000a8; backdrop-filter:blur(8px); border:1px solid #ffffff22; border-radius:14px;
@@ -311,8 +307,6 @@ textarea::placeholder{color:#b8b0a0}
 .chip .ik{width:13px;height:13px;vertical-align:-2.5px}
 .mik{display:inline-flex;align-items:center;justify-content:center}
 .mik .ik{width:22px;height:22px}
-.design{display:flex;align-items:center;justify-content:center}
-.design .ik{width:15px;height:15px}
 
 /* ---------- PERSONLIGT PRÆG: slidt omslag, foto & stickers ---------- */
 .slid{position:absolute;inset:0;border-radius:inherit;pointer-events:none;overflow:hidden;
@@ -337,9 +331,9 @@ textarea::placeholder{color:#b8b0a0}
 .m-pap .slid::before{opacity:.65}
 .m-pap::before{border-color:#00000026 !important}
 .m-pap .fs-titel{color:#3b2c15}
-.m-pap .fs-logo,.m-pap .fs-aabn{color:#00000066}
+.m-pap .fs-logo{color:#00000066}
 .m-pap .fs-under{color:#8a4b05}
-.fs-logo,.fs-titel,.fs-under,.fs-aabn{position:relative;z-index:1}
+.fs-logo,.fs-titel,.fs-under{position:relative;z-index:1}
 /* foto på forsiden — sat fast med tape */
 .fs-foto{position:absolute;left:50%;top:26%;width:46%;z-index:1;
   transform:translate(-50%,-50%) rotate(-2.5deg);
@@ -570,11 +564,9 @@ body.pr-patina .patina{display:block}
 
   <div class="forside" id="forside">
     <div class="slid"></div>
-    <div class="design" id="designKnap" title="Design forsiden"><svg class="ik"><use href="#ik-blyant"/></svg></div>
     <div class="fs-logo">Ditzel &amp; Co</div>
     <div class="fs-titel">Hovedet</div>
     <div class="fs-under">alt ud af hovedet</div>
-    <div class="fs-aabn">tryk for at åbne</div>
     <div class="designpanel" id="designPanel">
       <div class="matvalg">
         <span class="mchip" data-m="laeder">Læder</span>
@@ -635,7 +627,7 @@ const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdig
 /* ---------- personligt præg: gemmes pr. bruger/enhed i bogIndstil ---------- */
 const INDSTILLINGER=[
   {n:'solofane',lbl:'Kun den aktive fane på kanten',sub:'alle faner vises når bogen er lukket',std:true},
-  {n:'materiale',lbl:'Omslagets materiale',sub:'slidt af brug — vælg også med blyanten på forsiden',valg:[['laeder','Læder'],['pap','Pap']],std:'laeder'},
+  {n:'materiale',lbl:'Omslagets materiale',sub:'slidt af brug — se også Redigér forside nederst',valg:[['laeder','Læder'],['pap','Pap']],std:'laeder'},
   {n:'papirtone',lbl:'Papirtone',sub:'farven på siderne',valg:[['hvid','Hvid'],['cremet','Cremet'],['gullig','Gullig']],std:'cremet'},
   {n:'linjetype',lbl:'Linjer på papiret',valg:[['linjeret','Linjeret'],['kvadreret','Kvadreret'],['blank','Blank']],std:'linjeret'},
   {n:'patina',lbl:'Patina på siderne',sub:'kaffering og æseløre',std:false},
@@ -675,9 +667,9 @@ function bullet(r){
 
 document.getElementById('dato').textContent=new Date().toLocaleDateString('da-DK',{weekday:'long',day:'numeric',month:'long'});
 
-/* forside: tryk for at åbne bogen (ikke på design-knap/panel/pynt) */
+/* forside: tryk for at åbne bogen (ikke på design-panel/pynt) */
 document.getElementById('forside').addEventListener('click',function(e){
-  if(e.target.closest('.design')||e.target.closest('.designpanel')||e.target.closest('.sticker')||e.target.closest('.fs-foto')) return;
+  if(e.target.closest('.designpanel')||e.target.closest('.sticker')||e.target.closest('.fs-foto')) return;
   if(this.classList.contains('redigerer')){ /* i redigering lukker klik på omslaget panelet */
     document.getElementById('designPanel').classList.remove('vis');
     this.classList.remove('redigerer'); return;
@@ -707,11 +699,13 @@ function anvendDesign(){
   document.querySelectorAll('.mchip').forEach(m=>m.classList.toggle('valgt',m.dataset.m===mat));
 }
 function gemDesign(){try{localStorage.setItem('bogDesign',JSON.stringify(design))}catch(e){}}
-document.getElementById('designKnap').addEventListener('click',e=>{
-  e.stopPropagation();
-  const p=document.getElementById('designPanel'); p.classList.toggle('vis');
-  document.getElementById('forside').classList.toggle('redigerer',p.classList.contains('vis'));
-});
+/* redigering af forsiden startes fra ⚙️ System-siden: luk bogen og vis panelet */
+function redigerForside(){
+  const fs=document.getElementById('forside');
+  fs.classList.remove('aaben'); fs.classList.add('redigerer');
+  document.getElementById('designPanel').classList.add('vis');
+  gfanerSynlighed();
+}
 document.getElementById('designPanel').addEventListener('click',e=>{
   e.stopPropagation();
   const f=e.target.closest('.farve'); if(f){design.tema=f.dataset.t; anvendDesign(); gemDesign();}
@@ -742,7 +736,8 @@ function visForsidePynt(){
   document.getElementById('fotoFjern').style.display=indstil.foto?'':'none';
 }
 function tilfoejSticker(t){
-  (indstil.stickers=indstil.stickers||[]).push({t,x:25+Math.round(Math.random()*50),y:55+Math.round(Math.random()*25),r:Math.round(Math.random()*24-12)});
+  /* spawn i den øvre halvdel, så den ikke lander bag design-panelet nederst */
+  (indstil.stickers=indstil.stickers||[]).push({t,x:25+Math.round(Math.random()*50),y:16+Math.round(Math.random()*30),r:Math.round(Math.random()*24-12)});
   gemIndstil(); visForsidePynt();
 }
 /* foto: vælg billede → skaleres ned → dataURL i bogIndstil */
@@ -1008,9 +1003,12 @@ function visIndstillinger(){
       ?'<div class="gruppevalg">'+d.valg.map(v=>'<span class="gchip ichip'+(indstilVal(d.n)===v[0]?' med':'')+'" data-n="'+d.n+'" data-v="'+v[0]+'">'+v[1]+'</span>').join('')+'</div>'
       :'<div class="tnd'+(indstilVal(d.n)?' til':'')+'" data-n="'+d.n+'"></div>';
     return '<div class="indst"><div><div class="lbl">'+d.lbl+'</div>'+(d.sub?'<div class="sub">'+d.sub+'</div>':'')+'</div>'+hoejre+'</div>';
-  }).join('');
+  }).join('')
+  +'<div class="indst"><div><div class="lbl">Forsidens udseende</div><div class="sub">foto, stickers, materiale og farve</div></div>'
+  +'<button class="redigerknap">'+ikon('blyant')+' Redigér forside</button></div>';
 }
 document.getElementById('indstillinger').addEventListener('click',e=>{
+  if(e.target.closest('.redigerknap')){ redigerForside(); return; }
   const c=e.target.closest('.ichip');
   if(c){ indstil[c.dataset.n]=c.dataset.v; gemIndstil(); visIndstillinger(); anvendPraeg(); anvendDesign(); return; }
   const t=e.target.closest('.tnd'); if(!t) return;
