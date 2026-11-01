@@ -359,6 +359,12 @@ textarea::placeholder{color:#b8b0a0}
 .fotorow{display:flex;gap:8px}
 .dknap{background:#ffffff14;border:1px solid #ffffff2a;color:#d8d2c4;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:bold;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 
+/* træk-og-slip-zone: vises mens en fil trækkes hen over bogen */
+#dropOverlay{position:fixed;inset:0;z-index:80;display:none;background:#00000055;pointer-events:none}
+#dropOverlay.vis{display:flex;align-items:center;justify-content:center}
+#dropOverlay .dz{border:3px dashed #fff;border-radius:18px;padding:26px 36px;color:#fff;
+  font-family:'Caveat',cursive;font-size:31px;background:#00000077;display:flex;align-items:center;gap:13px}
+#dropOverlay .dz .ik{width:32px;height:32px}
 /* ---------- SIDERNES PRÆG: linjetype & patina ---------- */
 .pr-kvadreret .side{background:
   repeating-linear-gradient(90deg,transparent 0 27px,var(--linje) 27px 28px),
@@ -600,6 +606,8 @@ body.pr-patina .patina{display:block}
   </div>
   <input type="file" id="fotoInput" accept="image/*" multiple style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
 
+  <div id="dropOverlay" aria-hidden="true"><div class="dz"><svg class="ik"><use href="#ik-foto"/></svg>Slip fotoet her</div></div>
+
   <div class="faner" id="faner">
     <button class="fane aktiv" data-s="skriv"><span class="em"><svg class="ik"><use href="#ik-pen"/></svg></span>Skriv</button>
     <button class="fane" data-s="seneste"><span class="em"><svg class="ik"><use href="#ik-ur"/></svg></span>Seneste</button>
@@ -620,7 +628,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v20';
+const BOGVERSION='v21';
 /* håndtegnet ikon fra SVG-spriten øverst i body */
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
@@ -756,6 +764,9 @@ const fotoInput=document.getElementById('fotoInput');
 document.getElementById('fotoVaelg').addEventListener('click',()=>fotoInput.click());
 fotoInput.addEventListener('change',()=>{
   const filer=[...fotoInput.files]; fotoInput.value='';
+  tilfoejFotoFiler(filer);
+});
+function tilfoejFotoFiler(filer){
   filer.forEach(f=>{
     const img=new Image();
     img.onload=()=>{
@@ -773,6 +784,28 @@ fotoInput.addEventListener('change',()=>{
     img.onerror=()=>alert('Kunne ikke læse billedet — prøv et andet format');
     img.src=URL.createObjectURL(f);
   });
+}
+/* træk-og-slip: billedfiler fra Finder/skrivebordet direkte ind på bogen */
+let dropTael=0;
+const dropOv=document.getElementById('dropOverlay');
+const erFiltraek=e=>e.dataTransfer&&[...(e.dataTransfer.types||[])].includes('Files');
+document.addEventListener('dragenter',e=>{
+  if(!erFiltraek(e)) return;
+  e.preventDefault(); dropTael++; dropOv.classList.add('vis');
+});
+document.addEventListener('dragover',e=>{ if(erFiltraek(e)) e.preventDefault(); });
+document.addEventListener('dragleave',e=>{
+  if(!erFiltraek(e)) return;
+  if(--dropTael<=0){ dropTael=0; dropOv.classList.remove('vis'); }
+});
+document.addEventListener('drop',e=>{
+  if(!erFiltraek(e)) return;
+  e.preventDefault(); dropTael=0; dropOv.classList.remove('vis');
+  const filer=[...e.dataTransfer.files].filter(f=>f.type.startsWith('image/'));
+  if(!filer.length) return;
+  tilfoejFotoFiler(filer);
+  /* luk bogen og åbn redigering, så fotoet kan placeres med det samme */
+  if(!document.getElementById('forside').classList.contains('redigerer')) redigerForside();
 });
 /* flyt + skalér fotos/stickers mens design-panelet er åbent; ✕ fjerner dem igen */
 let pyntTraek=null;   /* {el,id,x,y} — flyt med én finger/mus */
