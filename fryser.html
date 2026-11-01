@@ -63,6 +63,17 @@ input[type=file]{display:none}
 .nfcov p{color:#8a8a94;font-size:15px;max-width:320px}
 .nfcov .go{background:#E8820A;color:#fff;border:none;border-radius:14px;font-weight:bold;font-size:20px;padding:18px 28px;font-family:inherit;cursor:pointer;width:100%;max-width:360px;margin-top:6px}
 .nfcov .cancel{background:none;border:none;color:#8a8a94;font-size:15px;font-family:inherit;cursor:pointer;padding:8px}
+.nfcov .sticker{border:none;cursor:pointer;padding:0;width:min(74vw,300px);height:min(74vw,300px);border-radius:16%;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 34px rgba(0,0,0,.45)}
+.nfcov .sticker:active{transform:scale(.97)}
+.nfcov .sticker .circle{width:56%;height:56%;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.nfcov .sticker .circle span{font-weight:800;color:#fff;letter-spacing:2px;line-height:1}
+.nfcov.ud .sticker{background:#9e4b37}
+.nfcov.ud .sticker .circle{background:#585a47}
+.nfcov.ud .sticker .circle span{font-size:58px}
+.nfcov.ind .sticker{background:#5a6b3a}
+.nfcov.ind .sticker .circle{background:#9e4b37}
+.nfcov.ind .sticker .circle span{font-size:44px}
+.nfchint{color:#9a9aa4;font-size:15px;font-weight:bold;margin-top:4px}
 .scanov{position:fixed;inset:0;background:#000;display:none;align-items:center;justify-content:center;z-index:50}
 .scanov.show{display:flex}
 .scanov video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -176,12 +187,10 @@ input[type=file]{display:none}
   </div>
 </div>
 
-<!-- NFC: åbnet via tag → klar til at tage ud -->
+<!-- NFC: åbnet via tag (UD / IND) → tryk på stickeren og scan -->
 <div class="nfcov" id="nfcOv">
-  <div class="big">🧊</div>
-  <h2>Tag ud af fryseren</h2>
-  <p>Scan QR-koden på den pakke du tager ud.</p>
-  <button class="go" onclick="nfcGo()">📤 Scan pakke</button>
+  <button class="sticker" id="nfcSticker" onclick="nfcGo()"><span class="circle"><span id="nfcLetters">UD</span></span></button>
+  <p class="nfchint" id="nfcHint">Tryk for at tage ud af fryseren</p>
   <button class="cancel" onclick="nfcCancel()">Annuller</button>
 </div>
 
@@ -491,16 +500,27 @@ function startTake(){
 }
 // NFC: tagget åbner appen med ?take -> vis stor "klar til at tage ud"-skærm.
 // (Kameraet kan ikke auto-åbne uden et tryk på iPhone, så ét tryk starter scan.)
-function nfcClearFlag(){try{sessionStorage.removeItem('nfcTake');}catch(e){}}
-function nfcGo(){nfcClearFlag();document.getElementById('nfcOv').classList.remove('show');startTake();}
+var nfcAction=null;
+function nfcClearFlag(){try{sessionStorage.removeItem('nfcMode');}catch(e){}}
+function nfcSetMode(mode){
+  var ov=document.getElementById('nfcOv');ov.classList.remove('ud','ind');
+  if(mode==='add'){ov.classList.add('ind');document.getElementById('nfcLetters').textContent='IND';
+    document.getElementById('nfcHint').textContent='Tryk for at lægge i fryseren';nfcAction=startAdd;}
+  else{ov.classList.add('ud');document.getElementById('nfcLetters').textContent='UD';
+    document.getElementById('nfcHint').textContent='Tryk for at tage ud af fryseren';nfcAction=startTake;}
+}
+function nfcGo(){nfcClearFlag();document.getElementById('nfcOv').classList.remove('show');if(nfcAction)nfcAction();}
 function nfcCancel(){nfcClearFlag();document.getElementById('nfcOv').classList.remove('show');}
 (function(){
   var p=new URLSearchParams(location.search);
-  var want=p.has('take')||p.get('mode')==='take'||location.hash==='#take';
-  var flag=false;try{flag=sessionStorage.getItem('nfcTake')==='1';}catch(e){}
-  if(want||flag){
-    try{sessionStorage.setItem('nfcTake','1');}catch(e){}         // overlev auto-update reload
+  var want=(p.has('take')||p.get('mode')==='take'||location.hash==='#take')?'take'
+          :(p.has('add')||p.get('mode')==='add'||location.hash==='#add')?'add':null;
+  var flag=null;try{flag=sessionStorage.getItem('nfcMode');}catch(e){}
+  var mode=want||flag;
+  if(mode){
+    try{sessionStorage.setItem('nfcMode',mode);}catch(e){}        // overlev auto-update reload
     if(want){try{history.replaceState(null,'',location.pathname);}catch(e){}}
+    nfcSetMode(mode);
     document.getElementById('nfcOv').classList.add('show');
   }
 })();
