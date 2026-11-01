@@ -202,7 +202,17 @@ body{
 .firk.halv{background:linear-gradient(90deg,#2a2a30 0 50%,transparent 0)}
 .firk.fuld{background:#2a2a30}
 .opg{display:flex;align-items:center;gap:11px;padding:3px 0;min-height:30px;cursor:pointer}
-.opg .t{font-family:'Caveat',cursive;font-size:24px;line-height:1.05;color:#1d1d22;text-transform:uppercase;letter-spacing:.5px}
+.opg .t{font-family:'Caveat',cursive;font-size:24px;line-height:1.05;color:#1d1d22;text-transform:uppercase;letter-spacing:.5px;flex:1}
+/* træk-greb: træk et punkt over på en anden liste-fane på kanten */
+.opg .greb{flex:0 0 auto;color:#c6bda8;font-size:17px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;padding:2px 5px}
+.traekghost{
+  position:fixed;z-index:50;pointer-events:none;
+  font-family:'Caveat',cursive;font-size:22px;text-transform:uppercase;color:#1d1d22;
+  background:var(--papir);border:1px solid #00000022;border-radius:8px;padding:4px 12px;
+  box-shadow:0 6px 18px #00000055;transform:translate(-60%,-120%) rotate(-2deg);
+  max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.gfane.maal{transform:translateX(6px) rotate(var(--rot,0deg));filter:none;box-shadow:0 0 0 2.5px var(--orange),2px 3px 8px #00000030}
 .opg.fuld .t{text-decoration:line-through;text-decoration-thickness:2.5px;color:#6b6555}
 .opgrubrik{text-align:center;text-transform:uppercase;text-decoration:underline 2px;text-underline-offset:7px;letter-spacing:2px;font-size:30px}
 .skrivlinje{display:flex;align-items:center;gap:11px;margin-top:4px}
@@ -890,11 +900,12 @@ function visOpgaver(){
   rows.sort((a,b)=>a.id-b.id);
   el.innerHTML=rows.map(r=>{
     const st=r.status==='udfoert'?'fuld':r.status==='igang'?'halv':'hul';
-    return '<div class="opg '+st+'" data-id="'+r.id+'"><span class="firk '+st+'"></span><span class="t">'+esc((r.tekst||'').replace(/#\S+/g,'').trim())+'</span></div>';
+    return '<div class="opg '+st+'" data-id="'+r.id+'"><span class="firk '+st+'"></span><span class="t">'+esc((r.tekst||'').replace(/#\S+/g,'').trim())+'</span><span class="greb" title="Træk til en anden liste">⠿</span></div>';
   }).join('')||'<div class="tom" style="font-size:19px">Tom liste — skriv nederst</div>';
 }
 /* klik på et punkt = næste tilstand: hul → halv (i gang) → sort (færdig) → hul */
 document.getElementById('l-opgaver').addEventListener('click',async e=>{
+  if(e.target.closest('.greb')) return;                 /* grebet er kun til at trække */
   const o=e.target.closest('.opg'); if(!o) return;
   const r=(alleNoter||[]).find(x=>String(x.id)===o.dataset.id); if(!r) return;
   r.status=r.status==='aaben'?'igang':r.status==='igang'?'udfoert':'aaben';
@@ -902,6 +913,48 @@ document.getElementById('l-opgaver').addEventListener('click',async e=>{
   try{ await fetch(API+'/api/hoved/'+r.id,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({status:r.status,behandlet:1})}); }catch(err){}
 });
+/* træk i grebet (⠿) → slip på en anden liste-fane på kanten for at flytte punktet */
+let traek=null;
+const opgTraekEl=document.getElementById('l-opgaver');
+opgTraekEl.addEventListener('pointerdown',e=>{
+  const g=e.target.closest('.greb'); if(!g) return;
+  const o=g.closest('.opg'); if(!o) return;
+  e.preventDefault();
+  try{g.setPointerCapture(e.pointerId)}catch(err){}
+  const gh=document.createElement('div'); gh.className='traekghost';
+  gh.textContent=o.querySelector('.t').textContent;
+  document.body.appendChild(gh);
+  traek={id:o.dataset.id,ghost:gh,maal:null};
+  traekFlyt(e);
+});
+function traekFlyt(e){ traek.ghost.style.left=e.clientX+'px'; traek.ghost.style.top=e.clientY+'px'; }
+opgTraekEl.addEventListener('pointermove',e=>{
+  if(!traek) return;
+  traekFlyt(e);
+  const hit=document.elementFromPoint(e.clientX,e.clientY);
+  const f=hit?hit.closest('.gfane[data-l][data-t="opgaver"]'):null;
+  const ny=(f&&parseInt(f.dataset.l)!==aktivOpgListe)?f:null;
+  if(traek.maal&&traek.maal!==ny) traek.maal.classList.remove('maal');
+  traek.maal=ny; if(ny) ny.classList.add('maal');
+});
+async function traekSlut(e){
+  if(!traek) return;
+  const t=traek; traek=null;
+  t.ghost.remove();
+  if(t.maal){
+    t.maal.classList.remove('maal');
+    if(e.type==='pointerup') await flytOpgave(t.id,t.maal.dataset.l);
+  }
+}
+opgTraekEl.addEventListener('pointerup',traekSlut);
+opgTraekEl.addEventListener('pointercancel',traekSlut);
+async function flytOpgave(id,til){
+  const r=(alleNoter||[]).find(x=>String(x.id)===String(id)); if(!r) return;
+  r.bogliste=String(til); visOpgaver();
+  try{ await fetch(API+'/api/hoved/'+id,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({bogliste:String(til)})}); }
+  catch(err){ alert('Kunne ikke flytte — prøv igen'); }
+}
 /* nyt punkt på skrivelinjen nederst */
 document.getElementById('opgInput').addEventListener('keydown',async e=>{
   if(e.key!=='Enter') return;
