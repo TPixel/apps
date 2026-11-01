@@ -335,7 +335,7 @@ textarea::placeholder{color:#b8b0a0}
 /* fotos på forsiden — sat fast med tape, frit flytbare */
 .fs-foto{position:absolute;width:46%;z-index:1;
   transform:translate(-50%,-50%) rotate(var(--fr,-2.5deg));
-  background:#f8f6ee;padding:3% 3% 10%;box-shadow:0 5px 15px #00000055;
+  background:#f8f6ee;padding:1.2% 1.2% 4.5%;box-shadow:0 5px 15px #00000055;
   pointer-events:none;touch-action:none}
 .fs-foto img{display:block;width:100%;pointer-events:none}
 /* tape-hjørnerne skalerer med fotoet (% + aspect-ratio i stedet for faste px) */
@@ -628,7 +628,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v21';
+const BOGVERSION='v22';
 /* håndtegnet ikon fra SVG-spriten øverst i body */
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
