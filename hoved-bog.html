@@ -96,20 +96,18 @@ body{
 .fane:nth-child(10){--rot:1.9deg;font-size:9.5px}
 .fane:nth-child(11){--rot:-1.2deg;font-size:10px}
 .fane:nth-child(12){--rot:1.3deg;font-size:9px}
-.fane:nth-child(13){--rot:-1.7deg;font-size:10px}
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f2a2a2}
 .fane:nth-child(3){background:#f4c04e}
 .fane:nth-child(4){background:#c9a6e8}
 .fane:nth-child(5){background:#6fd793}
 .fane:nth-child(6){background:#9dbff5}
-.fane:nth-child(7){background:#cfccc2}
-.fane:nth-child(8){background:#c9a27a}
-.fane:nth-child(9){background:#8fd4d1}
-.fane:nth-child(10){background:#f0b6d2}
-.fane:nth-child(11){background:#e8dd73}
+.fane:nth-child(7){background:#c9a27a}
+.fane:nth-child(8){background:#8fd4d1}
+.fane:nth-child(9){background:#f0b6d2}
+.fane:nth-child(10){background:#e8dd73}
+.fane:nth-child(11){background:#f5a97f}
 .fane:nth-child(12){background:#c4c4c4}
-.fane:nth-child(13){background:#f5a97f}
 
 /* ---------- FORSIDE ---------- */
 .forside{
@@ -605,19 +603,20 @@ body.pr-patina .patina{display:block}
     <button class="fane" data-s="ideer"><span class="em"><svg class="ik"><use href="#ik-pare"/></svg></span>Idé</button>
     <button class="fane" data-s="rapporter"><span class="em"><svg class="ik"><use href="#ik-kolbe"/></svg></span>Rapport</button>
     <button class="fane" data-s="projekter"><span class="em"><svg class="ik"><use href="#ik-hammer"/></svg></span>Projekt</button>
-    <button class="fane" data-s="faerdige"><span class="em"><svg class="ik"><use href="#ik-flueben"/></svg></span>Færdig</button>
     <button class="fane" data-s="adresser"><span class="em"><svg class="ik"><use href="#ik-tlf"/></svg></span>Adresse</button>
     <button class="fane" data-s="links"><span class="em"><svg class="ik"><use href="#ik-kaede"/></svg></span>Link</button>
     <button class="fane" data-s="holdmeat"><span class="em"><svg class="ik"><use href="#ik-bobler"/></svg></span>Hold Meat</button>
     <button class="fane" data-s="opgaver"><span class="em"><svg class="ik"><use href="#ik-liste"/></svg></span>Opgaver</button>
-    <button class="fane" data-s="system"><span class="em"><svg class="ik"><use href="#ik-tandhjul"/></svg></span>System</button>
     <button class="fane" data-s="events"><span class="em"><svg class="ik"><use href="#ik-maske"/></svg></span>Events</button>
+    <button class="fane" data-s="system"><span class="em"><svg class="ik"><use href="#ik-tandhjul"/></svg></span>System</button>
   </div>
   <div class="gfaner" id="gfaner"></div>
 </div>
 
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
+/* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
+const BOGVERSION='v19';
 /* håndtegnet ikon fra SVG-spriten øverst i body */
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
@@ -965,6 +964,15 @@ function listeFanerHtml(type){
     +'>'+esc(l.navn.length>14?l.navn.slice(0,13)+'…':l.navn)+'</button>').join('')
     +'<button class="gfane ny" data-nyliste="'+type+'">'+ikon('plus')+' Ny</button>';
 }
+/* under-faner på System: Indstillinger + Færdig (Færdig bor ikke længere på bogkanten) */
+function systemFanerHtml(aktId){
+  return '<button class="gfane'+(aktId==='s-system'?' valgt':'')+'" data-sek="system"'
+    +(aktId==='s-system'?'':' style="background:'+GRUPPE_FARVER[3]+'"')
+    +'><span class="em">'+ikon('tandhjul')+'</span>Indstillinger</button>'
+    +'<button class="gfane'+(aktId==='s-faerdige'?' valgt':'')+'" data-sek="faerdige"'
+    +(aktId==='s-faerdige'?'':' style="background:'+GRUPPE_FARVER[2]+'"')
+    +'><span class="em">'+ikon('flueben')+'</span>Færdig</button>';
+}
 async function nyListe(type){
   const idag=new Date().toLocaleDateString('da-DK',{day:'numeric',month:'numeric'});
   const forslag=type==='opgaver'?'Week end '+idag:'Husmøde '+idag;
@@ -993,6 +1001,7 @@ function gfanerSynlighed(){
     if(akt.id==='s-adresser') html=gruppeFanerHtml();
     else if(akt.id==='s-opgaver') html=listeFanerHtml('opgaver');
     else if(akt.id==='s-holdmeat') html=listeFanerHtml('husmoede');
+    else if(akt.id==='s-system'||akt.id==='s-faerdige') html=systemFanerHtml(akt.id);
   }
   g.innerHTML=html;
   const aaben=document.getElementById('forside').classList.contains('aaben');
@@ -1014,7 +1023,9 @@ function visIndstillinger(){
     return '<div class="indst"><div><div class="lbl">'+d.lbl+'</div>'+(d.sub?'<div class="sub">'+d.sub+'</div>':'')+'</div>'+hoejre+'</div>';
   }).join('')
   +'<div class="indst"><div><div class="lbl">Forsidens udseende</div><div class="sub">foto, stickers, materiale og farve</div></div>'
-  +'<button class="redigerknap">'+ikon('blyant')+' Redigér forside</button></div>';
+  +'<button class="redigerknap">'+ikon('blyant')+' Redigér forside</button></div>'
+  +'<div class="indst"><div><div class="lbl">Version</div><div class="sub">nævn den når noget driller</div></div>'
+  +'<div style="font-family:\'Caveat\',cursive;font-size:27px;color:var(--orange)">'+BOGVERSION+'</div></div>';
 }
 document.getElementById('indstillinger').addEventListener('click',e=>{
   if(e.target.closest('.redigerknap')){ redigerForside(); return; }
@@ -1044,6 +1055,13 @@ function visGruppeFaner(){ gfanerSynlighed(); }
 document.getElementById('gfaner').addEventListener('click',e=>{
   const b=e.target.closest('.gfane'); if(!b) return;
   if(b.dataset.nyliste){ nyListe(b.dataset.nyliste); return; }
+  if(b.dataset.sek){ /* System-sidens under-faner: Indstillinger ↔ Færdig */
+    document.querySelectorAll('.sektion').forEach(x=>x.classList.remove('aktiv'));
+    document.getElementById('s-'+b.dataset.sek).classList.add('aktiv');
+    document.getElementById('sidefod').textContent='— '+SIDETAL[b.dataset.sek]+' —';
+    document.getElementById('side').scrollTop=0;
+    gfanerSynlighed(); hentNoter(); return;
+  }
   if(b.dataset.l){
     if(b.dataset.t==='opgaver') aktivOpgListe=parseInt(b.dataset.l); else aktivHmListe=parseInt(b.dataset.l);
     gfanerSynlighed(); if(alleNoter) visLister(); return;
