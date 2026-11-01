@@ -69,8 +69,10 @@ body{
 .faner{
   position:absolute; left:100%; margin-left:-30px; top:34px;
   display:flex; flex-direction:column; gap:7px; z-index:5; align-items:flex-start;
+  pointer-events:none; /* kolonnen må ikke sluge klik på gfanerne nedenunder */
 }
 .fane{
+  pointer-events:auto;
   padding:5px 11px 5px 12px;
   border-radius:0 9px 9px 0; border:none; cursor:pointer;
   font-family:Tahoma,sans-serif; font-weight:bold; letter-spacing:.3px;
@@ -166,7 +168,9 @@ body{
 .gfaner{
   position:absolute; left:100%; margin-left:-30px; top:72px;
   display:none; flex-direction:column; gap:7px; z-index:4; align-items:flex-start;
+  pointer-events:none;
 }
+.gfane{pointer-events:auto}
 .gfaner.vis{display:flex}
 .gfane{
   padding:5px 11px 5px 12px; border-radius:0 9px 9px 0; border:none; cursor:pointer;
