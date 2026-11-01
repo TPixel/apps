@@ -350,6 +350,11 @@ textarea::placeholder{color:#b8b0a0}
 .fs-foto .sskaler svg{width:12px;height:12px;margin:5px;display:block;pointer-events:none}
 .forside.redigerer .sticker,.forside.redigerer .fs-foto{pointer-events:auto;cursor:grab}
 .forside.redigerer .sfjern,.forside.redigerer .sskaler{display:block}
+/* tekstfri forside: slå al tekst fra, og tom titel viser ingen tom plads */
+.titelrow{display:flex;gap:7px;align-items:center}
+.titelrow input{flex:1;min-width:0}
+.forside.tekstfri .fs-logo,.forside.tekstfri .fs-titel,.forside.tekstfri .fs-under{display:none}
+.fs-titel:empty{display:none}
 /* design-panelets nye rækker */
 .matvalg{display:flex;gap:7px}
 .mchip{font-size:12px;font-weight:bold;color:#d8d2c4;border:1px solid #ffffff33;border-radius:12px;padding:5px 13px;cursor:pointer}
@@ -589,7 +594,10 @@ body.pr-patina .patina{display:block}
         <div class="farve" data-t="blaa" style="background:#1f2a4a"></div>
         <div class="farve" data-t="orange" style="background:#9a5c08"></div>
       </div>
-      <input id="titelInput" maxlength="18" placeholder="Titel på bogen">
+      <div class="titelrow">
+        <input id="titelInput" maxlength="18" placeholder="Titel på bogen">
+        <button class="mchip" id="tekstFri" title="Skjul al tekst på forsiden">Uden tekst</button>
+      </div>
       <div class="stikvalg" id="stikValg" title="Sæt et klistermærke på forsiden">
         <svg data-st="hjerte"><use href="#st-hjerte"/></svg>
         <svg data-st="stjerne"><use href="#st-stjerne"/></svg>
@@ -628,7 +636,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v22';
+const BOGVERSION='v23';
 /* håndtegnet ikon fra SVG-spriten øverst i body */
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
@@ -705,9 +713,12 @@ function anvendDesign(){
   if(mat==='pap') fs.style.background='linear-gradient(160deg,#c9a771 0%,#b2905c 55%,#97773f 100%)';
   else{ const t=TEMAER[design.tema]||TEMAER.sort;
     fs.style.background='linear-gradient(145deg,'+t[0]+' 0%,'+t[1]+' 55%,'+t[2]+' 100%)'; }
-  document.querySelector('.fs-titel').textContent=design.titel||'Hovedet';
+  /* tom titel = ingen tekst (ingen 'Hovedet'-fallback, ingen tom plads) */
+  document.querySelector('.fs-titel').textContent=design.titel===undefined?'Hovedet':design.titel;
+  fs.classList.toggle('tekstfri',!!indstil.tekstfri);
+  document.getElementById('tekstFri').classList.toggle('valgt',!!indstil.tekstfri);
   document.querySelectorAll('.farve').forEach(f=>f.classList.toggle('valgt',f.dataset.t===design.tema));
-  document.querySelectorAll('.mchip').forEach(m=>m.classList.toggle('valgt',m.dataset.m===mat));
+  document.querySelectorAll('.matvalg .mchip').forEach(m=>m.classList.toggle('valgt',m.dataset.m===mat));
 }
 function gemDesign(){try{localStorage.setItem('bogDesign',JSON.stringify(design))}catch(e){}}
 /* redigering af forsiden startes fra ⚙️ System-siden: luk bogen og vis panelet */
@@ -720,12 +731,15 @@ function redigerForside(){
 document.getElementById('designPanel').addEventListener('click',e=>{
   e.stopPropagation();
   const f=e.target.closest('.farve'); if(f){design.tema=f.dataset.t; anvendDesign(); gemDesign();}
-  const m=e.target.closest('.mchip'); if(m){indstil.materiale=m.dataset.m; gemIndstil(); anvendDesign(); visIndstillinger();}
+  const m=e.target.closest('.matvalg .mchip'); if(m){indstil.materiale=m.dataset.m; gemIndstil(); anvendDesign(); visIndstillinger();}
   const s=e.target.closest('[data-st]'); if(s) tilfoejSticker(s.dataset.st);
 });
 const titelInput=document.getElementById('titelInput');
-titelInput.value=design.titel||'Hovedet';
+titelInput.value=design.titel===undefined?'Hovedet':design.titel;
 titelInput.addEventListener('input',()=>{design.titel=titelInput.value.trim(); anvendDesign(); gemDesign();});
+document.getElementById('tekstFri').addEventListener('click',()=>{
+  indstil.tekstfri=!indstil.tekstfri; gemIndstil(); anvendDesign();
+});
 anvendDesign();
 
 /* ---------- forsidens pynt: fotos + stickers (gemmes i bogIndstil) ---------- */
