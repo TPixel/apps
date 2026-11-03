@@ -313,6 +313,10 @@ textarea::placeholder{color:#b8b0a0}
 }
 .nb .issueknap{display:inline-block;margin-top:8px;font-size:12px;font-weight:bold;color:#fff;background:#4a7fd6;border-radius:8px;padding:6px 11px;text-decoration:none}
 .tom{font-family:'Caveat',cursive;font-size:22px;color:#b4ab99;margin-top:18px}
+/* 'Vis hjælpetekster' slået fra (⚙️ System): kun forklarende tekst forsvinder —
+   #dato (dagens dato) og .tom.besked (status/søge-feedback) bliver stående */
+.pr-udenhjaelp .dato:not(#dato),.pr-udenhjaelp .noegle,
+.pr-udenhjaelp .indst .sub,.pr-udenhjaelp .tom:not(.besked){display:none}
 .hent{font-size:12px;color:#b4ab99}
 
 /* ---------- HÅNDTEGNEDE IKONER (SVG-spriten øverst i body) ---------- */
@@ -741,7 +745,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v31';
+const BOGVERSION='v32';
 
 /* ---------- adgangsnøgle: hele hoved-API'et er privat ----------
    Samme nøgle som adressebogen (localStorage kontaktNoegle) — én prompt pr. enhed.
@@ -781,6 +785,7 @@ const INDSTILLINGER=[
   {n:'papirtone',lbl:'Papirtone',sub:'farven på siderne',valg:[['hvid','Hvid'],['cremet','Cremet'],['gullig','Gullig']],std:'cremet'},
   {n:'linjetype',lbl:'Linjer på papiret',valg:[['linjeret','Linjeret'],['kvadreret','Kvadreret'],['blank','Blank']],std:'linjeret'},
   {n:'patina',lbl:'Patina på siderne',sub:'kaffering og æseløre',std:false},
+  {n:'hjaelp',lbl:'Vis hjælpetekster',sub:'forklaringer, symbol-nøgler og tips på siderne',std:true},
 ];
 let indstil={};
 try{Object.assign(indstil,JSON.parse(localStorage.getItem('bogIndstil')||'{}'))}catch(e){}
@@ -797,6 +802,7 @@ function anvendPraeg(){
   const lt=indstilVal('linjetype');
   if(lt==='kvadreret'||lt==='blank') document.body.classList.add('pr-'+lt);
   document.body.classList.toggle('pr-patina',!!indstilVal('patina'));
+  document.body.classList.toggle('pr-udenhjaelp',!indstilVal('hjaelp'));
 }
 anvendPraeg();
 const erLink=r=>/https?:\/\/\S+/i.test(r.tekst||'');
@@ -1391,7 +1397,7 @@ async function hentKontakter(){
   try{
     const rs=await fetch(API+'/api/kontakter',{headers:{'Authorization':'Bearer '+kontaktNoegle()}});
     if(rs.status===401){ boks.style.display='block'; document.getElementById('l-adresser').textContent=''; return; }
-    if(!rs.ok){ document.getElementById('l-adresser').innerHTML='<div class="tom">Adressebogen er ikke sat op på serveren endnu</div>'; return; }
+    if(!rs.ok){ document.getElementById('l-adresser').innerHTML='<div class="tom besked">Adressebogen er ikke sat op på serveren endnu</div>'; return; }
     kontaktListe=await rs.json(); boks.style.display='none';
   }catch(e){ document.getElementById('l-adresser').textContent='Kunne ikke hente kontakter'; return; }
   visAdresser();
@@ -1459,7 +1465,7 @@ function visAdresser(noter){
   visGruppeFaner();
   const ekstra=kontaktNoteListe.map(r=>({navn:kontaktNavn(r),firma:'',stilling:'',telefon:'',email:'',adresse:'',_note:r}));
   let alle=[...(kontaktListe||[]),...ekstra];
-  if(!alle.length){ el.innerHTML='<div class="tom">Ingen kontakter — kør synk-kontakter.sh på Mac’en</div>'; return; }
+  if(!alle.length){ el.innerHTML='<div class="tom besked">Ingen kontakter — kør synk-kontakter.sh på Mac’en</div>'; return; }
   if(kontaktGruppe!=='alle') alle=alle.filter(k=>(k.gruppe||'').split('|').includes(kontaktGruppe));
   if(kontaktSoegeTekst){
     const q=kontaktSoegeTekst, qd=q.replace(/[^\d+]/g,'');
@@ -1467,10 +1473,10 @@ function visAdresser(noter){
       ((k.navn||'')+' '+(k.firma||'')+' '+(k.stilling||'')+' '+(k.email||'')).toLowerCase().includes(q)
       || (qd.length>2 && (k.telefon||'').replace(/[^\d+]/g,'').includes(qd)));
   }
-  if(!alle.length){ el.innerHTML='<div class="tom">'+(kontaktSoegeTekst?'Ingen træffere':'Ingen i denne gruppe endnu')+'</div>'; return; }
+  if(!alle.length){ el.innerHTML='<div class="tom besked">'+(kontaktSoegeTekst?'Ingen træffere':'Ingen i denne gruppe endnu')+'</div>'; return; }
   if(kontaktSort!=='navn'){
     alle=alle.filter(k=>((k[kontaktSort]||'')+'').trim());
-    if(!alle.length){ el.innerHTML='<div class="tom">Ingen med '+(kontaktSort==='firma'?'firma':'stilling')+' i denne visning</div>'; return; }
+    if(!alle.length){ el.innerHTML='<div class="tom besked">Ingen med '+(kontaktSort==='firma'?'firma':'stilling')+' i denne visning</div>'; return; }
   }
   const key=k=>(((k[kontaktSort]||'')+'').trim()||'—');
   alle.sort((a,b)=>key(a).localeCompare(key(b),'da'));
