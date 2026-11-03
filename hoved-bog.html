@@ -131,6 +131,11 @@ body{
   background:linear-gradient(90deg,#c96f08,#E8820A 50%,#a85c06); opacity:.9;
   box-shadow:0 0 8px #00000066;
 }
+/* logoet blindpræget ind i omslaget: neutral sort/hvid-alpha (paperhead-praeg.png,
+   genereres af lav-ikoner.py), så prægningen følger alle omslagsfarver tone-i-tone */
+.fs-praeg{width:clamp(96px,16vmin,150px);aspect-ratio:413/508;margin-bottom:4px;
+  background:url('paperhead-praeg.png') center/contain no-repeat;
+  pointer-events:none;position:relative;z-index:1}
 .forside .fs-logo{font-size:11px;color:#8d8679;letter-spacing:3px;text-transform:uppercase;font-weight:bold}
 .forside .fs-titel{font-family:'Caveat',cursive;font-size:64px;font-weight:700;color:#f5f1e6;line-height:1}
 .forside .fs-under{font-family:'Caveat',cursive;font-size:22px;color:var(--orange)}
@@ -667,6 +672,7 @@ body.pr-patina .patina{display:block}
 
   <div class="forside" id="forside">
     <div class="slid"></div>
+    <div class="fs-praeg"></div>
     <div class="fs-logo">Ditzel &amp; Co</div>
     <div class="fs-titel">Paperhead</div>
     <div class="fs-under">alt ud af hovedet</div>
@@ -735,7 +741,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v30';
+const BOGVERSION='v31';
 
 /* ---------- adgangsnøgle: hele hoved-API'et er privat ----------
    Samme nøgle som adressebogen (localStorage kontaktNoegle) — én prompt pr. enhed.

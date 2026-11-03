@@ -91,3 +91,22 @@ skala = 480 / max(maerke.size)
 maerke = maerke.resize((round(maerke.width * skala), round(maerke.height * skala)), Image.LANCZOS)
 maerke.save(HER / 'paperhead-maerke.png', optimize=True)
 print(f'paperhead-maerke.png: {maerke.width}x{maerke.height} (gennemsigtig)')
+
+# paperhead-praeg.png: blindprægning til bogens omslag — logoets silhuet som
+# neutral sort/hvid-alpha (mørkere fyld, skygge foroven, lyskant forneden),
+# så den virker tone-i-tone på ALLE omslagsfarver (læder som pap).
+from PIL import ImageChops, ImageFilter, ImageOps
+
+RAND, DYB = 14, 5          # kant-margin (mod offset-wrap) og prægedybde i px
+A = ImageOps.expand(maerke.split()[3], border=RAND, fill=0)
+blod = A.filter(ImageFilter.GaussianBlur(1.2))          # blød presset kant
+top = ImageChops.subtract(A, ImageChops.offset(A, 0, DYB)).filter(ImageFilter.GaussianBlur(1.6))
+bund = ImageChops.subtract(A, ImageChops.offset(A, 0, -DYB)).filter(ImageFilter.GaussianBlur(1.6))
+
+praeg = Image.new('RGBA', A.size, (0, 0, 0, 0))
+for farve, alfa, styrke in ((0, blod, 0.20), (0, top, 0.50), (255, bund, 0.42)):
+    lag = Image.new('RGBA', A.size, (farve, farve, farve, 0))
+    lag.putalpha(alfa.point(lambda v, s=styrke: round(v * s)))
+    praeg = Image.alpha_composite(praeg, lag)
+praeg.save(HER / 'paperhead-praeg.png', optimize=True)
+print(f'paperhead-praeg.png: {praeg.width}x{praeg.height} (prægning)')
