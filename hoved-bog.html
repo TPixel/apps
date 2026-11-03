@@ -354,8 +354,17 @@ textarea::placeholder{color:#b8b0a0}
 .fs-foto .sspejl{position:absolute;top:-9px;left:-9px;z-index:3;width:20px;height:20px;border-radius:50%;background:#7a5ea8;display:none;cursor:pointer;box-shadow:0 1px 3px #00000044}
 .fs-foto .sspejl svg{width:12px;height:12px;margin:4px;display:block;pointer-events:none}
 .fs-foto.spejl img{transform:scaleX(-1)}
-.forside.redigerer .sticker,.forside.redigerer .fs-foto{pointer-events:auto;cursor:grab}
-.forside.redigerer .sfjern,.forside.redigerer .sskaler,.forside.redigerer .sroter,.forside.redigerer .sspejl{display:block}
+.redigerer .sticker,.redigerer .fs-foto{pointer-events:auto;cursor:grab}
+.redigerer .sfjern,.redigerer .sskaler,.redigerer .sroter,.redigerer .sspejl{display:block}
+/* fotos på bogens sider: lag ovenpå indholdet, rører ikke teksten uden redigering */
+#sideFotoLag{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+#sideFotoKnap{position:absolute;right:9px;bottom:42px;z-index:6;width:30px;height:30px;border-radius:50%;
+  border:none;background:#00000010;color:#b4ab99;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+#sideFotoKnap .ik{width:16px;height:16px}
+#sideFotoKnap.aktivt{background:var(--orange);color:#fff}
+#sideFotoBar{position:absolute;left:50%;transform:translateX(-50%);bottom:46px;z-index:7;display:none;gap:8px;
+  background:#2b2b33ee;padding:9px 11px;border-radius:13px;box-shadow:0 8px 22px #00000055}
+#sideFotoBar.vis{display:flex}
 /* tekstfri forside: slå al tekst fra, og tom titel viser ingen tom plads */
 .titelrow{display:flex;gap:7px;align-items:center}
 .titelrow input{flex:1;min-width:0}
@@ -580,6 +589,13 @@ body.pr-patina .patina{display:block}
       <svg class="plet" viewBox="0 0 24 24"><path d="M12 3c3 4 6 7 6 11a6 6 0 1 1-12 0c0-4 3-7 6-11z" fill="#7a4a1f"/></svg>
       <svg class="oere" viewBox="0 0 46 46"><path d="M46 46H14C27 38 38 26 46 10z" fill="#00000014"/><path d="M46 10C38 26 27 38 14 46 18 30 30 16 46 10z" fill="#efe7d2" stroke="#00000022" stroke-width="1"/></svg>
     </div>
+    <!-- fotos klistret ind på siden (pr. fane, gemmes i bogIndstil.sideFotos) -->
+    <div id="sideFotoLag" aria-hidden="true"></div>
+    <button id="sideFotoKnap" title="Foto på denne side"><svg class="ik"><use href="#ik-foto"/></svg></button>
+    <div id="sideFotoBar">
+      <button class="dknap" id="sideFotoVaelg"><svg class="ik"><use href="#ik-foto"/></svg> Sæt foto på</button>
+      <button class="dknap" id="sideFotoFaerdig"><svg class="ik"><use href="#ik-flueben"/></svg> Færdig</button>
+    </div>
   </div>
 
   <div class="forside" id="forside">
@@ -642,7 +658,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v24';
+const BOGVERSION='v25';
 /* håndtegnet ikon fra SVG-spriten øverst i body */
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
@@ -758,18 +774,7 @@ function visForsidePynt(){
     delete indstil.foto; delete indstil.fotoPos; gemIndstil();
   }
   fs.querySelectorAll('.fs-foto,.sticker').forEach(s=>s.remove());
-  (indstil.fotos||[]).forEach((f,i)=>{
-    const d=document.createElement('div'); d.className='fs-foto'; d.dataset.i=i;
-    d.style.left=f.x+'%'; d.style.top=f.y+'%'; d.style.width=(f.s||46)+'%';
-    d.style.setProperty('--fr',(f.r||0)+'deg');
-    if(f.sp) d.classList.add('spejl');
-    d.innerHTML='<img alt=""><span class="sfjern">✕</span>'
-      +'<span class="sskaler"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M5 19 19 5M5 19v-6m0 6h6M19 5v6m0-6h-6"/></svg></span>'
-      +'<span class="sroter"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3 6.2M7 21v-3.5h3.5"/></svg></span>'
-      +'<span class="sspejl"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 8 4 12l4 4M16 8l4 4-4 4"/></svg></span>';
-    d.querySelector('img').src=f.d;
-    fs.appendChild(d);
-  });
+  (indstil.fotos||[]).forEach((f,i)=>fs.appendChild(lavFotoEl(f,i,'forside')));
   (indstil.stickers||[]).forEach((s,i)=>{
     const d=document.createElement('div'); d.className='sticker'; d.dataset.i=i;
     d.style.left=s.x+'%'; d.style.top=s.y+'%'; d.style.setProperty('--sr',(s.r||0)+'deg');
@@ -777,6 +782,34 @@ function visForsidePynt(){
     fs.appendChild(d);
   });
 }
+function lavFotoEl(f,i,lag){
+  const d=document.createElement('div'); d.className='fs-foto'; d.dataset.i=i; d.dataset.lag=lag;
+  d.style.left=f.x+'%'; d.style.top=f.y+'%'; d.style.width=(f.s||46)+'%';
+  d.style.setProperty('--fr',(f.r||0)+'deg');
+  if(f.sp) d.classList.add('spejl');
+  d.innerHTML='<img alt=""><span class="sfjern">✕</span>'
+    +'<span class="sskaler"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M5 19 19 5M5 19v-6m0 6h6M19 5v6m0-6h-6"/></svg></span>'
+    +'<span class="sroter"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3 6.2M7 21v-3.5h3.5"/></svg></span>'
+    +'<span class="sspejl"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 8 4 12l4 4M16 8l4 4-4 4"/></svg></span>';
+  d.querySelector('img').src=f.d;
+  return d;
+}
+/* ---------- fotos på bogens sider (pr. fane) ---------- */
+const sideLag=document.getElementById('sideFotoLag');
+const aktSide=()=>{const a=document.querySelector('.sektion.aktiv');return a?a.id.slice(2):'skriv'};
+function sideListe(){const o=indstil.sideFotos=indstil.sideFotos||{};return o[aktSide()]=o[aktSide()]||[]}
+function visSideFotos(){
+  sideLag.querySelectorAll('.fs-foto').forEach(x=>x.remove());
+  ((indstil.sideFotos||{})[aktSide()]||[]).forEach((f,i)=>sideLag.appendChild(lavFotoEl(f,i,'side')));
+}
+function sideRediger(til){
+  sideLag.classList.toggle('redigerer',til);
+  document.getElementById('sideFotoBar').classList.toggle('vis',til);
+  document.getElementById('sideFotoKnap').classList.toggle('aktivt',til);
+}
+document.getElementById('sideFotoKnap').addEventListener('click',()=>sideRediger(!sideLag.classList.contains('redigerer')));
+document.getElementById('sideFotoFaerdig').addEventListener('click',()=>sideRediger(false));
+document.getElementById('sideFotoVaelg').addEventListener('click',()=>{fotoMaal='side';fotoInput.click();});
 function tilfoejSticker(t){
   /* spawn i den øvre halvdel, så den ikke lander bag design-panelet nederst */
   (indstil.stickers=indstil.stickers||[]).push({t,x:25+Math.round(Math.random()*50),y:16+Math.round(Math.random()*30),r:Math.round(Math.random()*24-12)});
@@ -784,12 +817,14 @@ function tilfoejSticker(t){
 }
 /* fotos: vælg ét eller flere billeder → skaleres ned → dataURL'er i bogIndstil */
 const fotoInput=document.getElementById('fotoInput');
-document.getElementById('fotoVaelg').addEventListener('click',()=>fotoInput.click());
+let fotoMaal='forside'; /* hvor det næste valgte foto skal hen */
+document.getElementById('fotoVaelg').addEventListener('click',()=>{fotoMaal='forside';fotoInput.click();});
 fotoInput.addEventListener('change',()=>{
   const filer=[...fotoInput.files]; fotoInput.value='';
-  tilfoejFotoFiler(filer);
+  tilfoejFotoFiler(filer,fotoMaal);
 });
-function tilfoejFotoFiler(filer){
+function tilfoejFotoFiler(filer,maal){
+  maal=maal||'forside';
   filer.forEach(f=>{
     const img=new Image();
     img.onload=()=>{
@@ -798,11 +833,12 @@ function tilfoejFotoFiler(filer){
       c.width=Math.round(img.width*sk); c.height=Math.round(img.height*sk);
       c.getContext('2d').drawImage(img,0,0,c.width,c.height);
       URL.revokeObjectURL(img.src);
-      (indstil.fotos=indstil.fotos||[]).push({d:c.toDataURL('image/jpeg',.82),
+      const liste=maal==='side'?sideListe():(indstil.fotos=indstil.fotos||[]);
+      liste.push({d:c.toDataURL('image/jpeg',.82),
         x:34+Math.round(Math.random()*32),y:20+Math.round(Math.random()*18),
-        r:Math.round(Math.random()*10-5)});
-      if(!gemIndstil()){ indstil.fotos.pop(); alert('Billedet fylder for meget — prøv et mindre'); return; }
-      visForsidePynt();
+        r:Math.round(Math.random()*10-5),s:maal==='side'?38:undefined});
+      if(!gemIndstil()){ liste.pop(); alert('Billedet fylder for meget — prøv et mindre'); return; }
+      maal==='side'?visSideFotos():visForsidePynt();
     };
     img.onerror=()=>alert('Kunne ikke læse billedet — prøv et andet format');
     img.src=URL.createObjectURL(f);
@@ -826,9 +862,14 @@ document.addEventListener('drop',e=>{
   e.preventDefault(); dropTael=0; dropOv.classList.remove('vis');
   const filer=[...e.dataTransfer.files].filter(f=>f.type.startsWith('image/'));
   if(!filer.length) return;
-  tilfoejFotoFiler(filer);
-  /* luk bogen og åbn redigering, så fotoet kan placeres med det samme */
-  if(!document.getElementById('forside').classList.contains('redigerer')) redigerForside();
+  if(document.getElementById('forside').classList.contains('aaben')){
+    /* bogen er åben → fotoet klistres ind på den aktuelle side */
+    tilfoejFotoFiler(filer,'side'); sideRediger(true);
+  }else{
+    tilfoejFotoFiler(filer,'forside');
+    /* åbn redigering, så fotoet kan placeres med det samme */
+    if(!document.getElementById('forside').classList.contains('redigerer')) redigerForside();
+  }
 });
 /* flyt + skalér fotos/stickers mens design-panelet er åbent; ✕ fjerner dem igen */
 let pyntTraek=null;   /* {el,id,x,y} — flyt med én finger/mus */
@@ -838,9 +879,12 @@ let fotoKnib=null;    /* {el,id1,id2,p1,p2,start,w,a0,r0} — to fingre: knib + 
 const begrW=w=>Math.min(90,Math.max(16,w));
 const fotoR=el=>parseFloat(el.style.getPropertyValue('--fr'))||0;
 const fotoMidt=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}};
+function pyntListe(el){
+  if(el.classList.contains('sticker')) return indstil.stickers;
+  return el.dataset.lag==='side'?(indstil.sideFotos||{})[aktSide()]:indstil.fotos;
+}
 function gemPynt(el){
-  const liste=el.classList.contains('fs-foto')?indstil.fotos:indstil.stickers;
-  const p=(liste||[])[el.dataset.i];
+  const p=(pyntListe(el)||[])[el.dataset.i];
   if(p){
     p.x=parseFloat(el.style.left); p.y=parseFloat(el.style.top);
     if(el.classList.contains('fs-foto')){
@@ -851,23 +895,24 @@ function gemPynt(el){
   gemIndstil();
 }
 const fsEl=document.getElementById('forside');
-fsEl.addEventListener('click',e=>{
+const visLag=el=>el.dataset.lag==='side'?visSideFotos():visForsidePynt();
+function pyntKlik(e){
   const sp=e.target.closest('.sspejl');
   if(sp){ /* spejlvend fotoet */
     e.stopPropagation();
-    const p=(indstil.fotos||[])[sp.closest('.fs-foto').dataset.i];
-    if(p){ p.sp=p.sp?0:1; gemIndstil(); visForsidePynt(); }
+    const el=sp.closest('.fs-foto');
+    const p=(pyntListe(el)||[])[el.dataset.i];
+    if(p){ p.sp=p.sp?0:1; gemIndstil(); visLag(el); }
     return;
   }
   const x=e.target.closest('.sfjern'); if(!x) return;
   e.stopPropagation();
-  const pf=x.closest('.fs-foto');
-  if(pf) (indstil.fotos||[]).splice(+pf.dataset.i,1);
-  else (indstil.stickers||[]).splice(+x.closest('.sticker').dataset.i,1);
-  gemIndstil(); visForsidePynt();
-});
-fsEl.addEventListener('pointerdown',e=>{
-  if(!fsEl.classList.contains('redigerer')) return;
+  const el=x.closest('.fs-foto')||x.closest('.sticker');
+  (pyntListe(el)||[]).splice(+el.dataset.i,1);
+  gemIndstil(); visLag(el);
+}
+function pyntNed(rod,e){
+  if(!rod.classList.contains('redigerer')) return;
   const h=e.target.closest('.sskaler');
   if(h){ /* træk i hjørnet → skalér (afstand fra fotoets midte) */
     const el=h.closest('.fs-foto');
@@ -905,8 +950,8 @@ fsEl.addEventListener('pointerdown',e=>{
   }
   try{m.setPointerCapture(e.pointerId)}catch(err){}
   pyntTraek={el:m,id:e.pointerId,x:e.clientX,y:e.clientY};
-});
-fsEl.addEventListener('pointermove',e=>{
+}
+function pyntFlyt(e){
   if(fotoKnib){
     if(e.pointerId===fotoKnib.id1) fotoKnib.p1={x:e.clientX,y:e.clientY};
     else if(e.pointerId===fotoKnib.id2) fotoKnib.p2={x:e.clientX,y:e.clientY};
@@ -929,10 +974,10 @@ fsEl.addEventListener('pointermove',e=>{
   }
   if(!pyntTraek||e.pointerId!==pyntTraek.id) return;
   pyntTraek.x=e.clientX; pyntTraek.y=e.clientY;
-  const r=fsEl.getBoundingClientRect();
+  const r=pyntTraek.el.parentElement.getBoundingClientRect();
   pyntTraek.el.style.left=Math.min(97,Math.max(3,(e.clientX-r.left)/r.width*100))+'%';
   pyntTraek.el.style.top=Math.min(97,Math.max(3,(e.clientY-r.top)/r.height*100))+'%';
-});
+}
 function pyntSlut(){
   if(fotoKnib){const el=fotoKnib.el; fotoKnib=null; gemPynt(el); return;}
   if(fotoRoter){const el=fotoRoter.el; fotoRoter=null; gemPynt(el); return;}
@@ -941,9 +986,15 @@ function pyntSlut(){
   const el=pyntTraek.el; pyntTraek=null;
   gemPynt(el);
 }
-fsEl.addEventListener('pointerup',pyntSlut);
-fsEl.addEventListener('pointercancel',pyntSlut);
+[fsEl,sideLag].forEach(rod=>{
+  rod.addEventListener('click',pyntKlik);
+  rod.addEventListener('pointerdown',e=>pyntNed(rod,e));
+  rod.addEventListener('pointermove',pyntFlyt);
+  rod.addEventListener('pointerup',pyntSlut);
+  rod.addEventListener('pointercancel',pyntSlut);
+});
 visForsidePynt();
+visSideFotos();
 
 /* chips */
 const chipsEl=document.getElementById('chips');
@@ -970,6 +1021,7 @@ document.getElementById('faner').addEventListener('click',e=>{
   document.getElementById('sidefod').textContent='— '+SIDETAL[s]+' —';
   document.getElementById('side').scrollTop=0;
   gfanerSynlighed();
+  visSideFotos();
   if(s==='events') hentEvents();
   else if(s!=='skriv') hentNoter();
 });
@@ -1201,7 +1253,7 @@ document.getElementById('gfaner').addEventListener('click',e=>{
     document.getElementById('s-'+b.dataset.sek).classList.add('aktiv');
     document.getElementById('sidefod').textContent='— '+SIDETAL[b.dataset.sek]+' —';
     document.getElementById('side').scrollTop=0;
-    gfanerSynlighed(); hentNoter(); return;
+    gfanerSynlighed(); visSideFotos(); hentNoter(); return;
   }
   if(b.dataset.l){
     if(b.dataset.t==='opgaver') aktivOpgListe=parseInt(b.dataset.l); else aktivHmListe=parseInt(b.dataset.l);
