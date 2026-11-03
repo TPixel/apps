@@ -95,7 +95,9 @@ body{
 .fane:nth-child(9){--rot:-1.6deg;font-size:10px}
 .fane:nth-child(10){--rot:1.9deg;font-size:9.5px}
 .fane:nth-child(11){--rot:-1.2deg;font-size:10px}
-.fane:nth-child(12){--rot:1.3deg;font-size:9px}
+.fane:nth-child(12){--rot:1.3deg;font-size:10px}
+.fane:nth-child(13){--rot:-1.7deg;font-size:9.5px}
+.fane:nth-child(14){--rot:1.3deg;font-size:9px}
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f2a2a2}
 .fane:nth-child(3){background:#f4c04e}
@@ -107,7 +109,9 @@ body{
 .fane:nth-child(9){background:#f0b6d2}
 .fane:nth-child(10){background:#e8dd73}
 .fane:nth-child(11){background:#f5a97f}
-.fane:nth-child(12){background:#c4c4c4}
+.fane:nth-child(12){background:#e07a7a}
+.fane:nth-child(13){background:#9fb4c7}
+.fane:nth-child(14){background:#c4c4c4}
 
 /* ---------- FORSIDE ---------- */
 .forside{
@@ -379,6 +383,19 @@ textarea::placeholder{color:#b8b0a0}
 .fotorow{display:flex;gap:8px}
 .dknap{background:#ffffff14;border:1px solid #ffffff2a;color:#d8d2c4;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:bold;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 
+/* 🎁/🏍 ønskelister: søge-kurv pr. linje + MC-stamdata */
+.gsoeg{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:#efe7d2;color:#7a6a3f;
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin-right:2px}
+.gsoeg .ik{width:14px;height:14px}
+.gsoeg.sendt{background:var(--orange);color:#fff}
+.note.koebt .ti{text-decoration:line-through;opacity:.55}
+.mcrow{display:flex;gap:8px;align-items:baseline;border-bottom:1px dashed #00000016;padding:4px 0}
+.mcrow .mck{width:128px;flex:0 0 auto;border:none;background:none;font-size:11px;font-weight:bold;
+  color:#8d8679;text-transform:uppercase;letter-spacing:1px;outline:none}
+.mcrow .mcv{flex:1;min-width:0;border:none;background:none;font-family:'Caveat',cursive;font-size:23px;color:var(--blaek);outline:none}
+.mcrow .mcx{color:#c0392b;cursor:pointer;font-size:12px;opacity:.45;flex:0 0 auto}
+.mcplus{margin-top:12px;border:none;background:none;font-family:'Caveat',cursive;font-size:21px;color:var(--orange);cursor:pointer}
+.mckm{width:76px;flex:0 0 auto}
 /* træk-og-slip-zone: vises mens en fil trækkes hen over bogen */
 #dropOverlay{position:fixed;inset:0;z-index:80;display:none;background:#00000055;pointer-events:none}
 #dropOverlay.vis{display:flex;align-items:center;justify-content:center}
@@ -429,6 +446,7 @@ body.pr-patina .patina{display:block}
 <symbol id="ik-familie" viewBox="0 0 24 24"><circle cx="8.8" cy="7.2" r="3"/><path d="M3.6 19.6c.4-3.7 2.5-5.9 5.2-5.9 2.1 0 3.8 1.3 4.6 3.4"/><circle cx="16.8" cy="10.6" r="2.3"/><path d="M14.1 19.4c.4-2.7 1.5-4.3 2.9-4.3 1.5 0 2.7 1.6 3.1 4.3"/></symbol>
 <symbol id="ik-film" viewBox="0 0 24 24"><rect x="4.4" y="9.6" width="15.2" height="9.6" rx="1"/><path d="M4.6 9.4L6 5.2l14 1-1.2 3.4"/><path d="M9.5 5.5L8.3 9.2 M14 5.8l-1.2 3.6 M18.4 6.1l-1.2 3.3"/></symbol>
 <symbol id="ik-mc" viewBox="0 0 24 24"><circle cx="6.1" cy="16.4" r="3.2"/><circle cx="17.9" cy="16.4" r="3.2"/><path d="M6.1 16.4l2.9-5.9h4.4l2.8 5.9"/><path d="M9 10.5L7.4 7.9h-2 M13.4 10.5l2.4-2.6 2.1 1"/></symbol>
+<symbol id="ik-gave" viewBox="0 0 24 24"><path d="M5 11.4h14v8.1H5z"/><path d="M3.9 7.8h16.2v3.6H3.9z"/><path d="M12 7.8v11.7"/><path d="M12 7.5c-2 .2-4.3-.4-4.1-2.1C8.1 3.8 11 4.1 12 7.5zm0 0c2 .2 4.3-.4 4.1-2.1-.2-1.6-3.1-1.3-4.1 2.1z"/></symbol>
 <symbol id="ik-pizza" viewBox="0 0 24 24"><path d="M12 20.6L4.6 6.2c2.3-1.6 4.8-2.5 7.4-2.5s5.1.9 7.4 2.5z"/><path d="M6.4 8.7c3.5-1.9 7.7-1.9 11.2 0"/><circle cx="11" cy="11" r="1.2"/><circle cx="13.2" cy="14.8" r="1.2"/></symbol>
 <symbol id="ik-laas" viewBox="0 0 24 24"><path d="M7.6 10.8V8.4c0-2.5 2-4.5 4.4-4.5s4.4 2 4.4 4.5v2.4"/><rect x="5.6" y="10.8" width="12.8" height="9.2" rx="1.2"/><path d="M12 14.4v2.4"/></symbol>
 <symbol id="ik-kuvert" viewBox="0 0 24 24"><rect x="3.8" y="6.2" width="16.4" height="11.6" rx="1"/><path d="M4.4 7.2l7.6 6 7.6-6"/></symbol>
@@ -557,6 +575,44 @@ body.pr-patina .patina{display:block}
       </div>
 
       <!-- ⚙️ SYSTEM -->
+      <!-- 🎁 GAVER JUL 2026 -->
+      <div class="sektion" id="s-gaver">
+        <h1 class="rubrik">Gaver — Jul 2026</h1>
+        <div class="dato">ønsker til familien · kurven finder pris &amp; butik · ✓ = købt</div>
+        <div id="l-gaver" class="hent">Henter…</div>
+        <div class="skrivlinje">
+          <span class="firk"></span>
+          <input id="gaveInput" placeholder="ønske, evt. med 'til Maya' — tryk retur" enterkeyhint="done" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- 🏍 MOTORCYKEL -->
+      <div class="sektion" id="s-mc">
+        <h1 class="rubrik">Motorcykel</h1>
+        <div class="dato">stamdata — ret felterne direkte, de gemmes selv (på denne enhed)</div>
+        <div id="mcInfo"></div>
+        <button class="mcplus" id="mcPlus">+ nyt felt</button>
+      </div>
+      <div class="sektion" id="s-mcvaerk">
+        <h1 class="rubrik">Værksted</h1>
+        <div class="dato">vedligehold — km-stand og hvad der blev lavet, dato sættes selv</div>
+        <div id="l-mcvaerk" class="hent">Henter…</div>
+        <div class="skrivlinje">
+          <span class="firk"></span>
+          <input id="mcKm" class="mckm" placeholder="km" inputmode="numeric" autocomplete="off">
+          <input id="mcLogInput" placeholder="hvad blev lavet — tryk retur" enterkeyhint="done" autocomplete="off">
+        </div>
+      </div>
+      <div class="sektion" id="s-mcnyt">
+        <h1 class="rubrik">NYT til cyklen</h1>
+        <div class="dato">udstyr der skal købes · kurven finder pris &amp; butik</div>
+        <div id="l-mcnyt" class="hent">Henter…</div>
+        <div class="skrivlinje">
+          <span class="firk"></span>
+          <input id="mcNytInput" placeholder="nyt udstyr — tryk retur" enterkeyhint="done" autocomplete="off">
+        </div>
+      </div>
+
       <div class="sektion" id="s-system">
         <h1 class="rubrik">System</h1>
         <div class="dato">indstillinger for bogen</div>
@@ -650,6 +706,8 @@ body.pr-patina .patina{display:block}
     <button class="fane" data-s="holdmeat"><span class="em"><svg class="ik"><use href="#ik-bobler"/></svg></span>Hold Meat</button>
     <button class="fane" data-s="opgaver"><span class="em"><svg class="ik"><use href="#ik-liste"/></svg></span>Opgaver</button>
     <button class="fane" data-s="events"><span class="em"><svg class="ik"><use href="#ik-maske"/></svg></span>Events</button>
+    <button class="fane" data-s="gaver"><span class="em"><svg class="ik"><use href="#ik-gave"/></svg></span>Gaver</button>
+    <button class="fane" data-s="mc"><span class="em"><svg class="ik"><use href="#ik-mc"/></svg></span>MC</button>
     <button class="fane" data-s="system"><span class="em"><svg class="ik"><use href="#ik-tandhjul"/></svg></span>System</button>
   </div>
   <div class="gfaner" id="gfaner"></div>
@@ -658,12 +716,12 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v25';
+const BOGVERSION='v26';
 /* håndtegnet ikon fra SVG-spriten øverst i body */
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#husmøde','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13};
+const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17};
 
 /* ---------- personligt præg: gemmes pr. bruger/enhed i bogIndstil ---------- */
 const INDSTILLINGER=[
@@ -695,6 +753,10 @@ const erHoldMeat=r=>/#(holdmeat|husm[øo]de)/i.test((r.tags||'')+' '+(r.tekst||'
 const erOpgave=r=>/#opgave\b/i.test((r.tags||'')+' '+(r.tekst||''))||(!!r.bogliste&&!erHoldMeat(r));
 
 const erIde=r=>r.kategori==='Idé'||/idé/i.test(r.handling||'')||/#id[eé]\b/i.test(r.tags||'');
+const erGave=r=>/#gave2026\b/i.test((r.tags||'')+' '+(r.tekst||''));
+const erMcLog=r=>/#mclog\b/i.test((r.tags||'')+' '+(r.tekst||''));
+const erMcNyt=r=>/#mcnyt\b/i.test((r.tags||'')+' '+(r.tekst||''));
+const erSaer=r=>erGave(r)||erMcLog(r)||erMcNyt(r); /* egne sider — holdes ude af de alm. lister */
 const erKontakt=r=>/kontakt/i.test((r.tags||'')+' '+(r.kategori||''));
 const kontaktNavn=r=>(r.tekst.replace(/#\S+/g,'').trim().split(/[,·|]/)[0].trim()||'?');
 /* bullet journal-symboler */
@@ -1022,12 +1084,15 @@ document.getElementById('faner').addEventListener('click',e=>{
   document.getElementById('side').scrollTop=0;
   gfanerSynlighed();
   visSideFotos();
+  if(s==='gaver'||s==='mc') alleNoter=null; /* hent friske søge-resultater fra pipelinen */
   if(s==='events') hentEvents();
   else if(s!=='skriv') hentNoter();
 });
 
 /* fold ud/ind ved klik på overskrift — eller fjern fra listen med ✓ */
 document.getElementById('side').addEventListener('click',e=>{
+  const gs=e.target.closest('.gsoeg');
+  if(gs){ e.stopPropagation(); soegKoeb(gs); return; }
   const fj=e.target.closest('.fjern');
   if(fj){ e.stopPropagation(); fjernNote(fj.closest('.note').dataset.id); return; }
   if(e.target.closest('a')) return;              /* tel:-link i linjen → ring, fold ikke ud */
@@ -1097,20 +1162,21 @@ async function hentNoter(){
     const rs=await fetch(API+'/api/hoved?status=alle&limit=200');
     const d=await rs.json(); alleNoter=Array.isArray(d)?d:(d.rows||[]);
     visLister();
-  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige','l-links','l-holdmeat','l-opgaver'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
+  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige','l-links','l-holdmeat','l-opgaver','l-gaver','l-mcvaerk','l-mcnyt'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
 }
 function visLister(){
   const alle=alleNoter.filter(r=>r.status!=='arkiv');
   const kontakter=alle.filter(erKontakt);
   const ikkeK=alle.filter(r=>!erKontakt(r));
-  const n=ikkeK.filter(r=>!erLink(r)&&!erHoldMeat(r)&&!erOpgave(r));
+  const n=ikkeK.filter(r=>!erLink(r)&&!erHoldMeat(r)&&!erOpgave(r)&&!erSaer(r));
   visAdresser(kontakter);
   fyld('l-links', ikkeK.filter(r=>erLink(r)&&!erHoldMeat(r)&&!erOpgave(r)&&r.status!=='udfoert'), 'Ingen links endnu — del fra Safari med Hoved-genvejen');
   visHoldMeatListe(ikkeK);
   visOpgaver();
+  visGaver(); visMcNyt(); visMcVaerk();
   const nu=Date.now(), DOGN=24*3600*1000;
   const opr=r=>{const d=new Date(String(r.oprettet||'').replace(' ','T')+'Z');return isNaN(d)?0:d.getTime()};
-  fyld('l-nye', ikkeK.filter(r=>nu-opr(r)<DOGN&&!erOpgave(r)), 'Intet nyt siden i går');
+  fyld('l-nye', ikkeK.filter(r=>nu-opr(r)<DOGN&&!erOpgave(r)&&!erSaer(r)), 'Intet nyt siden i går');
   fyld('l-forfalder', ikkeK.filter(r=>!erLink(r)&&!erOpgave(r)).filter(r=>{
     if(r.status!=='aaben'||!r.deadline) return false;
     const d=new Date(r.deadline+'T23:59:59'); return !isNaN(d)&&d.getTime()<nu+DOGN;
@@ -1195,6 +1261,7 @@ function gfanerSynlighed(){
     else if(akt.id==='s-opgaver') html=listeFanerHtml('opgaver');
     else if(akt.id==='s-holdmeat') html=listeFanerHtml('husmoede');
     else if(akt.id==='s-system'||akt.id==='s-faerdige') html=systemFanerHtml(akt.id);
+    else if(akt.id==='s-mc'||akt.id==='s-mcvaerk'||akt.id==='s-mcnyt') html=mcFanerHtml(akt.id);
   }
   g.innerHTML=html;
   const aaben=document.getElementById('forside').classList.contains('aaben');
@@ -1440,6 +1507,111 @@ async function flytOpgave(id,til){
   catch(err){ alert('Kunne ikke flytte — prøv igen'); }
 }
 /* nyt punkt på skrivelinjen nederst */
+/* ---------- 🎁 Gaver Jul 2026 + 🏍 Motorcykel ---------- */
+/* kobling ønske-note → søge-note (kurven), gemt pr. enhed */
+let bogSoeg={}; try{bogSoeg=JSON.parse(localStorage.getItem('bogSoeg')||'{}')}catch(e){}
+function oenskeHtml(r,ikn){
+  const soegId=bogSoeg[r.id];
+  const s=soegId?(alleNoter||[]).find(x=>String(x.id)===String(soegId)):null;
+  let krop='';
+  if(soegId){
+    krop=(s&&s.resultat)?'<div class="r">'+linkify(s.resultat)+'</div>'
+      :'<div class="m">'+ikon('lup')+' søger pris & butik… (note #'+soegId+' — kig forbi igen om lidt)</div>';
+    if(s&&s.rapport) krop+='<a class="rapportknap" href="'+esc(s.rapport)+'" target="_blank">'+ikon('dok')+' Åbn rapport</a>';
+  }else krop='<div class="m">tryk på kurven for at få fundet pris og hvor det købes</div>';
+  return '<div class="note'+(r.status==='udfoert'?' koebt':'')+'" data-id="'+r.id+'"><div class="nt">'
+    +'<span class="em">'+ikon(ikn)+'</span><span class="ti">'+esc((r.tekst||'').replace(/#\S+/g,'').trim())+'</span>'
+    +'<span class="gsoeg'+(soegId?' sendt':'')+'" title="Find pris og butik">'+ikon('kurv')+'</span>'
+    +'<span class="fjern" title="Købt">✓</span><span class="pil">▶</span></div><div class="nb">'+krop+'</div></div>';
+}
+function visGaver(){
+  const el=document.getElementById('l-gaver'); el.classList.remove('hent');
+  const rows=(alleNoter||[]).filter(r=>erGave(r)&&r.status!=='arkiv'); rows.sort((a,b)=>a.id-b.id);
+  el.innerHTML=rows.map(r=>oenskeHtml(r,'gave')).join('')||'<div class="tom">Ingen ønsker endnu — skriv nederst</div>';
+}
+function visMcNyt(){
+  const el=document.getElementById('l-mcnyt'); el.classList.remove('hent');
+  const rows=(alleNoter||[]).filter(r=>erMcNyt(r)&&r.status!=='arkiv'); rows.sort((a,b)=>a.id-b.id);
+  el.innerHTML=rows.map(r=>oenskeHtml(r,'mc')).join('')||'<div class="tom">Intet på listen — skriv nederst</div>';
+}
+function visMcVaerk(){
+  const rows=(alleNoter||[]).filter(r=>erMcLog(r)&&r.status!=='arkiv'); rows.sort((a,b)=>b.id-a.id);
+  fyld('l-mcvaerk',rows,'Ingen værkstedslinjer endnu — skriv nederst');
+}
+/* ny linje på en af de nye sider: gemmes som note med fanens tag, pipeline røres ikke */
+async function nyLinje(inp,tag,note,efter){
+  const t=inp.value.trim(); if(!t) return;
+  inp.value=''; inp.disabled=true;
+  try{
+    const rs=await fetch(API+'/api/hoved',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({tekst:t+' '+tag,kilde:'bog',sorter:false})});
+    const d=await rs.json();
+    await fetch(API+'/api/hoved/'+d.id,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({behandlet:1,titel:t.slice(0,60),resultat:note})});
+    if(d.entry){ d.entry.behandlet=1; (alleNoter||(alleNoter=[])).unshift(d.entry); }
+    efter();
+  }catch(err){ alert('Kunne ikke gemme — prøv igen'); }
+  inp.disabled=false; inp.focus();
+}
+document.getElementById('gaveInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') nyLinje(e.target,'#gave2026','',visGaver);
+});
+document.getElementById('mcNytInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') nyLinje(e.target,'#mcnyt','',visMcNyt);
+});
+document.getElementById('mcLogInput').addEventListener('keydown',e=>{
+  if(e.key!=='Enter') return;
+  const kmEl=document.getElementById('mcKm'), km=kmEl.value.trim();
+  if(!e.target.value.trim()) return;
+  if(km){ e.target.value=e.target.value.trim()+' — '+km.replace(/\D/g,'')+' km'; kmEl.value=''; }
+  nyLinje(e.target,'#mclog','',visMcVaerk);
+});
+/* kurven: send 'køb …' gennem hoved-pipelinen og vis resultatet på ønsket */
+async function soegKoeb(knap){
+  const id=knap.closest('.note').dataset.id;
+  const r=(alleNoter||[]).find(x=>String(x.id)===String(id)); if(!r) return;
+  const ren=(r.tekst||'').replace(/#\S+/g,'').trim();
+  const ctx=erGave(r)?' (gave, jul 2026)':' (motorcykel-udstyr)';
+  knap.style.opacity=.4;
+  try{
+    const rs=await fetch(API+'/api/hoved',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({tekst:'køb '+ren+ctx,kilde:'bog'})});
+    const d=await rs.json();
+    bogSoeg[id]=d.id||(d.entry&&d.entry.id);
+    try{localStorage.setItem('bogSoeg',JSON.stringify(bogSoeg))}catch(e2){}
+    if(d.entry)(alleNoter||(alleNoter=[])).unshift(d.entry);
+  }catch(err){ alert('Kunne ikke sende søgningen — prøv igen'); }
+  erGave(r)?visGaver():visMcNyt();
+}
+/* 🏍 stamdata: redigerbar nøgle/værdi-liste (localStorage, pr. enhed) */
+let mcInfo=null; try{mcInfo=JSON.parse(localStorage.getItem('bogMc')||'null')}catch(e){}
+if(!Array.isArray(mcInfo)) mcInfo=[['Stelnummer',''],['Nummerplade',''],['Årgang',''],['Vægt',''],
+  ['Motorolie',''],['Forgaffelolie',''],['Kølervæske',''],['Dæk for',''],['Dæk bag','']];
+const gemMc=()=>{try{localStorage.setItem('bogMc',JSON.stringify(mcInfo))}catch(e){}};
+const atr=t=>esc(t).replace(/"/g,'&quot;');
+function visMcInfo(){
+  document.getElementById('mcInfo').innerHTML=mcInfo.map((p,i)=>
+    '<div class="mcrow" data-i="'+i+'"><input class="mck" value="'+atr(p[0])+'" placeholder="felt">'
+    +'<input class="mcv" value="'+atr(p[1])+'" placeholder="…"><span class="mcx" title="Fjern felt">✕</span></div>').join('');
+}
+document.getElementById('mcInfo').addEventListener('change',e=>{
+  const row=e.target.closest('.mcrow'); if(!row) return;
+  mcInfo[+row.dataset.i]=[row.querySelector('.mck').value,row.querySelector('.mcv').value];
+  gemMc();
+});
+document.getElementById('mcInfo').addEventListener('click',e=>{
+  const x=e.target.closest('.mcx'); if(!x) return;
+  mcInfo.splice(+x.closest('.mcrow').dataset.i,1); gemMc(); visMcInfo();
+});
+document.getElementById('mcPlus').addEventListener('click',()=>{mcInfo.push(['','']);gemMc();visMcInfo();});
+visMcInfo();
+/* MC-sidens under-faner: Cyklen ↔ Værksted ↔ NYT (samme mønster som System) */
+function mcFanerHtml(aktId){
+  const b=(sek,ikn,txt,fv)=>'<button class="gfane'+(aktId==='s-'+sek?' valgt':'')+'" data-sek="'+sek+'"'
+    +(aktId==='s-'+sek?'':' style="background:'+GRUPPE_FARVER[fv]+'"')
+    +'><span class="em">'+ikon(ikn)+'</span>'+txt+'</button>';
+  return b('mc','mc','Cyklen',3)+b('mcvaerk','hammer','Værksted',0)+b('mcnyt','kurv','NYT',2);
+}
 document.getElementById('opgInput').addEventListener('keydown',async e=>{
   if(e.key!=='Enter') return;
   const inp=e.target, t=inp.value.trim();
