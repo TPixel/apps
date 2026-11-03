@@ -348,8 +348,14 @@ textarea::placeholder{color:#b8b0a0}
 /* hjørnehåndtag: træk for at ændre fotoets størrelse */
 .fs-foto .sskaler{position:absolute;bottom:-10px;right:-10px;z-index:3;width:22px;height:22px;border-radius:50%;background:#2d6a4f;display:none;cursor:nwse-resize;touch-action:none;box-shadow:0 1px 3px #00000044}
 .fs-foto .sskaler svg{width:12px;height:12px;margin:5px;display:block;pointer-events:none}
+/* drej-håndtag (nederst tv.) og spejlvending (øverst tv.) */
+.fs-foto .sroter{position:absolute;bottom:-10px;left:-10px;z-index:3;width:22px;height:22px;border-radius:50%;background:#4a6fa5;display:none;cursor:grab;touch-action:none;box-shadow:0 1px 3px #00000044}
+.fs-foto .sroter svg{width:13px;height:13px;margin:4.5px;display:block;pointer-events:none}
+.fs-foto .sspejl{position:absolute;top:-9px;left:-9px;z-index:3;width:20px;height:20px;border-radius:50%;background:#7a5ea8;display:none;cursor:pointer;box-shadow:0 1px 3px #00000044}
+.fs-foto .sspejl svg{width:12px;height:12px;margin:4px;display:block;pointer-events:none}
+.fs-foto.spejl img{transform:scaleX(-1)}
 .forside.redigerer .sticker,.forside.redigerer .fs-foto{pointer-events:auto;cursor:grab}
-.forside.redigerer .sfjern,.forside.redigerer .sskaler{display:block}
+.forside.redigerer .sfjern,.forside.redigerer .sskaler,.forside.redigerer .sroter,.forside.redigerer .sspejl{display:block}
 /* tekstfri forside: slå al tekst fra, og tom titel viser ingen tom plads */
 .titelrow{display:flex;gap:7px;align-items:center}
 .titelrow input{flex:1;min-width:0}
@@ -636,7 +642,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v23';
+const BOGVERSION='v24';
 /* håndtegnet ikon fra SVG-spriten øverst i body */
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
@@ -756,8 +762,11 @@ function visForsidePynt(){
     const d=document.createElement('div'); d.className='fs-foto'; d.dataset.i=i;
     d.style.left=f.x+'%'; d.style.top=f.y+'%'; d.style.width=(f.s||46)+'%';
     d.style.setProperty('--fr',(f.r||0)+'deg');
+    if(f.sp) d.classList.add('spejl');
     d.innerHTML='<img alt=""><span class="sfjern">✕</span>'
-      +'<span class="sskaler"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M5 19 19 5M5 19v-6m0 6h6M19 5v6m0-6h-6"/></svg></span>';
+      +'<span class="sskaler"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M5 19 19 5M5 19v-6m0 6h6M19 5v6m0-6h-6"/></svg></span>'
+      +'<span class="sroter"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3 6.2M7 21v-3.5h3.5"/></svg></span>'
+      +'<span class="sspejl"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 8 4 12l4 4M16 8l4 4-4 4"/></svg></span>';
     d.querySelector('img').src=f.d;
     fs.appendChild(d);
   });
@@ -824,19 +833,32 @@ document.addEventListener('drop',e=>{
 /* flyt + skalér fotos/stickers mens design-panelet er åbent; ✕ fjerner dem igen */
 let pyntTraek=null;   /* {el,id,x,y} — flyt med én finger/mus */
 let fotoSkaler=null;  /* {el,c,start,w} — træk i hjørnehåndtaget */
-let fotoKnib=null;    /* {el,id1,id2,p1,p2,start,w} — knib med to fingre */
+let fotoRoter=null;   /* {el,c,start,r} — træk i drej-håndtaget */
+let fotoKnib=null;    /* {el,id1,id2,p1,p2,start,w,a0,r0} — to fingre: knib + drej */
 const begrW=w=>Math.min(90,Math.max(16,w));
+const fotoR=el=>parseFloat(el.style.getPropertyValue('--fr'))||0;
+const fotoMidt=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}};
 function gemPynt(el){
   const liste=el.classList.contains('fs-foto')?indstil.fotos:indstil.stickers;
   const p=(liste||[])[el.dataset.i];
   if(p){
     p.x=parseFloat(el.style.left); p.y=parseFloat(el.style.top);
-    if(el.classList.contains('fs-foto')) p.s=Math.round(parseFloat(el.style.width)||46);
+    if(el.classList.contains('fs-foto')){
+      p.s=Math.round(parseFloat(el.style.width)||46);
+      p.r=Math.round(fotoR(el));
+    }
   }
   gemIndstil();
 }
 const fsEl=document.getElementById('forside');
 fsEl.addEventListener('click',e=>{
+  const sp=e.target.closest('.sspejl');
+  if(sp){ /* spejlvend fotoet */
+    e.stopPropagation();
+    const p=(indstil.fotos||[])[sp.closest('.fs-foto').dataset.i];
+    if(p){ p.sp=p.sp?0:1; gemIndstil(); visForsidePynt(); }
+    return;
+  }
   const x=e.target.closest('.sfjern'); if(!x) return;
   e.stopPropagation();
   const pf=x.closest('.fs-foto');
@@ -851,20 +873,32 @@ fsEl.addEventListener('pointerdown',e=>{
     const el=h.closest('.fs-foto');
     e.preventDefault();
     try{el.setPointerCapture(e.pointerId)}catch(err){}
-    const r=el.getBoundingClientRect(),c={x:r.left+r.width/2,y:r.top+r.height/2};
+    const c=fotoMidt(el);
     fotoSkaler={el,c,start:Math.max(10,Math.hypot(e.clientX-c.x,e.clientY-c.y)),
       w:parseFloat(el.style.width)||46};
     pyntTraek=null;
     return;
   }
-  const m=e.target.closest('.sticker, .fs-foto'); if(!m||e.target.closest('.sfjern')) return;
+  const rh=e.target.closest('.sroter');
+  if(rh){ /* træk i drej-håndtaget → rotér om fotoets midte */
+    const el=rh.closest('.fs-foto');
+    e.preventDefault();
+    try{el.setPointerCapture(e.pointerId)}catch(err){}
+    const c=fotoMidt(el);
+    fotoRoter={el,c,start:Math.atan2(e.clientY-c.y,e.clientX-c.x),r:fotoR(el)};
+    pyntTraek=null;
+    return;
+  }
+  const m=e.target.closest('.sticker, .fs-foto');
+  if(!m||e.target.closest('.sfjern')||e.target.closest('.sspejl')) return;
   e.preventDefault();
   if(pyntTraek&&pyntTraek.el===m&&m.classList.contains('fs-foto')){
-    /* finger nr. 2 på samme foto → knib for at skalere */
+    /* finger nr. 2 på samme foto → knib for at skalere + dreje */
     fotoKnib={el:m,id1:pyntTraek.id,id2:e.pointerId,
       p1:{x:pyntTraek.x,y:pyntTraek.y},p2:{x:e.clientX,y:e.clientY},
-      w:parseFloat(m.style.width)||46};
+      w:parseFloat(m.style.width)||46,r0:fotoR(m)};
     fotoKnib.start=Math.max(10,Math.hypot(fotoKnib.p1.x-fotoKnib.p2.x,fotoKnib.p1.y-fotoKnib.p2.y));
+    fotoKnib.a0=Math.atan2(fotoKnib.p2.y-fotoKnib.p1.y,fotoKnib.p2.x-fotoKnib.p1.x);
     try{m.setPointerCapture(e.pointerId)}catch(err){}
     pyntTraek=null;
     return;
@@ -879,6 +913,13 @@ fsEl.addEventListener('pointermove',e=>{
     else return;
     const d=Math.hypot(fotoKnib.p1.x-fotoKnib.p2.x,fotoKnib.p1.y-fotoKnib.p2.y);
     fotoKnib.el.style.width=begrW(fotoKnib.w*d/fotoKnib.start)+'%';
+    const a=Math.atan2(fotoKnib.p2.y-fotoKnib.p1.y,fotoKnib.p2.x-fotoKnib.p1.x);
+    fotoKnib.el.style.setProperty('--fr',(fotoKnib.r0+(a-fotoKnib.a0)*180/Math.PI)+'deg');
+    return;
+  }
+  if(fotoRoter){
+    const v=Math.atan2(e.clientY-fotoRoter.c.y,e.clientX-fotoRoter.c.x);
+    fotoRoter.el.style.setProperty('--fr',(fotoRoter.r+(v-fotoRoter.start)*180/Math.PI)+'deg');
     return;
   }
   if(fotoSkaler){
@@ -894,6 +935,7 @@ fsEl.addEventListener('pointermove',e=>{
 });
 function pyntSlut(){
   if(fotoKnib){const el=fotoKnib.el; fotoKnib=null; gemPynt(el); return;}
+  if(fotoRoter){const el=fotoRoter.el; fotoRoter=null; gemPynt(el); return;}
   if(fotoSkaler){const el=fotoSkaler.el; fotoSkaler=null; gemPynt(el); return;}
   if(!pyntTraek) return;
   const el=pyntTraek.el; pyntTraek=null;
