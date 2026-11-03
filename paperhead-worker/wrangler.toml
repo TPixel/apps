@@ -1,0 +1,8 @@
+name = "paperhead"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+routes = [
+  { pattern = "paperhead.app", custom_domain = true },
+  { pattern = "www.paperhead.app", custom_domain = true }
+]
