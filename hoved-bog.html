@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Hovedet — notesbog</title>
+<title>Paperhead — notesbog</title>
 <link rel="apple-touch-icon" href="hoved-ikon-180.png">
 <link rel="manifest" href="hoved-bog.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="hoved-ikon-32.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Hovedet">
+<meta name="apple-mobile-web-app-title" content="Paperhead">
 <meta name="theme-color" content="#0C0C12">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -659,7 +659,7 @@ body.pr-patina .patina{display:block}
   <div class="forside" id="forside">
     <div class="slid"></div>
     <div class="fs-logo">Ditzel &amp; Co</div>
-    <div class="fs-titel">Hovedet</div>
+    <div class="fs-titel">Paperhead</div>
     <div class="fs-under">alt ud af hovedet</div>
     <div class="designpanel" id="designPanel">
       <div class="matvalg">
@@ -718,7 +718,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v27';
+const BOGVERSION='v28';
 /* håndtegnet ikon fra SVG-spriten øverst i body */
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
@@ -789,8 +789,10 @@ const TEMAER={
   bordeaux:['#7a2b38','#581f29','#38141b'], groen:['#2b5a3a','#1f4029','#132a1b'],
   blaa:['#2b3a6a','#1f2a4a','#131a30'], orange:['#c9821a','#9a5c08','#5e3804']
 };
-let design={tema:'sort',titel:'Hovedet'};
+let design={tema:'sort',titel:'Paperhead'};
 try{Object.assign(design,JSON.parse(localStorage.getItem('bogDesign')||'{}'))}catch(e){}
+/* gammel default lækket ind i gemt design → nyt navn; egne titler røres ikke */
+if(design.titel==='Hovedet') design.titel='Paperhead';
 function anvendDesign(){
   const fs=document.getElementById('forside');
   const mat=indstilVal('materiale');
@@ -799,8 +801,8 @@ function anvendDesign(){
   if(mat==='pap') fs.style.background='linear-gradient(160deg,#c9a771 0%,#b2905c 55%,#97773f 100%)';
   else{ const t=TEMAER[design.tema]||TEMAER.sort;
     fs.style.background='linear-gradient(145deg,'+t[0]+' 0%,'+t[1]+' 55%,'+t[2]+' 100%)'; }
-  /* tom titel = ingen tekst (ingen 'Hovedet'-fallback, ingen tom plads) */
-  document.querySelector('.fs-titel').textContent=design.titel===undefined?'Hovedet':design.titel;
+  /* tom titel = ingen tekst (ingen 'Paperhead'-fallback, ingen tom plads) */
+  document.querySelector('.fs-titel').textContent=design.titel===undefined?'Paperhead':design.titel;
   fs.classList.toggle('tekstfri',!!indstil.tekstfri);
   document.getElementById('tekstFri').classList.toggle('valgt',!!indstil.tekstfri);
   document.querySelectorAll('.farve').forEach(f=>f.classList.toggle('valgt',f.dataset.t===design.tema));
@@ -821,7 +823,7 @@ document.getElementById('designPanel').addEventListener('click',e=>{
   const s=e.target.closest('[data-st]'); if(s) tilfoejSticker(s.dataset.st);
 });
 const titelInput=document.getElementById('titelInput');
-titelInput.value=design.titel===undefined?'Hovedet':design.titel;
+titelInput.value=design.titel===undefined?'Paperhead':design.titel;
 titelInput.addEventListener('input',()=>{design.titel=titelInput.value.trim(); anvendDesign(); gemDesign();});
 document.getElementById('tekstFri').addEventListener('click',()=>{
   indstil.tekstfri=!indstil.tekstfri; gemIndstil(); anvendDesign();

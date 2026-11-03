@@ -1,6 +1,6 @@
 {
-  "name": "Hovedet",
-  "short_name": "Hovedet",
+  "name": "Paperhead",
+  "short_name": "Paperhead",
   "start_url": "./hoved-bog.html",
   "scope": "./",
   "display": "standalone",
