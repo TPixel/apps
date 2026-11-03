@@ -559,19 +559,21 @@ body.pr-patina .patina{display:block}
         <div id="l-holdmeat" class="hent">Henter…</div>
       </div>
 
-      <!-- 🎭 EVENTS -->
+      <!-- 🎭 EVENTS: Plakaten (agentens fund) ↔ Opsætning (hvem følger jeg) som under-faner -->
       <div class="sektion" id="s-events">
         <h1 class="rubrik">Events</h1>
-        <div class="dato">følg bands, steder &amp; museer — og se hvad der er på plakaten</div>
-        <div class="grupperubrik"><svg class="ik"><use href="#ik-stjerne"/></svg> Følger</div>
+        <div class="dato">på plakaten — det agenten har fundet til dig</div>
+        <div id="l-events" class="hent">Henter…</div>
+      </div>
+      <div class="sektion" id="s-eventops">
+        <h1 class="rubrik">Opsætning</h1>
+        <div class="dato">hvem &amp; hvad følger jeg — agenten søger efter det her</div>
         <div id="l-foelger" class="hent">Henter…</div>
         <div class="chips" id="evTyper" style="margin:8px 0 0"></div>
         <div class="skrivlinje">
           <span class="firk"></span>
           <input id="evInput" placeholder="følg ny — navn + retur" enterkeyhint="done" autocomplete="off">
         </div>
-        <div class="grupperubrik"><svg class="ik"><use href="#ik-billet"/></svg> På plakaten</div>
-        <div id="l-events" class="hent">Henter…</div>
       </div>
 
       <!-- ⚙️ SYSTEM -->
@@ -716,12 +718,12 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v26';
+const BOGVERSION='v27';
 /* håndtegnet ikon fra SVG-spriten øverst i body */
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#husmøde','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17};
+const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,eventops:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17};
 
 /* ---------- personligt præg: gemmes pr. bruger/enhed i bogIndstil ---------- */
 const INDSTILLINGER=[
@@ -1262,6 +1264,7 @@ function gfanerSynlighed(){
     else if(akt.id==='s-holdmeat') html=listeFanerHtml('husmoede');
     else if(akt.id==='s-system'||akt.id==='s-faerdige') html=systemFanerHtml(akt.id);
     else if(akt.id==='s-mc'||akt.id==='s-mcvaerk'||akt.id==='s-mcnyt') html=mcFanerHtml(akt.id);
+    else if(akt.id==='s-events'||akt.id==='s-eventops') html=eventFanerHtml(akt.id);
   }
   g.innerHTML=html;
   const aaben=document.getElementById('forside').classList.contains('aaben');
@@ -1320,7 +1323,9 @@ document.getElementById('gfaner').addEventListener('click',e=>{
     document.getElementById('s-'+b.dataset.sek).classList.add('aktiv');
     document.getElementById('sidefod').textContent='— '+SIDETAL[b.dataset.sek]+' —';
     document.getElementById('side').scrollTop=0;
-    gfanerSynlighed(); visSideFotos(); hentNoter(); return;
+    gfanerSynlighed(); visSideFotos();
+    if(b.dataset.sek==='events'||b.dataset.sek==='eventops') hentEvents(); else hentNoter();
+    return;
   }
   if(b.dataset.l){
     if(b.dataset.t==='opgaver') aktivOpgListe=parseInt(b.dataset.l); else aktivHmListe=parseInt(b.dataset.l);
@@ -1654,7 +1659,13 @@ document.getElementById('side').addEventListener('change',async e=>{
     body:JSON.stringify({deadline:r.deadline})}); }catch(err){}
 });
 
-/* 🎭 Events: fulgte + på plakaten */
+/* 🎭 Events: Plakaten ↔ Opsætning som under-faner (samme mønster som System/MC) */
+function eventFanerHtml(aktId){
+  const b=(sek,ikn,txt,fv)=>'<button class="gfane'+(aktId==='s-'+sek?' valgt':'')+'" data-sek="'+sek+'"'
+    +(aktId==='s-'+sek?'':' style="background:'+GRUPPE_FARVER[fv]+'"')
+    +'><span class="em">'+ikon(ikn)+'</span>'+txt+'</button>';
+  return b('events','billet','Plakaten',1)+b('eventops','tandhjul','Opsætning',5);
+}
 const EVTYPER={band:'node',spillested:'hus',museum:'ramme',restaurant:'tallerken',popup:'gnist'};
 let evFoelger=[],evListe=[],evType='band';
 const evTyperEl=document.getElementById('evTyper');
@@ -1687,7 +1698,7 @@ function visEvents(){
       +'<div class="nb"><div class="m">'+esc(f.type)+(f.note?' · '+esc(f.note):'')+' · fulgt siden '+esc((f.oprettet||'').slice(0,10))+'</div></div></div>';
   }).join(''):'<div class="tom">Følger ingen endnu — skriv et navn nedenfor</div>';
   const le=document.getElementById('l-events'); le.classList.remove('hent');
-  if(!evListe.length){ le.innerHTML='<div class="tom">Intet på plakaten endnu — agenten søger ud fra det du følger</div>'; return; }
+  if(!evListe.length){ le.innerHTML='<div class="tom">Intet på plakaten endnu — vælg hvad du følger under Opsætning på kanten</div>'; return; }
   let h='',sidste='';
   for(const e of evListe){
     if(e.dato!==sidste){ h+='<div class="evdag">'+esc(evDato(e.dato))+'</div>'; sidste=e.dato; }
