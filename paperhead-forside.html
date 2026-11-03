@@ -6,12 +6,15 @@
 <title>Paperhead — alt ud af hovedet</title>
 <meta name="description" content="Paperhead: skriv én linje, og systemet sorterer, undersøger og leverer — i en bog der føles som papir, ikke som en app.">
 <link rel="icon" type="image/png" sizes="32x32" href="hoved-ikon-32.png">
+<link rel="apple-touch-icon" href="hoved-ikon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --papir:#faf6ec; --linje:#00000012; --blaek:#2a2a30; --svag:#8d8679; --orange:#E8820A;
+  /* accenter fra logoets faneblade (gul/grøn/lilla) */
+  --gul:#F2CB4E; --groen:#43BFA3; --lilla:#A77FE2;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -25,7 +28,7 @@ body{
 
 /* ---------- top ---------- */
 header{display:flex;align-items:center;gap:10px;padding:18px 0 6px}
-header .logo{width:46px;height:46px;flex:0 0 auto}
+header .logo{height:46px;width:auto;flex:0 0 auto}
 header .navn{font-family:'Caveat',cursive;font-weight:700;font-size:30px;letter-spacing:.5px}
 header .aabn{margin-left:auto;font-size:13px;font-weight:bold;color:var(--orange);text-decoration:none;border:1.5px solid #e8820a66;border-radius:10px;padding:7px 12px;transform:rotate(-1deg)}
 header .aabn:hover{background:var(--orange);color:#fff}
@@ -35,7 +38,7 @@ header .aabn:hover{background:var(--orange);color:#fff}
 .hero .tekst{flex:1 1 340px;min-width:280px}
 h1{font-family:'Caveat',cursive;font-weight:700;font-size:clamp(44px,7vw,68px);line-height:1.04;margin:0 0 14px;transform:rotate(-.6deg)}
 h1 .streg{position:relative;white-space:nowrap}
-h1 .streg::after{content:"";position:absolute;left:-2%;right:-3%;bottom:4px;height:10px;background:#e8820a3d;transform:rotate(-1deg);z-index:-1}
+h1 .streg::after{content:"";position:absolute;left:-2%;right:-3%;bottom:4px;height:10px;background:linear-gradient(90deg,#f2cb4e66,#43bfa35c,#a77fe258);transform:rotate(-1deg);z-index:-1}
 .hero p.under{font-size:17px;color:#55503f;max-width:46ch;margin:0 0 24px}
 .cta{display:inline-block;background:var(--orange);color:#fff;font-weight:bold;font-size:17px;text-decoration:none;border-radius:12px;padding:14px 26px;box-shadow:0 4px 0 #b05f04,0 10px 24px #e8820a44;transform:rotate(-1deg)}
 .cta:active{transform:rotate(-1deg) translateY(3px);box-shadow:0 1px 0 #b05f04}
@@ -62,7 +65,13 @@ h1 .streg::after{content:"";position:absolute;left:-2%;right:-3%;bottom:4px;heig
 .bog .slid::after{content:"";position:absolute;inset:0;opacity:.35;border-radius:inherit;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='l'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.08' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23l)' opacity='0.45'/%3E%3C/svg%3E");
   box-shadow:inset 0 0 46px #00000066}
-.bog .blogo{width:64px;height:64px;color:#f5f1e6cc;margin-bottom:2px}
+/* logoet som klistermærke på læderet */
+.bog .blogo{width:86px;height:auto;background:#f5f1eeea;border-radius:12px;padding:9px 13px;box-shadow:0 2px 7px #00000066, inset 0 0 0 1px #00000010;transform:rotate(-2.4deg);margin-bottom:6px}
+/* farvede faneblade der stikker ud af bogen, som i logoet */
+.bog .fane{position:absolute;right:-9px;width:16px;height:27px;border-radius:0 6px 6px 0;box-shadow:1px 1px 2px #00000033}
+.bog .fane.gul{top:19%;background:var(--gul)}
+.bog .fane.groen{top:28%;background:var(--groen)}
+.bog .fane.lilla{top:37%;background:var(--lilla)}
 .bog .btitel{font-family:'Caveat',cursive;font-weight:700;font-size:52px;color:#f5f1e6;line-height:1;text-shadow:0 2px 6px #00000066}
 .bog .bunder{font-family:'Caveat',cursive;font-size:19px;color:var(--orange)}
 .bog .elastik{position:absolute;top:-6px;bottom:-6px;right:34px;width:9px;background:linear-gradient(90deg,#1d150d,#33241633);border-radius:4px;box-shadow:1px 0 2px #00000066}
@@ -80,6 +89,10 @@ h2{font-family:'Caveat',cursive;font-weight:700;font-size:38px;margin:0 0 18px;t
 .lap:nth-child(odd){transform:rotate(-.8deg)}
 .lap:nth-child(even){transform:rotate(.7deg)}
 .lap::before{content:"";position:absolute;width:76px;height:22px;background:#efe8ceb0;top:-11px;left:50%;transform:translateX(-50%) rotate(-2deg);box-shadow:0 1px 2px #00000022}
+/* washi-tape i logoets farver */
+.lap:nth-child(3n+1)::before{background:#f2cb4e52}
+.lap:nth-child(3n+2)::before{background:#43bfa348}
+.lap:nth-child(3n)::before{background:#a77fe24a}
 .lap .ik{width:34px;height:34px;color:var(--blaek);margin-bottom:8px}
 .lap h3{font-family:'Caveat',cursive;font-weight:700;font-size:26px;margin:0 0 4px;line-height:1.1}
 .lap p{font-size:14px;color:#55503f;margin:0}
@@ -106,23 +119,14 @@ footer a{color:var(--svag)}
 </head>
 <body>
 
-<!-- LOGO-PLACEHOLDER: skitse 2, "bog-ansigtet", fra rapporter/110-nyt-navn-logo.html.
-     Endeligt logo er IKKE valgt — udskift indholdet af dette ene symbol når det er. -->
-<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
-  <symbol id="logo-ansigt" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M34 92 L34 36 C34 30 40 26 46 28 C52 22 68 22 74 28 C80 26 86 30 86 36 L86 92"/>
-    <path d="M34 92 C40 86 54 86 60 92 C66 86 80 86 86 92"/>
-    <path d="M60 30 L60 90" stroke-width="2.2" stroke-dasharray="1 6"/>
-    <circle cx="47" cy="48" r="2" fill="currentColor" stroke="none"/>
-    <circle cx="73" cy="48" r="2" fill="currentColor" stroke="none"/>
-    <path d="M52 62 C56 66 64 66 68 62" stroke-width="2.6"/>
-  </symbol>
-</svg>
+<!-- LOGO: FORELØBIGT. Kilden er paperhead-logo.png — udskift dén fil og kør
+     `python3 lav-ikoner.py`, så gendannes paperhead-maerke.png og alle hoved-ikon-*.png
+     med samme navne/stier (intet andet skal rettes). -->
 
 <div class="wrap">
 
 <header>
-  <svg class="logo" style="color:var(--blaek)"><use href="#logo-ansigt"/></svg>
+  <img class="logo" src="paperhead-maerke.png" alt="">
   <div class="navn">Paperhead</div>
   <a class="aabn" href="/bog">Min bog →</a>
 </header>
@@ -141,7 +145,8 @@ footer a{color:var(--svag)}
       <div class="slid"></div>
       <div class="tape"></div>
       <div class="elastik"></div>
-      <svg class="blogo"><use href="#logo-ansigt"/></svg>
+      <div class="fane gul"></div><div class="fane groen"></div><div class="fane lilla"></div>
+      <img class="blogo" src="paperhead-maerke.png" alt="">
       <div class="btitel">Paperhead</div>
       <div class="bunder">alt ud af hovedet</div>
     </div>
