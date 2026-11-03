@@ -86,6 +86,25 @@ h1{font-size:26px;margin-top:2px}
 <script>
 const API = 'https://lightcrew-api.thomas-5c5.workers.dev';
 const $ = id => document.getElementById(id);
+
+// Adgangsnøgle: hele hoved-API'et er privat — samme nøgle som bogen (localStorage kontaktNoegle).
+function noegle() { try { return localStorage.getItem('kontaktNoegle') || '' } catch (e) { return '' } }
+let noegleSpurgt = false;
+function bedOmNoegle(forkert) {
+  if (noegleSpurgt) return; noegleSpurgt = true;
+  const v = window.prompt((forkert ? 'Forkert nøgle — prøv igen.\n' : '') + 'Paperhead er privat — skriv adgangsnøglen (gemmes kun på denne enhed):');
+  if (v && v.trim()) { try { localStorage.setItem('kontaktNoegle', v.trim()) } catch (e) {} location.reload(); }
+}
+const _fetch = window.fetch.bind(window);
+window.fetch = (url, o) => {
+  if (typeof url === 'string' && url.startsWith(API)) {
+    o = o || {}; o.headers = Object.assign({}, o.headers, { 'Authorization': 'Bearer ' + noegle() });
+    return _fetch(url, o).then(r => { if (r.status === 401) bedOmNoegle(!!noegle()); return r; });
+  }
+  return _fetch(url, o);
+};
+if (!noegle()) bedOmNoegle(false);
+
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const FUNK = { send: '📤 send', slaaop: '🔎 slå op', koeb: '🛒 køb', undersoeg: '🔬 undersøg', projekt: '🛠 projekt' };
 // escaped tekst → klikbare links

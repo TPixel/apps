@@ -1,0 +1,3 @@
+// Kopiér denne fil til Noegle.swift og indsæt adgangsnøglen (samme som ~/.config/hoved/noegle).
+// Noegle.swift er gitignoreret — nøglen må ALDRIG committes (apps-repoet er offentligt).
+let apiNoegle = "INDSAET-NOEGLE-HER"

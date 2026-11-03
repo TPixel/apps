@@ -10,6 +10,7 @@
 		AA0000000000000000000001 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0000000000000000000001 /* main.swift */; };
 		AA0000000000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB0000000000000000000002 /* Assets.xcassets */; };
 		D10000000000000000000006 /* HovedetWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000003 /* HovedetWatchApp.swift */; };
+		D10000000000000000000021 /* Noegle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000020 /* Noegle.swift */; };
 		D10000000000000000000007 /* WatchAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000004 /* WatchAssets.xcassets */; };
 		D1000000000000000000000C /* HovedetWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D10000000000000000000002 /* HovedetWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -45,6 +46,7 @@
 		AB0000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D10000000000000000000002 /* HovedetWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HovedetWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D10000000000000000000003 /* HovedetWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HovedetWatchApp.swift; path = ../../hovedet-watch/HovedetWatchApp.swift; sourceTree = "<group>"; };
+		D10000000000000000000020 /* Noegle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Noegle.swift; path = ../../hovedet-watch/Noegle.swift; sourceTree = "<group>"; };
 		D10000000000000000000004 /* WatchAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = WatchAssets.xcassets; path = "../../hovedet-watch/xcode/Assets.xcassets"; sourceTree = "<group>"; };
 		D10000000000000000000005 /* WatchInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = WatchInfo.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -67,6 +69,7 @@
 				AB0000000000000000000002 /* Assets.xcassets */,
 				AB0000000000000000000004 /* Info.plist */,
 				D10000000000000000000003 /* HovedetWatchApp.swift */,
+				D10000000000000000000020 /* Noegle.swift */,
 				D10000000000000000000004 /* WatchAssets.xcassets */,
 				D10000000000000000000005 /* WatchInfo.plist */,
 				AD0000000000000000000002 /* Products */,
@@ -209,6 +212,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D10000000000000000000006 /* HovedetWatchApp.swift in Sources */,
+				D10000000000000000000021 /* Noegle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

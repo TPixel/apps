@@ -66,8 +66,9 @@ struct ContentView: View {
                                       ["tekst": tekst + d.tag, "kilde": "watch", "sorter": d.aiSorter])
             if d.tilOpgaveliste, let id = svar["id"] as? Int {
                 // stempl punktet på den nyeste opgaveliste
-                let (data, _) = try await URLSession.shared.data(
-                    from: URL(string: "\(apiBase)/api/boglister?type=opgaver")!)
+                var hent = URLRequest(url: URL(string: "\(apiBase)/api/boglister?type=opgaver")!)
+                hent.setValue("Bearer " + apiNoegle, forHTTPHeaderField: "Authorization")
+                let (data, _) = try await URLSession.shared.data(for: hent)
                 if let lister = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
                    let nyeste = lister.first?["id"] as? Int {
                     _ = try await post("\(apiBase)/api/hoved/\(id)",
@@ -88,6 +89,7 @@ struct ContentView: View {
         var req = URLRequest(url: URL(string: url)!)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("Bearer " + apiNoegle, forHTTPHeaderField: "Authorization")
         req.httpBody = try JSONSerialization.data(withJSONObject: body)
         let (data, resp) = try await URLSession.shared.data(for: req)
         guard let http = resp as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {

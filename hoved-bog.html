@@ -226,6 +226,15 @@ body{
 .noeglebox{background:#ffffff80;border:1px solid #00000015;border-radius:12px;padding:12px;margin-bottom:12px}
 .noeglebox input{border:1px solid #00000022;border-radius:8px;padding:8px 10px;font-size:14px;outline:none;background:#fff;width:130px}
 .noeglebox button{background:var(--orange);color:#fff;font-weight:bold;border:none;border-radius:8px;padding:8px 14px;margin-left:6px;cursor:pointer}
+/* adgangslås: hele bogen er privat — nøglen gemmes kun på enheden */
+#laasSkaerm{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:#1a1712ee}
+#laasSkaerm.vis{display:flex}
+#laasSkaerm .lkort{background:#f2ecd9;border-radius:14px;padding:26px 24px;max-width:320px;margin:16px;box-shadow:0 18px 60px #000a;transform:rotate(-.6deg);text-align:center}
+#laasSkaerm h2{font-family:'Caveat',cursive;font-size:30px;margin:0 0 6px;color:#2e2a20}
+#laasSkaerm p{font-size:13px;color:#55503f;margin:0 0 14px}
+#laasSkaerm input{border:1px solid #00000022;border-radius:8px;padding:10px 12px;font-size:16px;outline:none;background:#fff;width:100%;box-sizing:border-box;text-align:center}
+#laasSkaerm button{background:var(--orange);color:#fff;font-weight:bold;border:none;border-radius:8px;padding:10px 14px;margin-top:10px;cursor:pointer;width:100%;font-size:15px}
+#laasSkaerm .lfejl{font-size:12px;color:#a33;margin:8px 0 0;display:none}
 .kont .ti{display:flex;align-items:baseline;min-width:0}
 .kont .nvn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:40px}
 .kont .fir{font-size:11.5px;color:#8d8679;font-weight:normal;margin-left:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:4;min-width:0}
@@ -696,6 +705,14 @@ body.pr-patina .patina{display:block}
 
   <div id="dropOverlay" aria-hidden="true"><div class="dz"><svg class="ik"><use href="#ik-foto"/></svg>Slip fotoet her</div></div>
 
+  <div id="laasSkaerm"><div class="lkort">
+    <h2>Paperhead er privat</h2>
+    <p><svg class="ik"><use href="#ik-laas"/></svg> Skriv adgangsnøglen — den gemmes kun på denne enhed.</p>
+    <input id="laasInput" type="password" placeholder="nøgle" autocomplete="off">
+    <button id="laasKnap">Lås op</button>
+    <div class="lfejl" id="laasFejl">Forkert nøgle — prøv igen</div>
+  </div></div>
+
   <div class="faner" id="faner">
     <button class="fane aktiv" data-s="skriv"><span class="em"><svg class="ik"><use href="#ik-pen"/></svg></span>Skriv</button>
     <button class="fane" data-s="seneste"><span class="em"><svg class="ik"><use href="#ik-ur"/></svg></span>Seneste</button>
@@ -718,7 +735,33 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v28';
+const BOGVERSION='v29';
+
+/* ---------- adgangsnøgle: hele hoved-API'et er privat ----------
+   Samme nøgle som adressebogen (localStorage kontaktNoegle) — én prompt pr. enhed.
+   Headeren sættes på ALLE kald til API'et her; 401 åbner låsen igen. */
+function kontaktNoegle(){ try{return localStorage.getItem('kontaktNoegle')||''}catch(e){return ''} }
+function visLaas(forkert){
+  document.getElementById('laasSkaerm').classList.add('vis');
+  document.getElementById('laasFejl').style.display=forkert?'block':'none';
+  setTimeout(()=>document.getElementById('laasInput').focus(),60);
+}
+function laasOp(){
+  const v=document.getElementById('laasInput').value.trim(); if(!v) return;
+  try{localStorage.setItem('kontaktNoegle',v)}catch(e){}
+  location.reload();
+}
+document.getElementById('laasKnap').addEventListener('click',laasOp);
+document.getElementById('laasInput').addEventListener('keydown',e=>{if(e.key==='Enter')laasOp()});
+const _fetch=window.fetch.bind(window);
+window.fetch=(url,o)=>{
+  if(typeof url==='string'&&url.startsWith(API)){
+    o=o||{}; o.headers=Object.assign({},o.headers,{'Authorization':'Bearer '+kontaktNoegle()});
+    return _fetch(url,o).then(r=>{ if(r.status===401) visLaas(!!kontaktNoegle()); return r; });
+  }
+  return _fetch(url,o);
+};
+if(!kontaktNoegle()) visLaas(false);
 /* håndtegnet ikon fra SVG-spriten øverst i body */
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
@@ -1335,7 +1378,7 @@ document.getElementById('gfaner').addEventListener('click',e=>{
   }
   kontaktGruppe=b.dataset.g; visAdresser();
 });
-function kontaktNoegle(){ try{return localStorage.getItem('kontaktNoegle')||''}catch(e){return ''} }
+/* kontaktNoegle() er global (adgangslåsen øverst) — samme nøgle bruges her */
 async function hentKontakter(){
   const boks=document.getElementById('noeglebox');
   if(!kontaktNoegle()){ boks.style.display='block'; document.getElementById('l-adresser').textContent=''; return; }
