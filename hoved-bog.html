@@ -265,6 +265,14 @@ textarea::placeholder{color:#b8b0a0}
   border-radius:20px;padding:6px 11px;cursor:pointer;user-select:none
 }
 .chip.valgt{background:var(--orange);color:#fff;border-color:var(--orange)}
+/* Tags-siden (under-fane til Skriv): egne tags + hvilke der vises som chips */
+.tagrk{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #00000018}
+.tagrk .tn{font-family:'Caveat',cursive;font-size:25px;line-height:1.05;color:#1d1d22;flex:1;cursor:pointer}
+.tagrk.skjult .tn{color:#a39c8a;text-decoration:line-through;text-decoration-thickness:2px}
+.tagrk .tagh{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.tagslet{border:none;background:transparent;color:#c6bda8;font-size:17px;cursor:pointer;padding:2px 6px;font-weight:bold}
+.tagslet:hover{color:#e07a7a}
+.tagrk .std{font-size:9.5px;color:#b8b0a0;letter-spacing:.5px;text-transform:uppercase}
 .knapper{display:flex;gap:10px;align-items:center}
 .gem{
   flex:1;background:var(--orange);color:#fff;font-family:Tahoma,sans-serif;font-weight:bold;
@@ -502,6 +510,18 @@ body.pr-patina .patina{display:block}
           <button class="mik" id="mik" title="Indtal"><svg class="ik"><use href="#ik-mik"/></svg></button>
         </div>
         <div class="kvittering" id="kvit"></div>
+      </div>
+
+      <!-- # TAGS (under-fane til Skriv): lav egne tags og vælg hvilke der vises som chips -->
+      <div class="sektion" id="s-tags">
+        <h1 class="rubrik">Tags</h1>
+        <div class="dato">chips på Skriv-siden</div>
+        <div class="skrivlinje" style="margin-bottom:10px">
+          <span style="font-family:'Caveat',cursive;font-size:28px;color:var(--orange);line-height:1">#</span>
+          <input id="tagInput" placeholder="nyt tag + Enter…" autocapitalize="none" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="noegle">tryk på et tag eller kontakten for at vise/skjule det på Skriv · ✕ sletter dine egne · gemmes på denne enhed</div>
+        <div id="tagListe"></div>
       </div>
 
       <!-- 🕐 SENESTE -->
@@ -745,7 +765,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v32';
+const BOGVERSION='v33';
 
 /* ---------- adgangsnøgle: hele hoved-API'et er privat ----------
    Samme nøgle som adressebogen (localStorage kontaktNoegle) — én prompt pr. enhed.
@@ -776,7 +796,7 @@ if(!kontaktNoegle()) visLaas(false);
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#husmøde','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,eventops:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17};
+const SIDETAL={skriv:1,tags:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,eventops:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17};
 
 /* ---------- personligt præg: gemmes pr. bruger/enhed i bogIndstil ---------- */
 const INDSTILLINGER=[
@@ -1117,13 +1137,49 @@ function pyntSlut(){
 visForsidePynt();
 visSideFotos();
 
-/* chips */
+/* chips — standard-tags + egne tags, minus dem der er skjult på Tags-siden (gemmes i localStorage bogTags) */
 const chipsEl=document.getElementById('chips');
-TAGS.forEach(t=>{
-  const c=document.createElement('span'); c.className='chip'; c.textContent=t;
-  c.onclick=()=>{ c.classList.toggle('valgt'); };
-  chipsEl.appendChild(c);
+let tagOpsaet={egne:[],skjult:[]};
+try{ const g=JSON.parse(localStorage.getItem('bogTags')||'{}'); if(Array.isArray(g.egne)) tagOpsaet.egne=g.egne; if(Array.isArray(g.skjult)) tagOpsaet.skjult=g.skjult; }catch(e){}
+function gemTags(){ try{localStorage.setItem('bogTags',JSON.stringify(tagOpsaet))}catch(e){} }
+const normTag=s=>{ const t=String(s||'').trim().toLowerCase().replace(/^#+/,'').replace(/\s+/g,'').replace(/[^\p{L}\p{N}_\-]/gu,''); return t?'#'+t:''; };
+const alleTags=()=>[...TAGS,...tagOpsaet.egne.filter(t=>!TAGS.includes(t))];
+const synligeTags=()=>alleTags().filter(t=>!tagOpsaet.skjult.includes(t));
+function visChips(){
+  const valgt=new Set([...chipsEl.querySelectorAll('.chip.valgt')].map(c=>c.textContent));
+  chipsEl.innerHTML='';
+  synligeTags().forEach(t=>{
+    const c=document.createElement('span'); c.className='chip'+(valgt.has(t)?' valgt':''); c.textContent=t;
+    c.onclick=()=>{ c.classList.toggle('valgt'); };
+    chipsEl.appendChild(c);
+  });
+}
+visChips();
+/* Tags-siden: liste med til/fra-kontakt pr. tag, ✕ på egne tags, og skrivelinje til nye */
+function visTags(){
+  document.getElementById('tagListe').innerHTML=alleTags().map(t=>{
+    const skjult=tagOpsaet.skjult.includes(t), egen=!TAGS.includes(t);
+    return '<div class="tagrk'+(skjult?' skjult':'')+'" data-t="'+esc(t)+'"><span class="tn">'+esc(t)+'</span><span class="tagh">'
+      +(egen?'<button class="tagslet" data-slet="'+esc(t)+'" title="Slet tagget">✕</button>':'<span class="std">standard</span>')
+      +'<div class="tnd'+(skjult?'':' til')+'" data-vis="'+esc(t)+'"></div></span></div>';
+  }).join('')||'<div class="tom">Ingen tags endnu</div>';
+}
+function tagSynlig(t,vis){ tagOpsaet.skjult=tagOpsaet.skjult.filter(x=>x!==t); if(!vis) tagOpsaet.skjult.push(t); gemTags(); visTags(); visChips(); }
+document.getElementById('tagListe').addEventListener('click',e=>{
+  const sl=e.target.closest('.tagslet');
+  if(sl){ const t=sl.dataset.slet; if(!confirm('Slet '+t+'?')) return;
+    tagOpsaet.egne=tagOpsaet.egne.filter(x=>x!==t); tagOpsaet.skjult=tagOpsaet.skjult.filter(x=>x!==t); gemTags(); visTags(); visChips(); return; }
+  const rk=e.target.closest('.tagrk'); if(!rk) return;
+  tagSynlig(rk.dataset.t, rk.classList.contains('skjult'));
 });
+document.getElementById('tagInput').addEventListener('keydown',e=>{
+  if(e.key!=='Enter') return;
+  const inp=e.target, t=normTag(inp.value); if(t.length<2) return;
+  if(!alleTags().includes(t)) tagOpsaet.egne.push(t);
+  tagOpsaet.skjult=tagOpsaet.skjult.filter(x=>x!==t);   // nyt/genoprettet tag er synligt
+  gemTags(); visTags(); visChips(); inp.value='';
+});
+visTags();
 
 /* faner */
 let alleNoter=null;
@@ -1282,6 +1338,15 @@ function listeFanerHtml(type){
     +'>'+esc(l.navn.length>14?l.navn.slice(0,13)+'…':l.navn)+'</button>').join('')
     +'<button class="gfane ny" data-nyliste="'+type+'">'+ikon('plus')+' Ny</button>';
 }
+/* under-faner på Skriv: Skriv ↔ Tags (egne tags + hvilke der vises som chips) */
+function skrivFanerHtml(aktId){
+  return '<button class="gfane'+(aktId==='s-skriv'?' valgt':'')+'" data-sek="skriv"'
+    +(aktId==='s-skriv'?'':' style="background:'+GRUPPE_FARVER[0]+'"')
+    +'><span class="em">'+ikon('pen')+'</span>Skriv</button>'
+    +'<button class="gfane'+(aktId==='s-tags'?' valgt':'')+'" data-sek="tags"'
+    +(aktId==='s-tags'?'':' style="background:'+GRUPPE_FARVER[4]+'"')
+    +'><span class="em" style="font-family:\'Caveat\',cursive;font-size:17px;line-height:1">#</span>Tags</button>';
+}
 /* under-faner på System: Indstillinger + Færdig (Færdig bor ikke længere på bogkanten) */
 function systemFanerHtml(aktId){
   return '<button class="gfane'+(aktId==='s-system'?' valgt':'')+'" data-sek="system"'
@@ -1316,7 +1381,8 @@ function gfanerSynlighed(){
   const akt=document.querySelector('.sektion.aktiv');
   let html='';
   if(akt){
-    if(akt.id==='s-adresser') html=gruppeFanerHtml();
+    if(akt.id==='s-skriv'||akt.id==='s-tags') html=skrivFanerHtml(akt.id);
+    else if(akt.id==='s-adresser') html=gruppeFanerHtml();
     else if(akt.id==='s-opgaver') html=listeFanerHtml('opgaver');
     else if(akt.id==='s-holdmeat') html=listeFanerHtml('husmoede');
     else if(akt.id==='s-system'||akt.id==='s-faerdige') html=systemFanerHtml(akt.id);
@@ -1381,7 +1447,9 @@ document.getElementById('gfaner').addEventListener('click',e=>{
     document.getElementById('sidefod').textContent='— '+SIDETAL[b.dataset.sek]+' —';
     document.getElementById('side').scrollTop=0;
     gfanerSynlighed(); visSideFotos();
-    if(b.dataset.sek==='events'||b.dataset.sek==='eventops') hentEvents(); else hentNoter();
+    if(b.dataset.sek==='events'||b.dataset.sek==='eventops') hentEvents();
+    else if(b.dataset.sek==='tags') visTags();
+    else if(b.dataset.sek!=='skriv') hentNoter();
     return;
   }
   if(b.dataset.l){
