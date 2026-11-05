@@ -436,9 +436,9 @@ textarea::placeholder{color:#b8b0a0}
 .indst .gruppevalg{margin:0;justify-content:flex-end}
 .patina{position:absolute;inset:0;z-index:2;pointer-events:none;display:none;border-radius:inherit;overflow:hidden}
 body.pr-patina .patina{display:block}
-.patina .kaffe{position:absolute;top:8%;right:6%;width:86px;opacity:.5}
-.patina .plet{position:absolute;top:21%;right:26%;width:22px;opacity:.35}
-.patina .oere{position:absolute;right:0;bottom:0;width:46px;height:46px}
+.patina .kaffe{position:absolute;top:7%;right:6%;width:112px;mix-blend-mode:multiply;opacity:.85;transform:rotate(-8deg)}
+.patina .plet{position:absolute;top:23%;right:29%;width:30px;mix-blend-mode:multiply;opacity:.75;transform:rotate(14deg)}
+.patina .oere{position:absolute;right:-1px;bottom:-1px;width:54px;height:54px}
 
 </style>
 </head>
@@ -681,9 +681,62 @@ body.pr-patina .patina{display:block}
     <div class="sidefod" id="sidefod">— 1 —</div>
     <!-- valgfri patina: kaffering + æseløre (indstilling på ⚙️ System) -->
     <div class="patina" aria-hidden="true">
-      <svg class="kaffe" viewBox="0 0 100 100"><g fill="none" stroke="#7a4a1f"><path d="M50 13c20-1 36 14 36 35 0 22-17 38-37 37C29 84 13 70 13 49 13 29 30 14 50 13z" stroke-width="6" stroke-dasharray="34 10 52 14 26 8"/><path d="M50 20c15-1 29 11 29 29" stroke-width="3" opacity=".5"/></g></svg>
-      <svg class="plet" viewBox="0 0 24 24"><path d="M12 3c3 4 6 7 6 11a6 6 0 1 1-12 0c0-4 3-7 6-11z" fill="#7a4a1f"/></svg>
-      <svg class="oere" viewBox="0 0 46 46"><path d="M46 46H14C27 38 38 26 46 10z" fill="#00000014"/><path d="M46 10C38 26 27 38 14 46 18 30 30 16 46 10z" fill="#efe7d2" stroke="#00000022" stroke-width="1"/></svg>
+      <svg class="kaffe" viewBox="0 0 120 120">
+        <defs>
+          <filter id="pat-ru" x="-25%" y="-25%" width="150%" height="150%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.14" numOctaves="3" seed="11" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="6"/>
+          </filter>
+          <filter id="pat-vask" x="-25%" y="-25%" width="150%" height="150%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="4" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="13"/>
+            <feGaussianBlur stdDeviation="0.8"/>
+          </filter>
+          <filter id="pat-ru2" x="-30%" y="-30%" width="160%" height="160%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.2" numOctaves="2" seed="7" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5"/>
+          </filter>
+        </defs>
+        <!-- den brede, lyse vask inden for ringen -->
+        <ellipse cx="60" cy="60" rx="43" ry="40" fill="none" stroke="#8a5a28" stroke-width="8" opacity=".12" filter="url(#pat-vask)"/>
+        <g filter="url(#pat-ru)">
+          <!-- selve randen: mørkest yderst, som en rigtig kaffering -->
+          <ellipse cx="60" cy="60" rx="47" ry="44" fill="none" stroke="#6e4019" stroke-width="2.6" opacity=".42"/>
+          <ellipse cx="60" cy="60" rx="44.5" ry="41.5" fill="none" stroke="#8a5a28" stroke-width="1.4" opacity=".25"/>
+          <!-- koppen sat ned igen, lidt forskudt — brudt aftryk -->
+          <ellipse cx="64" cy="57" rx="46" ry="43" fill="none" stroke="#7a4a1f" stroke-width="1.5" opacity=".18" stroke-dasharray="38 30 14 42 22 18"/>
+          <!-- små stænk -->
+          <circle cx="21" cy="99" r="2" fill="#7a4a1f" opacity=".26"/>
+          <circle cx="104" cy="84" r="1.4" fill="#7a4a1f" opacity=".24"/>
+          <circle cx="99" cy="24" r="1.7" fill="#7a4a1f" opacity=".18"/>
+        </g>
+      </svg>
+      <svg class="plet" viewBox="0 0 40 40">
+        <g filter="url(#pat-ru2)">
+          <circle cx="19" cy="20" r="9.5" fill="none" stroke="#7a4a1f" stroke-width="1.4" opacity=".34"/>
+          <circle cx="19" cy="20" r="8" fill="#8a5a28" opacity=".09"/>
+          <circle cx="31" cy="28" r="1.5" fill="#7a4a1f" opacity=".26"/>
+          <circle cx="8.5" cy="11" r="1" fill="#7a4a1f" opacity=".26"/>
+        </g>
+      </svg>
+      <svg class="oere" viewBox="0 0 60 60">
+        <defs>
+          <linearGradient id="pat-fold" x1="0.8" y1="0.8" x2="0.3" y2="0.3">
+            <stop offset="0" stop-color="#f8f3e3"/>
+            <stop offset=".5" stop-color="#ede5cc"/>
+            <stop offset="1" stop-color="#d8cdab"/>
+          </linearGradient>
+          <filter id="pat-blur"><feGaussianBlur stdDeviation="1.7"/></filter>
+        </defs>
+        <!-- det man ser bag det bortfoldede hjørne -->
+        <path d="M18 60 L60 60 L60 18 Z" fill="#00000030"/>
+        <!-- flappens slagskygge på siden -->
+        <path d="M16 60 L60 16 L58 40 L36 58 Z" fill="#00000028" filter="url(#pat-blur)"/>
+        <!-- flappen: hjørnet foldet om, bagsiden ses, let krøl mod spidsen -->
+        <path d="M18 60 L60 18 C45 21 34 24 25.5 25.5 C24 34 21 45 18 60 Z" fill="url(#pat-fold)" stroke="#00000022" stroke-width=".7"/>
+        <!-- folde-knækket -->
+        <path d="M18 60 L60 18" fill="none" stroke="#00000015" stroke-width="1.6"/>
+      </svg>
     </div>
     <!-- fotos klistret ind på siden (pr. fane, gemmes i bogIndstil.sideFotos) -->
     <div id="sideFotoLag" aria-hidden="true"></div>
