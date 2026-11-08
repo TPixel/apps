@@ -259,6 +259,8 @@ textarea{
   color:var(--blaek); font-family:'Caveat',cursive; font-size:24px; line-height:28px; caret-color:var(--orange);
 }
 textarea::placeholder{color:#b8b0a0}
+/* kladden: blank side til kradserier (vælges under System → "Bogen åbner på") */
+.kladde{min-height:420px;overflow:hidden}
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 14px}
 .chip{
   font-size:12px;font-weight:bold;color:#55503f;background:#00000008;border:1px solid #00000018;
@@ -653,6 +655,11 @@ body.pr-patina .patina{display:block}
         </div>
       </div>
 
+      <!-- ✏️ KLADDE: blank side til kradserier -->
+      <div class="sektion" id="s-kladde">
+        <textarea id="kladde" class="kladde" placeholder="en blank side — kradsérier bliver stående (kun på denne enhed)"></textarea>
+      </div>
+
       <div class="sektion" id="s-system">
         <h1 class="rubrik">System</h1>
         <div class="dato">indstillinger for bogen</div>
@@ -818,7 +825,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v34';
+const BOGVERSION='v35';
 
 /* ---------- adgangsnøgle: hele hoved-API'et er privat ----------
    Samme nøgle som adressebogen (localStorage kontaktNoegle) — én prompt pr. enhed.
@@ -849,11 +856,12 @@ if(!kontaktNoegle()) visLaas(false);
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#husmøde','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,tags:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,eventops:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17};
+const SIDETAL={skriv:1,tags:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,eventops:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17,kladde:18};
 
 /* ---------- personligt præg: gemmes pr. bruger/enhed i bogIndstil ---------- */
 const INDSTILLINGER=[
   {n:'solofane',lbl:'Kun den aktive fane på kanten',sub:'alle faner vises når bogen er lukket',std:true},
+  {n:'aabnside',lbl:'Bogen åbner på',sub:'siden du lander på når du slår bogen op',valg:[['sidst','Sidste side'],['blank','Kladden'],['skriv','Skriv']],std:'sidst'},
   {n:'materiale',lbl:'Omslagets materiale',sub:'slidt af brug — se også Redigér forside nederst',valg:[['laeder','Læder'],['pap','Pap']],std:'laeder'},
   {n:'papirtone',lbl:'Papirtone',sub:'farven på siderne',valg:[['hvid','Hvid'],['cremet','Cremet'],['gullig','Gullig']],std:'cremet'},
   {n:'linjetype',lbl:'Linjer på papiret',valg:[['linjeret','Linjeret'],['kvadreret','Kvadreret'],['blank','Blank']],std:'linjeret'},
@@ -900,6 +908,26 @@ function bullet(r){
 
 document.getElementById('dato').textContent=new Date().toLocaleDateString('da-DK',{weekday:'long',day:'numeric',month:'long'});
 
+/* skift til en side (sektion) — fælles for faner, under-faner og åbne-valget.
+   Husker siden som "sidste side" til System → "Bogen åbner på". */
+const FANE_FOR={tags:'skriv',faerdige:'system',eventops:'events',mcvaerk:'mc',mcnyt:'mc',kladde:'skriv'};
+function skiftSide(s){
+  if(!document.getElementById('s-'+s)) s='skriv';
+  document.querySelectorAll('.fane').forEach(x=>x.classList.remove('aktiv'));
+  document.querySelectorAll('.sektion').forEach(x=>x.classList.remove('aktiv'));
+  const f=document.querySelector('.fane[data-s="'+(FANE_FOR[s]||s)+'"]');
+  if(f) f.classList.add('aktiv');
+  document.getElementById('s-'+s).classList.add('aktiv');
+  document.getElementById('sidefod').textContent='— '+(SIDETAL[s]||'·')+' —';
+  document.getElementById('side').scrollTop=0;
+  try{localStorage.setItem('bogSidsteSide',s)}catch(e){}
+  gfanerSynlighed(); visSideFotos();
+  if(s==='gaver'||s==='mc') alleNoter=null; /* hent friske søge-resultater fra pipelinen */
+  if(s==='events'||s==='eventops') hentEvents();
+  else if(s==='tags') visTags();
+  else if(s==='kladde') kladdeHoejde();
+  else if(s!=='skriv') hentNoter();
+}
 /* forside: tryk for at åbne bogen (ikke på design-panel/pynt) */
 document.getElementById('forside').addEventListener('click',function(e){
   if(e.target.closest('.designpanel')||e.target.closest('.sticker')||e.target.closest('.fs-foto')) return;
@@ -908,6 +936,10 @@ document.getElementById('forside').addEventListener('click',function(e){
     this.classList.remove('redigerer'); return;
   }
   this.classList.add('aaben');
+  const start=indstilVal('aabnside');
+  if(start==='blank') skiftSide('kladde');
+  else if(start==='skriv') skiftSide('skriv');
+  else{ const s=localStorage.getItem('bogSidsteSide'); if(s) skiftSide(s); }
   gfanerSynlighed();
 });
 
@@ -1243,18 +1275,7 @@ document.getElementById('faner').addEventListener('click',e=>{
     forside.classList.remove('aaben'); gfanerSynlighed(); return;   // samme fane igen → luk bogen
   }
   forside.classList.add('aaben');                 // fane på lukket bog → åbn på den side
-  document.querySelectorAll('.fane').forEach(x=>x.classList.remove('aktiv'));
-  document.querySelectorAll('.sektion').forEach(x=>x.classList.remove('aktiv'));
-  f.classList.add('aktiv');
-  const s=f.dataset.s;
-  document.getElementById('s-'+s).classList.add('aktiv');
-  document.getElementById('sidefod').textContent='— '+SIDETAL[s]+' —';
-  document.getElementById('side').scrollTop=0;
-  gfanerSynlighed();
-  visSideFotos();
-  if(s==='gaver'||s==='mc') alleNoter=null; /* hent friske søge-resultater fra pipelinen */
-  if(s==='events') hentEvents();
-  else if(s!=='skriv') hentNoter();
+  skiftSide(f.dataset.s);
 });
 
 /* fold ud/ind ved klik på overskrift — eller fjern fra listen med ✓ */
@@ -1494,17 +1515,7 @@ function visGruppeFaner(){ gfanerSynlighed(); }
 document.getElementById('gfaner').addEventListener('click',e=>{
   const b=e.target.closest('.gfane'); if(!b) return;
   if(b.dataset.nyliste){ nyListe(b.dataset.nyliste); return; }
-  if(b.dataset.sek){ /* System-sidens under-faner: Indstillinger ↔ Færdig */
-    document.querySelectorAll('.sektion').forEach(x=>x.classList.remove('aktiv'));
-    document.getElementById('s-'+b.dataset.sek).classList.add('aktiv');
-    document.getElementById('sidefod').textContent='— '+SIDETAL[b.dataset.sek]+' —';
-    document.getElementById('side').scrollTop=0;
-    gfanerSynlighed(); visSideFotos();
-    if(b.dataset.sek==='events'||b.dataset.sek==='eventops') hentEvents();
-    else if(b.dataset.sek==='tags') visTags();
-    else if(b.dataset.sek!=='skriv') hentNoter();
-    return;
-  }
+  if(b.dataset.sek){ skiftSide(b.dataset.sek); return; } /* under-faner: System↔Færdig, Skriv↔Tags, Events↔Opsætning, MC … */
   if(b.dataset.l){
     if(b.dataset.t==='opgaver') aktivOpgListe=parseInt(b.dataset.l); else aktivHmListe=parseInt(b.dataset.l);
     gfanerSynlighed(); if(alleNoter) visLister(); return;
@@ -1909,6 +1920,12 @@ document.getElementById('evInput').addEventListener('keydown',async e=>{
   }catch(err){ alert('Kunne ikke gemme — prøv igen'); }
   inp.disabled=false; inp.focus();
 });
+
+/* ✏️ kladden: fri kradse-side, gemmes kun på enheden */
+const kladdeEl=document.getElementById('kladde');
+try{kladdeEl.value=localStorage.getItem('bogKladde')||''}catch(e){}
+function kladdeHoejde(){ kladdeEl.style.height='auto'; kladdeEl.style.height=Math.max(kladdeEl.scrollHeight,420)+'px'; }
+kladdeEl.addEventListener('input',()=>{ try{localStorage.setItem('bogKladde',kladdeEl.value)}catch(e){} kladdeHoejde(); });
 
 /* gem */
 const ta=document.getElementById('tekst'), gem=document.getElementById('gem'), kvit=document.getElementById('kvit');
