@@ -267,6 +267,10 @@ textarea::placeholder{color:#b8b0a0}
   border-radius:20px;padding:6px 11px;cursor:pointer;user-select:none
 }
 .chip.valgt{background:var(--orange);color:#fff;border-color:var(--orange)}
+/* Datoer-siden (under-fane til Skriv): logbog — dato i margenen, tekst på linjen */
+.dlog{display:flex;gap:12px;align-items:baseline;padding:7px 0 5px;border-bottom:1px dashed #00000014}
+.dlog .ddato{font-family:'Caveat',cursive;font-weight:700;font-size:21px;color:var(--orange);flex:0 0 72px;white-space:nowrap}
+.dlog .dtekst{font-size:15px;color:var(--blaek);overflow-wrap:anywhere}
 /* Tags-siden (under-fane til Skriv): egne tags + hvilke der vises som chips */
 .tagrk{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #00000018}
 .tagrk .tn{font-family:'Caveat',cursive;font-size:25px;line-height:1.05;color:#1d1d22;flex:1;cursor:pointer}
@@ -449,6 +453,7 @@ body.pr-patina .patina{display:block}
 <svg style="display:none" aria-hidden="true"><defs>
 <symbol id="ik-pen" viewBox="0 0 24 24"><path d="M5.2 18.9c.4-2 1.2-3.8 2.5-5.1l7.6-7.9c.9-.9 2.3-1 3.1-.1.9.8.8 2.2-.1 3.1l-7.8 7.7c-1.3 1.3-3.2 2-5.3 2.3z"/><path d="M13.9 7.3l2.9 2.9"/><path d="M4.6 21.6c2.6-.7 5.2-.7 7.8-.2"/></symbol>
 <symbol id="ik-ur" viewBox="0 0 24 24"><circle cx="12" cy="12.3" r="8.2"/><path d="M12 7.6v4.9l3.3 2"/></symbol>
+<symbol id="ik-kalender" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10.2h16M8.5 3.5v3.6M15.5 3.5v3.6"/><path d="M8 14h2.6M13.4 14H16M8 17h2.6"/></symbol>
 <symbol id="ik-bakke" viewBox="0 0 24 24"><path d="M4 13.2l2.6-6.4c.2-.5.7-.8 1.2-.8h8.4c.5 0 1 .3 1.2.8L20 13.2v4.9c0 .8-.6 1.4-1.4 1.4H5.4c-.8 0-1.4-.6-1.4-1.4z"/><path d="M4.3 13.2h4.9c.3 1.6 1.4 2.7 2.9 2.7s2.6-1.1 2.9-2.7h4.7"/></symbol>
 <symbol id="ik-pare" viewBox="0 0 24 24"><path d="M12 3.6c-3.3 0-5.9 2.5-5.9 5.6 0 2 1 3.5 2.2 4.6.7.7 1.1 1.3 1.2 2.3h5c.1-1 .5-1.6 1.2-2.3 1.2-1.1 2.2-2.6 2.2-4.6 0-3.1-2.6-5.6-5.9-5.6z"/><path d="M9.7 18.9h4.6"/><path d="M10.3 21.4h3.4"/></symbol>
 <symbol id="ik-kolbe" viewBox="0 0 24 24"><path d="M10 3.6h4.2"/><path d="M10.8 3.8v4.9l-5.1 9.2c-.6 1.2.2 2.6 1.5 2.6h9.6c1.3 0 2.1-1.4 1.5-2.6l-5.1-9.2V3.8"/><path d="M8.2 14.7h7.7"/></symbol>
@@ -524,6 +529,15 @@ body.pr-patina .patina{display:block}
         </div>
         <div class="noegle">tryk på et tag eller kontakten for at vise/skjule det på Skriv · ✕ sletter dine egne · gemmes på denne enhed</div>
         <div id="tagListe"></div>
+      </div>
+
+      <!-- 📅 DATOER (under-fane til Skriv): logbog over alt med #dato -->
+      <div class="sektion" id="s-datoer">
+        <h1 class="rubrik">Datoer</h1>
+        <div class="dato">logbog — nyeste øverst</div>
+        <div class="noegle">skriv #dato i et input, så lander det her — fx "KM-stand 69.598 #dato"</div>
+        <input id="datoSoeg" class="soeg" type="search" placeholder="Søg i loggen…">
+        <div id="l-datoer" class="hent">Henter…</div>
       </div>
 
       <!-- 🕐 SENESTE -->
@@ -825,7 +839,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v35';
+const BOGVERSION='v36';
 
 /* ---------- adgangsnøgle: hele hoved-API'et er privat ----------
    Samme nøgle som adressebogen (localStorage kontaktNoegle) — én prompt pr. enhed.
@@ -856,7 +870,7 @@ if(!kontaktNoegle()) visLaas(false);
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#husmøde','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,tags:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,eventops:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17,kladde:18};
+const SIDETAL={skriv:1,tags:1,datoer:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,eventops:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17,kladde:18};
 
 /* ---------- personligt præg: gemmes pr. bruger/enhed i bogIndstil ---------- */
 const INDSTILLINGER=[
@@ -910,7 +924,7 @@ document.getElementById('dato').textContent=new Date().toLocaleDateString('da-DK
 
 /* skift til en side (sektion) — fælles for faner, under-faner og åbne-valget.
    Husker siden som "sidste side" til System → "Bogen åbner på". */
-const FANE_FOR={tags:'skriv',faerdige:'system',eventops:'events',mcvaerk:'mc',mcnyt:'mc',kladde:'skriv'};
+const FANE_FOR={tags:'skriv',datoer:'skriv',faerdige:'system',eventops:'events',mcvaerk:'mc',mcnyt:'mc',kladde:'skriv'};
 function skiftSide(s){
   if(!document.getElementById('s-'+s)) s='skriv';
   document.querySelectorAll('.fane').forEach(x=>x.classList.remove('aktiv'));
@@ -1267,6 +1281,25 @@ document.getElementById('tagInput').addEventListener('keydown',e=>{
 visTags();
 
 /* faner */
+/* Datoer-siden: logbog over alt med #dato — ALLE statusser, loggen mister aldrig poster */
+const erDato=r=>/#dato\b/i.test((r.tags||'')+' '+(r.tekst||''));
+let datoSoeg='';
+function visDatoer(){
+  const el=document.getElementById('l-datoer');
+  let rows=(alleNoter||[]).filter(erDato);
+  if(datoSoeg) rows=rows.filter(r=>(r.tekst||'').toLowerCase().includes(datoSoeg));
+  const opr=r=>{const d=new Date(String(r.oprettet||'').replace(' ','T')+'Z');return isNaN(d)?0:d.getTime()};
+  rows.sort((a,b)=>opr(b)-opr(a));
+  el.innerHTML=rows.map(r=>{
+    const t=opr(r); let ds='·';
+    if(t){ const d=new Date(t); ds=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getFullYear()).slice(2); }
+    const tekst=esc((r.tekst||'').replace(/#dato\b/ig,'').replace(/\s{2,}/g,' ').trim());
+    return '<div class="dlog"><span class="ddato">'+ds+'</span><span class="dtekst">'+tekst+'</span></div>';
+  }).join('')||(datoSoeg?'<div class="tom besked">Ingen træffere</div>':'<div class="tom">Ingen datoer i loggen endnu — skriv #dato i et input</div>');
+}
+document.getElementById('datoSoeg').addEventListener('input',function(){
+  datoSoeg=this.value.trim().toLowerCase(); visDatoer();
+});
 let alleNoter=null;
 document.getElementById('faner').addEventListener('click',e=>{
   const f=e.target.closest('.fane'); if(!f) return;
@@ -1351,7 +1384,7 @@ async function hentNoter(){
     const rs=await fetch(API+'/api/hoved?status=alle&limit=200');
     const d=await rs.json(); alleNoter=Array.isArray(d)?d:(d.rows||[]);
     visLister();
-  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige','l-links','l-holdmeat','l-opgaver','l-gaver','l-mcvaerk','l-mcnyt'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
+  }catch(e){ ['l-aabne','l-rapporter','l-projekter','l-faerdige','l-links','l-holdmeat','l-opgaver','l-gaver','l-mcvaerk','l-mcnyt','l-datoer'].forEach(id=>document.getElementById(id).textContent='Kunne ikke hente (offline?)'); }
 }
 function visLister(){
   const alle=alleNoter.filter(r=>r.status!=='arkiv');
@@ -1359,6 +1392,7 @@ function visLister(){
   const ikkeK=alle.filter(r=>!erKontakt(r));
   const n=ikkeK.filter(r=>!erLink(r)&&!erHoldMeat(r)&&!erOpgave(r)&&!erSaer(r));
   visAdresser(kontakter);
+  visDatoer();
   fyld('l-links', ikkeK.filter(r=>erLink(r)&&!erHoldMeat(r)&&!erOpgave(r)&&r.status!=='udfoert'), 'Ingen links endnu — del fra Safari med Hoved-genvejen');
   visHoldMeatListe(ikkeK);
   visOpgaver();
@@ -1419,7 +1453,10 @@ function skrivFanerHtml(aktId){
     +'><span class="em">'+ikon('pen')+'</span>Skriv</button>'
     +'<button class="gfane'+(aktId==='s-tags'?' valgt':'')+'" data-sek="tags"'
     +(aktId==='s-tags'?'':' style="background:'+GRUPPE_FARVER[4]+'"')
-    +'><span class="em" style="font-family:\'Caveat\',cursive;font-size:17px;line-height:1">#</span>Tags</button>';
+    +'><span class="em" style="font-family:\'Caveat\',cursive;font-size:17px;line-height:1">#</span>Tags</button>'
+    +'<button class="gfane'+(aktId==='s-datoer'?' valgt':'')+'" data-sek="datoer"'
+    +(aktId==='s-datoer'?'':' style="background:'+GRUPPE_FARVER[3]+'"')
+    +'><span class="em">'+ikon('kalender')+'</span>Datoer</button>';
 }
 /* under-faner på System: Indstillinger + Færdig (Færdig bor ikke længere på bogkanten) */
 function systemFanerHtml(aktId){
@@ -1455,7 +1492,7 @@ function gfanerSynlighed(){
   const akt=document.querySelector('.sektion.aktiv');
   let html='';
   if(akt){
-    if(akt.id==='s-skriv'||akt.id==='s-tags') html=skrivFanerHtml(akt.id);
+    if(akt.id==='s-skriv'||akt.id==='s-tags'||akt.id==='s-datoer') html=skrivFanerHtml(akt.id);
     else if(akt.id==='s-adresser') html=gruppeFanerHtml();
     else if(akt.id==='s-opgaver') html=listeFanerHtml('opgaver');
     else if(akt.id==='s-holdmeat') html=listeFanerHtml('husmoede');
