@@ -100,6 +100,7 @@ input[type=file]{display:none}
 .field input,.field select{width:100%;padding:12px;border-radius:10px;border:none;background:#0C0C12;color:#fff;font-size:16px;font-family:inherit;font-weight:bold}
 .thumb{width:100%;max-height:180px;object-fit:cover;border-radius:12px;margin-bottom:12px;background:#0C0C12}
 .qrline{font-size:12px;color:#666;margin-bottom:12px;word-break:break-all}
+.zwbadge{display:inline-flex;align-items:center;gap:6px;background:#2a1216;color:#ff8a8a;border:1px solid #5a2a30;border-radius:8px;padding:4px 10px;font-size:13px;font-weight:bold;word-break:normal}
 .row{display:flex;gap:10px}.row>*{flex:1}
 .sheet .btn{width:100%;margin-top:6px}
 .ghost{background:transparent;color:#888;padding:14px;font-size:15px}
@@ -230,6 +231,24 @@ var HYLDER=[
 var emojiOf={},monthsOf={};
 TYPES.forEach(function(t){emojiOf[t[0]]=t[1];monthsOf[t[0]]=t[2];});
 var filterType='',pendingFoto='',pendingQr='',pendingThumb='',takeQr='',pendingSaveAfterQr=false;
+// Genkend QR-typen: Ditzel-sticker, ZWILLING Fresh & Save-pose/boks, andet link, eller rent ID.
+// Zwilling-koder er URLs med unikt ID pr. pose — selve URL-strengen bruges som nøgle (stabil pr. pose).
+function qrInfo(qr){
+  if(!qr)return null;var s=(''+qr).trim();
+  if(/^https?:\/\//i.test(s)&&/zwilling/i.test(s)){
+    var id=s.replace(/[?#].*$/,'').replace(/\/+$/,'');id=id.slice(id.lastIndexOf('/')+1);
+    return{kind:'zwilling',label:'ZWILLING-pose/boks',short:id?id.slice(-8):''};
+  }
+  if(/^https?:\/\//i.test(s))return{kind:'url',label:'QR-link',short:''};
+  return{kind:'id',label:'QR',short:s};
+}
+function visQr(qr){
+  var el=document.getElementById('addQr');
+  if(!qr){el.innerHTML='';return;}
+  var inf=qrInfo(qr);
+  if(inf.kind==='zwilling'){el.innerHTML='<span class="zwbadge">🅩 '+inf.label+(inf.short?' · …'+esc(inf.short):'')+'</span>';}
+  else{el.textContent='QR: '+qr;}
+}
 function kortHylde(h){return h?('📍 '+h.replace('Fryser ','F').replace(' · ',' ').replace('Skuffe ','Sk').replace('Hylde ','Hy')):'';}
 function fyldHylder(sel,foerste){sel.innerHTML='<option value="">'+foerste+'</option>';HYLDER.forEach(function(g){var og=document.createElement('optgroup');og.label=g[0];g[1].forEach(function(it){var o=document.createElement('option');o.value=g[0]+' · '+it;o.textContent=g[0]+' · '+it;og.appendChild(o);});sel.appendChild(og);});}
 
@@ -291,7 +310,7 @@ function render(items){
     var el=document.createElement('div');el.className='card '+cardc;
     el.innerHTML=(i.thumb?'<img class="thumb-mini" src="data:image/jpeg;base64,'+i.thumb+'" alt="">':'<div class="emoji">'+(emojiOf[i.type]||'📦')+'</div>')+
       '<div class="info"><div class="navn">'+esc(i.navn||'(uden navn)')+'</div>'+
-      '<div class="sub"><span class="badge">'+esc(i.type||'?')+'</span>'+(i.vaegt?esc(i.vaegt)+' · ':'')+(i.udloeb?'bedst før '+fmtDK(i.udloeb):'ingen dato')+'</div>'+(i.hylde?'<div class="place '+(i.hylde.indexOf('Fryser 1')===0?'f1':'f2')+'">📍 '+esc(i.hylde)+'</div>':'<div class="place none">📍 ingen plads</div>')+'</div>'+
+      '<div class="sub"><span class="badge">'+esc(i.type||'?')+'</span>'+((qrInfo(i.qr)||{}).kind==='zwilling'?'<span class="badge" style="background:#2a1216;color:#ff8a8a">🅩</span>':'')+(i.vaegt?esc(i.vaegt)+' · ':'')+(i.udloeb?'bedst før '+fmtDK(i.udloeb):'ingen dato')+'</div>'+(i.hylde?'<div class="place '+(i.hylde.indexOf('Fryser 1')===0?'f1':'f2')+'">📍 '+esc(i.hylde)+'</div>':'<div class="place none">📍 ingen plads</div>')+'</div>'+
       '<div class="days '+cls+'">'+lbl+'</div>';
     el.onclick=function(){lookup(i.qr);};
     l.appendChild(el);
@@ -355,8 +374,8 @@ function onAddPhoto(input){
     document.getElementById('addThumb').src=r.dataUrl;
     openAdd();
     var s=document.getElementById('addStatus');
-    if(!pendingQr){document.getElementById('addQr').textContent='';setTimeout(scanAddQr,300);}
-    else{document.getElementById('addQr').textContent='QR: '+pendingQr;}
+    if(!pendingQr){visQr('');setTimeout(scanAddQr,300);}
+    else{visQr(pendingQr);}
     // AI-aflæsning
     s.innerHTML='<span class="spin"></span>Aflæser label…';
     fetch(API+'/api/fryser/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({foto:pendingFoto})})
@@ -374,7 +393,7 @@ function onAddPhoto(input){
 function onQrClose(input){
   if(!input.files[0])return;var file=input.files[0];input.value='';
   processFile(file).then(function(r){
-    if(r.qr){pendingQr=r.qr;document.getElementById('addQr').textContent='QR: '+pendingQr;document.getElementById('addStatus').textContent='';
+    if(r.qr){pendingQr=r.qr;visQr(pendingQr);document.getElementById('addStatus').textContent='';
       if(pendingSaveAfterQr){pendingSaveAfterQr=false;saveAdd();}}
     else{document.getElementById('addStatus').textContent='Kunne stadig ikke læse QR — prøv igen (hold roligt, fyld hele billedet med QR-koden)';}
   });
@@ -382,9 +401,9 @@ function onQrClose(input){
 // Live-scan QR til tilføj-flowet; fald tilbage til foto hvis kamera nægtes
 function scanAddQr(){
   openScanner(function(qr){
-    pendingQr=qr;document.getElementById('addQr').textContent='QR: '+qr;document.getElementById('addStatus').textContent='';
+    pendingQr=qr;visQr(qr);document.getElementById('addStatus').textContent='';
     if(pendingSaveAfterQr){pendingSaveAfterQr=false;saveAdd();}
-  }, 'Scan QR-koden på labelen', function(){document.getElementById('qrCam').click();});
+  }, 'Scan label eller Zwilling-posens QR-kode', function(){document.getElementById('qrCam').click();});
 }
 function openAdd(){
   document.getElementById('fInd').value=todayISO();
@@ -396,7 +415,7 @@ function recalcUdloeb(){
 }
 document.getElementById('fInd').addEventListener('change',recalcUdloeb);
 function closeAdd(){document.getElementById('addOv').classList.remove('show');clearAdd();}
-function clearAdd(){pendingFoto='';pendingQr='';pendingThumb='';pendingSaveAfterQr=false;['fNavn','fVaegt','fNote'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('fHylde').value='';document.getElementById('addQr').textContent='';document.getElementById('addStatus').textContent='';}
+function clearAdd(){pendingFoto='';pendingQr='';pendingThumb='';pendingSaveAfterQr=false;['fNavn','fVaegt','fNote'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('fHylde').value='';visQr('');document.getElementById('addStatus').textContent='';}
 function saveAdd(){
   if(!pendingQr){document.getElementById('addStatus').textContent='📷 Scan QR-koden, så gemmes der automatisk';pendingSaveAfterQr=true;scanAddQr();return;}
   var body={qr:pendingQr,navn:document.getElementById('fNavn').value.trim(),type:document.getElementById('fType').value,
@@ -495,7 +514,7 @@ function closeScanner(){
 
 // --- Tag ud-flow (live scan QR) ---
 function startTake(){
-  openScanner(function(qr){lookup(qr);}, 'Scan QR-koden på pakken du tager ud',
+  openScanner(function(qr){lookup(qr);}, 'Scan pakkens QR — label eller Zwilling-pose',
     function(){document.getElementById('takeCam').click();}); // fallback: foto hvis kamera nægtes
 }
 // NFC: tagget åbner appen med ?take -> vis stor "klar til at tage ud"-skærm.
@@ -543,7 +562,8 @@ function openDetail(i){
   takeQr=i.qr;
   var d=daysUntil(i.udloeb),dtxt=i.udloeb?('bedst før '+fmtDK(i.udloeb)+(d!==null?(d<0?' (udløbet)':' ('+d+' dage)'):'')):'ingen dato';
   document.getElementById('takeNavn').textContent=(emojiOf[i.type]||'📦')+' '+(i.navn||'(uden navn)');
-  document.getElementById('takeMeta').textContent=(i.type||'')+(i.vaegt?' · '+i.vaegt:'')+' · '+dtxt+(i.indfrossen?' · indfrosset '+fmtDK(i.indfrossen):'');
+  var inf=qrInfo(i.qr);
+  document.getElementById('takeMeta').textContent=(i.type||'')+(i.vaegt?' · '+i.vaegt:'')+' · '+dtxt+(i.indfrossen?' · indfrosset '+fmtDK(i.indfrossen):'')+(inf&&inf.kind==='zwilling'?' · 🅩 Zwilling':'');
   var noteEl=document.getElementById('takeNote');
   if(i.note){noteEl.textContent=i.note;noteEl.style.display='';}else{noteEl.style.display='none';}
   document.getElementById('takeHylde').value=i.hylde||'';
