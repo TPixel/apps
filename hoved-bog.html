@@ -84,6 +84,13 @@ body{
 }
 .fane .em{font-size:12px}
 .fane.aktiv{transform:translateX(5px) rotate(var(--rot,0deg)); filter:none}
+/* auto-routing fra Skriv: fanen noten landede på blinker kort (også når kanten kun viser den aktive fane) */
+@keyframes fane-lander{
+  0%,100%{transform:rotate(var(--rot,0deg))}
+  12%,50%{transform:translateX(10px) rotate(var(--rot,0deg));box-shadow:0 0 0 3px var(--orange),0 0 18px #e8820aaa,2px 3px 8px #00000030}
+  30%,70%{transform:translateX(4px) rotate(var(--rot,0deg))}
+}
+.faner .fane.lander{animation:fane-lander 1.7s ease;filter:none !important;visibility:visible !important;pointer-events:auto;z-index:6}
 .fane:nth-child(1){--rot:-2deg;  font-size:11px}
 .fane:nth-child(2){--rot:1.6deg; font-size:9.5px}
 .fane:nth-child(3){--rot:-1deg;  font-size:10.5px}
@@ -512,6 +519,7 @@ body.pr-patina .patina{display:block}
         <div class="dato" id="dato"></div>
         <textarea id="tekst" placeholder="Skriv eller indtal en tanke…" rows="4"></textarea>
         <div class="chips" id="chips"></div>
+        <div class="noegle" style="margin:-6px 0 12px">noten lander selv på den rigtige fane · tving med fx #mc, #idé, #gave, #opgave, #kontakt eller #link forrest</div>
         <div class="knapper">
           <button class="gem" id="gem">Gem i hovedet</button>
           <button class="mik" id="mik" title="Indtal"><svg class="ik"><use href="#ik-mik"/></svg></button>
@@ -618,6 +626,9 @@ body.pr-patina .patina{display:block}
         <h1 class="rubrik">Events</h1>
         <div class="dato">på plakaten — det agenten har fundet til dig</div>
         <div id="l-events" class="hent">Henter…</div>
+        <!-- egne event-noter fra Skriv (auto-routing / #event) -->
+        <div class="grupperubrik" id="evNoterRubrik" style="display:none"><svg class="ik"><use href="#ik-billet"/></svg> Mine noter</div>
+        <div id="l-evnoter"></div>
       </div>
       <div class="sektion" id="s-eventops">
         <h1 class="rubrik">Opsætning</h1>
@@ -839,7 +850,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v36';
+const BOGVERSION='v37';
 
 /* ---------- adgangsnøgle: hele hoved-API'et er privat ----------
    Samme nøgle som adressebogen (localStorage kontaktNoegle) — én prompt pr. enhed.
@@ -900,15 +911,20 @@ function anvendPraeg(){
   document.body.classList.toggle('pr-udenhjaelp',!indstilVal('hjaelp'));
 }
 anvendPraeg();
-const erLink=r=>/https?:\/\/\S+/i.test(r.tekst||'');
+/* #link sættes af auto-routingen når der står en side/et domæne uden http:// */
+const erLink=r=>/https?:\/\/\S+/i.test(r.tekst||'')||/#link\b/i.test((r.tags||'')+' '+(r.tekst||''));
 const erHoldMeat=r=>/#(holdmeat|husm[øo]de)/i.test((r.tags||'')+' '+(r.tekst||''));
 const erOpgave=r=>/#opgave\b/i.test((r.tags||'')+' '+(r.tekst||''))||(!!r.bogliste&&!erHoldMeat(r));
 
-const erIde=r=>r.kategori==='Idé'||/idé/i.test(r.handling||'')||/#id[eé]\b/i.test(r.tags||'');
+const erIde=r=>r.kategori==='Idé'||/idé/i.test(r.handling||'')||/#id[eé](?![\p{L}\p{N}])/iu.test((r.tags||'')+' '+(r.tekst||''));
 const erGave=r=>/#gave2026\b/i.test((r.tags||'')+' '+(r.tekst||''));
 const erMcLog=r=>/#mclog\b/i.test((r.tags||'')+' '+(r.tekst||''));
 const erMcNyt=r=>/#mcnyt\b/i.test((r.tags||'')+' '+(r.tekst||''));
-const erSaer=r=>erGave(r)||erMcLog(r)||erMcNyt(r); /* egne sider — holdes ude af de alm. lister */
+const erEvent=r=>/#event\b/i.test((r.tags||'')+' '+(r.tekst||''));
+const erSaer=r=>erGave(r)||erMcLog(r)||erMcNyt(r)||erEvent(r); /* egne sider — holdes ude af de alm. lister */
+/* Projekt/Rapport: pipelinens felter + routing-tags (#projekt / #slåop) så noten lander på fanen med det samme */
+const erProjekt=r=>r.funktion==='projekt'||r.kode===1||/#projekt\b/i.test((r.tags||'')+' '+(r.tekst||''));
+const erRapport=r=>!!r.rapport||(r.status!=='udfoert'&&/#sl[åa]a?op(?![\p{L}\p{N}])/iu.test((r.tags||'')+' '+(r.tekst||'')));
 const erKontakt=r=>/kontakt/i.test((r.tags||'')+' '+(r.kategori||''));
 const kontaktNavn=r=>(r.tekst.replace(/#\S+/g,'').trim().split(/[,·|]/)[0].trim()||'?');
 /* bullet journal-symboler */
@@ -937,8 +953,8 @@ function skiftSide(s){
   try{localStorage.setItem('bogSidsteSide',s)}catch(e){}
   gfanerSynlighed(); visSideFotos();
   if(s==='gaver'||s==='mc') alleNoter=null; /* hent friske søge-resultater fra pipelinen */
-  if(s==='events'||s==='eventops') hentEvents();
-  else if(s==='tags') visTags();
+  if(s==='events'||s==='eventops') hentEvents(); /* plakaten — egne event-noter kommer via hentNoter nedenfor */
+  if(s==='tags') visTags();
   else if(s==='kladde') kladdeHoejde();
   else if(s!=='skriv') hentNoter();
 }
@@ -1406,8 +1422,9 @@ function visLister(){
   }), 'Intet forfalder');
   fyld('l-aabne',   n.filter(r=>r.status==='aaben'), 'Tomt — flot!');
   fyld('l-ideer',   n.filter(erIde), 'Ingen idéer — endnu');
-  fyld('l-rapporter',n.filter(r=>r.rapport), 'Ingen rapporter endnu');
-  fyld('l-projekter',n.filter(r=>r.funktion==='projekt'||r.kode===1), 'Ingen projekt-noter');
+  fyld('l-rapporter',n.filter(erRapport), 'Ingen rapporter endnu');
+  fyld('l-projekter',n.filter(erProjekt), 'Ingen projekt-noter');
+  visEvNoter(ikkeK);
   fyld('l-faerdige', n.filter(r=>r.status==='udfoert').slice(0,30), 'Intet udført endnu');
   // fane-tæller på Åbne + Hold Meat
   const aabne=n.filter(r=>r.status==='aaben').length;
@@ -1937,6 +1954,12 @@ function visEvents(){
   }
   le.innerHTML=h;
 }
+/* egne event-noter (#event, sat af auto-routingen fra Skriv) under plakaten */
+function visEvNoter(ikkeK){
+  const rows=(ikkeK||[]).filter(r=>erEvent(r)&&r.status!=='udfoert'); rows.sort((a,b)=>b.id-a.id);
+  document.getElementById('evNoterRubrik').style.display=rows.length?'':'none';
+  document.getElementById('l-evnoter').innerHTML=rows.map(r=>noteHtml(r)).join('');
+}
 document.getElementById('l-foelger').addEventListener('click',async e=>{
   const x=e.target.closest('.evfjern'); if(!x) return;
   e.stopPropagation();
@@ -1964,19 +1987,125 @@ try{kladdeEl.value=localStorage.getItem('bogKladde')||''}catch(e){}
 function kladdeHoejde(){ kladdeEl.style.height='auto'; kladdeEl.style.height=Math.max(kladdeEl.scrollHeight,420)+'px'; }
 kladdeEl.addEventListener('input',()=>{ try{localStorage.setItem('bogKladde',kladdeEl.value)}catch(e){} kladdeHoejde(); });
 
+/* ---------- auto-routing: tekst fra Skriv → den fane noten hører til ----------
+   routeInput(text) er ren (ingen DOM) og returnerer fanens id (data-s på kanten).
+   Rækkefølgen af RUTE_REGLER er prioriteten: første træffer vinder, ellers 'aabne' (indbakken).
+   Et #tag forrest (eller hvor som helst i teksten) der står i RUTE_ALIAS tvinger fanen: "#mc vinterdæk". */
+const RUTE_FANER={mc:'MC',opgaver:'Opgaver',rapporter:'Rapport',ideer:'Idé',gaver:'Gaver',events:'Events',
+  adresser:'Adresse',links:'Link',projekter:'Projekt',aabne:'Åbne',holdmeat:'Hold Meat'};
+/* tagget der får fanens filter til at fange noten */
+const RUTE_TAG={mc:'#mcnyt',opgaver:'#opgave',rapporter:'#slåop',ideer:'#idé',gaver:'#gave2026',events:'#event',
+  adresser:'#kontakt',links:'#link',projekter:'#projekt',aabne:'',holdmeat:'#husmøde'};
+const RUTE_ALIAS={
+  mc:'mc',motorcykel:'mc',mcnyt:'mc',mclog:'mc',værksted:'mc',vaerksted:'mc',
+  opgaver:'opgaver',opgave:'opgaver',opg:'opgaver',todo:'opgaver',
+  rapporter:'rapporter',rapport:'rapporter',research:'rapporter',undersøg:'rapporter',slåop:'rapporter',slaaop:'rapporter',
+  ideer:'ideer',idéer:'ideer',ide:'ideer',idé:'ideer',
+  gaver:'gaver',gave:'gaver',gave2026:'gaver',
+  events:'events',event:'events',
+  adresser:'adresser',adresse:'adresser',kontakt:'adresser',
+  links:'links',link:'links',
+  projekter:'projekter',projekt:'projekter',
+  aabne:'aabne',åbne:'aabne',åben:'aabne',indbakke:'aabne',
+  husmøde:'holdmeat',husmoede:'holdmeat',holdmeat:'holdmeat'};
+/* aliasser der peger på en under-side og derfor skal have sit eget tag */
+const RUTE_UNDERTAG={mclog:'#mclog',værksted:'#mclog',vaerksted:'#mclog'};
+const RUTE_OVERRIDE_RE=new RegExp('(?:^|\\s)#('+Object.keys(RUTE_ALIAS).join('|')+')(?=\\s|$)','iu');
+/* ordgrænser der også virker med æøå (\b kender kun ASCII) */
+const B1='(?<![\\p{L}\\p{N}])', B2='(?![\\p{L}\\p{N}])';
+const ord=(...alt)=>new RegExp(B1+'(?:'+alt.join('|')+')'+B2,'iu');
+const RE_URL=/https?:\/\/|www\./i;
+const RE_DOMAENE=new RegExp(B1+'[\\p{L}\\p{N}-]{2,}\\.(?:dk|com|net|org|io|app|se|no|de|eu|co\\.uk)'+B2,'iu');
+const RE_TLF=/(?<!\d)(?:\+45\s?)?(?:\d{2}[ .]?){3}\d{2}(?!\d)/;
+const RE_MAIL=/[^\s@]+@[^\s@]+\.[\p{L}]{2,}/u;
+const RE_KONTAKTORD=ord('telefon(?:nummer|nr)?','tlf','nummer','nr','e-?mail','adresse(?:n|r)?','kontakt(?:en)?');
+const RE_NAVN=/(?<![\p{L}\p{N}#@])\p{Lu}\p{Ll}{2,}/gu;   /* et stort begyndelsesbogstav = et navn */
+const RUTE_REGLER=[
+  ['mc',t=>ord('t ?700','motorcykel(?:en|er|erne)?','mc','(?:vinter|sommer|regn)?dæk(?:ket|kene|s)?','kæde(?:n|r)?',
+      'olie(?:n|skift)?','hjelm(?:en|e)?','tur(?:en|e)?','rute(?:n|r)?').test(t)],
+  ['opgaver',t=>ord('køb(?:e|er)?','ring(?:e)?','husk(?:e)?','bestil(?:le|ler)?','betal(?:e|er)?','send(?:e|er)?',
+      'hent(?:e|er)?','aflever(?:e|er)?','book(?:e|er)?').test(t)],
+  ['rapporter',t=>ord('undersøg(?:e|er)?','research','find ud af','sammenlign(?:e|er)?','hvad er','hvordan','slå op').test(t)],
+  ['ideer',t=>ord('id[ée](?:er|en|erne)?','hvad hvis','koncept(?:et|er)?','man kunne','tænk hvis').test(t)],
+  ['gaver',t=>ord('\\p{L}*gave(?:n|r|rne)?','fødselsdag(?:en|e)?','jul(?:en)?','present(?:er)?','ønske(?:r|t|n|liste)?').test(t)],
+  ['events',t=>ord('koncert(?:en|er)?','festival(?:en|er)?','teater(?:et)?','teatret','udstilling(?:en|er)?','event(?:et|s)?',
+      'billet(?:ten|ter)?','show(?:et|s)?').test(t)],
+  ['adresser',t=>{
+      if(RE_TLF.test(t)||RE_MAIL.test(t)) return true;         /* et nummer eller en mail er kontakt i sig selv */
+      if(!RE_KONTAKTORD.test(t)) return false;
+      return [...t.matchAll(RE_NAVN)].some(m=>!RE_KONTAKTORD.test(m[0]));  /* kontakt-ord + et navn */
+    }],
+  ['links',t=>RE_URL.test(t)||RE_DOMAENE.test(t)||ord('website','hjemmeside','webside','side','url').test(t)],
+  ['projekter',t=>ord('projekt(?:et|er|erne)?','deadline(?:n|s)?','milepæl(?:e|en|ene)?','sprint(?:en|s)?','leverance(?:n|r|rne)?').test(t)],
+];
+function routeInput(text){
+  const t=String(text||'');
+  const o=t.match(RUTE_OVERRIDE_RE);
+  if(o) return RUTE_ALIAS[o[1].toLowerCase()];
+  for(const [fane,test] of RUTE_REGLER) if(test(t)) return fane;
+  return 'aabne';
+}
+/* ---------- /auto-routing (ren del) ---------- */
+
+/* rute + det der skal gemmes: fjerner tving-tagget fra teksten og finder opgavelisten */
+function ruteTekst(raa){
+  let fane=routeInput(raa), tekst=raa, tag=RUTE_TAG[fane]||'', note='', liste=null;
+  const o=raa.match(RUTE_OVERRIDE_RE);
+  if(o){
+    tekst=(raa.slice(0,o.index)+' '+raa.slice(o.index+o[0].length)).replace(/\s{2,}/g,' ').trim();
+    const al=o[1].toLowerCase(); if(RUTE_UNDERTAG[al]) tag=RUTE_UNDERTAG[al];
+  }
+  if(fane==='opgaver'){
+    liste=aktivOpgListe!==null?aktivOpgListe:(opgLister[0]?opgLister[0].id:null);
+    const l=opgLister.find(x=>x.id===liste);
+    if(liste===null){ fane='aabne'; tag=''; note='ingen opgaveliste endnu — gemt i Åbne'; }
+    else if(l) note=l.navn;
+  }
+  else if(fane==='mc') note=tag==='#mclog'?'Værksted':'NYT til cyklen';
+  return {fane,tekst,tag,note,liste,override:!!o};
+}
+const harTag=(tekst,tag)=>tag&&new RegExp('(^|\\s)'+tag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=\\s|$)','iu').test(tekst);
+/* gem noten der hvor ruten peger. Egne sider (MC, Gaver, Opgaver) gemmes uden om sorteringen,
+   præcis som skrivelinjerne på de sider gør — resten går gennem hoved-pipelinen som før. */
+async function gemRutet(r){
+  let tekst=r.tekst; if(r.tag&&!harTag(tekst,r.tag)) tekst+=' '+r.tag;
+  const direkte=r.fane==='mc'||r.fane==='gaver'||r.fane==='opgaver';
+  const body={tekst:tekst.trim(),kilde:'bog'}; if(direkte) body.sorter=false;
+  const rs=await fetch(API+'/api/hoved',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d=await rs.json(); const e=d.entry||{}; const id=d.id||e.id;
+  if(direkte&&id){
+    const ret={behandlet:1,titel:r.tekst.slice(0,60),resultat:r.fane==='opgaver'?'punkt på listen':''};
+    if(r.fane==='opgaver') ret.bogliste=String(r.liste);
+    await fetch(API+'/api/hoved/'+id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(ret)});
+  }
+  return Object.assign({id},e);
+}
+/* feedback: fanen på kanten blinker og skubber sig ud */
+function fanerBlink(fane){
+  const f=document.querySelector('.fane[data-s="'+fane+'"]'); if(!f) return;
+  f.classList.remove('lander'); void f.offsetWidth;
+  f.classList.add('lander');
+  f.addEventListener('animationend',()=>f.classList.remove('lander'),{once:true});
+}
+const faneIkon=fane=>{const f=document.querySelector('.fane[data-s="'+fane+'"] .em');return f?f.innerHTML:ikon('naal')};
+
 /* gem */
 const ta=document.getElementById('tekst'), gem=document.getElementById('gem'), kvit=document.getElementById('kvit');
 gem.onclick=async()=>{
   const tags=[...document.querySelectorAll('.chip.valgt')].map(c=>c.textContent).join(' ');
-  const tekst=(ta.value.trim()+' '+tags).trim();
-  if(!tekst) return;
+  const raa=(ta.value.trim()+' '+tags).trim();
+  if(!raa) return;
+  const rute=ruteTekst(raa);
+  if(!rute.tekst){ kvit.style.display='block'; kvit.innerHTML=ikon('advarsel')+' Skriv noget efter '+esc(raa.split(/\s+/)[0]); setTimeout(()=>kvit.style.display='none',4000); return; }
   gem.disabled=true; gem.textContent='Gemmer…';
   try{
-    const rs=await fetch(API+'/api/hoved',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tekst,kilde:'bog'})});
-    const d=await rs.json(); const e=d.entry||{};
+    const e=await gemRutet(rute);
     kvit.style.display='block';
-    kvit.innerHTML=ikon('ok')+' Gemt som <b>#'+e.id+'</b> · '+ikon(FUNK[e.funktion]||'naal')+' '+esc(e.funktion||'sorteres')+
-      (e.liste?' → '+esc(e.liste):'')+(e.projekt?' · '+esc(e.projekt):'');
+    kvit.innerHTML=ikon('ok')+' Gemt som <b>#'+esc(String(e.id||'?'))+'</b> → '+faneIkon(rute.fane)+' <b>'+esc(RUTE_FANER[rute.fane]||rute.fane)+'</b>'
+      +(rute.note?' · '+esc(rute.note):'')+(rute.override?' · tvunget':'')
+      +(e.funktion?' · '+ikon(FUNK[e.funktion]||'naal')+' '+esc(e.funktion):'')
+      +(e.liste?' → '+esc(e.liste):'')+(e.projekt?' · '+esc(e.projekt):'');
+    fanerBlink(rute.fane);
     ta.value=''; document.querySelectorAll('.chip.valgt').forEach(c=>c.classList.remove('valgt'));
     alleNoter=null; // genindlæs næste gang
     setTimeout(()=>kvit.style.display='none',6000);
