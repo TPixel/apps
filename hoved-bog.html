@@ -104,7 +104,8 @@ body{
 .fane:nth-child(11){--rot:-1.2deg;font-size:10px}
 .fane:nth-child(12){--rot:1.3deg;font-size:10px}
 .fane:nth-child(13){--rot:-1.7deg;font-size:9.5px}
-.fane:nth-child(14){--rot:1.3deg;font-size:9px}
+.fane:nth-child(14){--rot:1.3deg;font-size:9.5px}
+.fane:nth-child(15){--rot:-1.4deg;font-size:9px}
 .fane:nth-child(1){background:#E8820A}
 .fane:nth-child(2){background:#f2a2a2}
 .fane:nth-child(3){background:#f4c04e}
@@ -118,7 +119,8 @@ body{
 .fane:nth-child(11){background:#f5a97f}
 .fane:nth-child(12){background:#e07a7a}
 .fane:nth-child(13){background:#9fb4c7}
-.fane:nth-child(14){background:#c4c4c4}
+.fane:nth-child(14){background:#a8d8a0}
+.fane:nth-child(15){background:#c4c4c4}
 
 /* ---------- FORSIDE ---------- */
 .forside{
@@ -453,6 +455,38 @@ body.pr-patina .patina{display:block}
 .patina .plet{position:absolute;top:23%;right:29%;width:30px;mix-blend-mode:multiply;opacity:.75;transform:rotate(14deg)}
 .patina .oere{position:absolute;right:-1px;bottom:-1px;width:54px;height:54px}
 
+/* ---------- 📈 TRACKING: vaner & observationer ---------- */
+.trk{display:flex;align-items:center;gap:10px;padding:4px 0;min-height:32px;border-bottom:1px dashed #00000014}
+.trk .tn{font-family:'Caveat',cursive;font-size:24px;line-height:1.05;color:#1d1d22;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk.fuld .tn{color:#6b6555}
+.trk input{width:70px;border:none;border-bottom:1.5px dotted #c9c0a9;background:transparent;outline:none;font-family:'Caveat',cursive;font-size:21px;color:var(--blaek);text-align:right;padding:0 2px;caret-color:var(--orange);-webkit-appearance:none}
+.trk input.tnote{width:104px;text-align:left;font-size:18px}
+.trk input::placeholder{color:#c6bda8;font-size:15px}
+.trk .enh{font-size:11px;color:#8d8679;flex:0 0 auto}
+.trk .plus{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid #00000022;background:#ffffff80;color:#55503f;font-size:15px;line-height:23px;text-align:center;cursor:pointer;font-weight:bold;user-select:none}
+.trk .plus:active{background:var(--orange);color:#fff;border-color:var(--orange)}
+.ugehoved{display:flex;align-items:center;justify-content:space-between;margin:14px 0 4px}
+.ugehoved .ugenavn{font-family:'Caveat',cursive;font-size:23px;color:#1d1d22}
+.ugehoved button{border:1px solid #00000020;background:#ffffff80;border-radius:14px;padding:3px 11px;font-size:12px;color:#55503f;cursor:pointer}
+.uge{width:100%;border-collapse:collapse;table-layout:fixed}
+.uge th{font-size:10px;font-weight:bold;color:#8d8679;letter-spacing:.5px;padding:2px 0 4px;text-align:center;width:30px}
+.uge th:first-child{width:auto}
+.uge th .dn{display:block;font-family:'Caveat',cursive;font-size:17px;color:#55503f;font-weight:normal;line-height:1}
+.uge th.idag .dn{color:var(--orange)}
+.uge td{text-align:center;padding:3px 0;height:30px}
+.uge td.navn{text-align:left;font-family:'Caveat',cursive;font-size:20px;color:#1d1d22;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:4px}
+.uge td.navn .streak{font-size:10px;color:#a8690f;font-family:-apple-system,Helvetica,Arial,sans-serif;font-weight:bold;margin-left:4px;white-space:nowrap}
+.prik{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:2px solid #c9c0a9;background:transparent;cursor:pointer;font-size:9px;font-weight:bold;color:#fff;font-family:-apple-system,Helvetica,Arial,sans-serif;vertical-align:middle;user-select:none}
+.prik.fuld{background:var(--orange);border-color:var(--orange)}
+.prik.frem{border-style:dotted;opacity:.45;cursor:default}
+.uge td.idag .prik:not(.fuld){border-color:#e8820a88}
+.stat{display:flex;align-items:baseline;gap:6px;padding:5px 0;border-bottom:1px dashed #00000014;font-size:12px;color:#55503f}
+.stat .sn{font-family:'Caveat',cursive;font-size:21px;color:#1d1d22;flex:0 0 auto;max-width:40%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat .ldr{flex:1 0 8px;border-bottom:2px dotted #c9c0a9;margin:0 2px 4px}
+.stat .sv{white-space:nowrap;text-align:right}
+.stat .sv b{color:#a8690f}
+.typevalg{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 2px}
+
 </style>
 </head>
 <body>
@@ -499,6 +533,7 @@ body.pr-patina .patina{display:block}
 <symbol id="ik-person" viewBox="0 0 24 24"><circle cx="12" cy="7.7" r="3.3"/><path d="M5.6 20c.6-4.1 3-6.4 6.4-6.4s5.8 2.3 6.4 6.4"/></symbol>
 <symbol id="ik-advarsel" viewBox="0 0 24 24"><path d="M12 4.2L3.6 19.4h16.8z"/><path d="M12 9.8v4.4 M12 16.6v.2"/></symbol>
 <symbol id="ik-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2"/><path d="M8.3 12.4l2.7 2.9 4.7-6"/></symbol>
+<symbol id="ik-track" viewBox="0 0 24 24"><path d="M5.2 5.4v12.8M9 5.2v13.1M12.8 5.5v12.6M16.6 5.3v12.9"/><path d="M3.4 16.2c5.3-3 10.8-5.9 17.2-8.4"/></symbol>
 <symbol id="ik-foto" viewBox="0 0 24 24"><path d="M4.6 7.9h2.9l1.5-2.3h6l1.5 2.3h2.9c.6 0 1 .4 1 1v9.6c0 .6-.4 1-1 1H4.6c-.6 0-1-.4-1-1V8.9c0-.6.4-1 1-1z"/><circle cx="12" cy="13.2" r="3.3"/></symbol>
 <!-- stickers til forsiden (med egne farver) -->
 <symbol id="st-hjerte" viewBox="0 0 48 48"><path d="M24 42C12 33 5 25.5 5 17.5 5 11.7 9.5 7 15.2 7c3.6 0 6.9 1.9 8.8 5 1.9-3.1 5.2-5 8.8-5C38.5 7 43 11.7 43 17.5c0 8-7 15.5-19 24.5z" fill="#e3524f" stroke="#7c221f" stroke-width="2.5" stroke-linejoin="round"/></symbol>
@@ -519,7 +554,7 @@ body.pr-patina .patina{display:block}
         <div class="dato" id="dato"></div>
         <textarea id="tekst" placeholder="Skriv eller indtal en tanke…" rows="4"></textarea>
         <div class="chips" id="chips"></div>
-        <div class="noegle" style="margin:-6px 0 12px">noten lander selv på den rigtige fane · tving med fx #mc, #idé, #gave, #opgave, #kontakt eller #link forrest</div>
+        <div class="noegle" style="margin:-6px 0 12px">noten lander selv på den rigtige fane · tving med fx #mc, #idé, #gave, #opgave, #kontakt, #link eller #track forrest</div>
         <div class="knapper">
           <button class="gem" id="gem">Gem i hovedet</button>
           <button class="mik" id="mik" title="Indtal"><svg class="ik"><use href="#ik-mik"/></svg></button>
@@ -677,6 +712,25 @@ body.pr-patina .patina{display:block}
         <div class="skrivlinje">
           <span class="firk"></span>
           <input id="mcNytInput" placeholder="nyt udstyr — tryk retur" enterkeyhint="done" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- 📈 TRACKING: vaner & observationer (gemmes på enheden; #track-noter fra andre enheder og morgen-checklisten hentes ind) -->
+      <div class="sektion" id="s-tracking">
+        <h1 class="rubrik">Tracking</h1>
+        <div class="dato" id="trkDato">vaner &amp; observationer</div>
+        <div class="noegle">i dag: tryk på firkanten eller skriv et tal · på Skriv virker fx "30 armbøjninger", "løb 5 km", "2 rådyr på Tisvilde Hegn" · tryk på en prik i ugen for at rette · morgen-checklistens punkter tæller selv med</div>
+        <div id="trkIdag"></div>
+        <div class="ugehoved"><button id="trkForrige" title="Ugen før">◀</button><span class="ugenavn" id="trkUgeNavn"></span><button id="trkNaeste" title="Ugen efter">▶</button></div>
+        <table class="uge" id="trkUge"></table>
+        <div class="grupperubrik"><svg class="ik"><use href="#ik-stjerne"/></svg> Statistik</div>
+        <div class="noegle">dage i træk · denne uge · denne måned — ✕ fjerner en vane fra listen (dagene bliver husket)</div>
+        <div id="trkStat"></div>
+        <div class="grupperubrik"><svg class="ik"><use href="#ik-plus"/></svg> Ny vane</div>
+        <div class="typevalg" id="trkTyper"></div>
+        <div class="skrivlinje">
+          <span class="firk"></span>
+          <input id="trkNyInput" placeholder="navn på vanen — tryk retur" enterkeyhint="done" autocomplete="off">
         </div>
       </div>
 
@@ -842,6 +896,7 @@ body.pr-patina .patina{display:block}
     <button class="fane" data-s="events"><span class="em"><svg class="ik"><use href="#ik-maske"/></svg></span>Events</button>
     <button class="fane" data-s="gaver"><span class="em"><svg class="ik"><use href="#ik-gave"/></svg></span>Gaver</button>
     <button class="fane" data-s="mc"><span class="em"><svg class="ik"><use href="#ik-mc"/></svg></span>MC</button>
+    <button class="fane" data-s="tracking"><span class="em"><svg class="ik"><use href="#ik-track"/></svg></span>Tracking</button>
     <button class="fane" data-s="system"><span class="em"><svg class="ik"><use href="#ik-tandhjul"/></svg></span>System</button>
   </div>
   <div class="gfaner" id="gfaner"></div>
@@ -850,7 +905,7 @@ body.pr-patina .patina{display:block}
 <script>
 const API='https://lightcrew-api.thomas-5c5.workers.dev';
 /* versionsnummer — tæl op ved hvert deploy, vises på ⚙️ System (følger ?ny=N) */
-const BOGVERSION='v37';
+const BOGVERSION='v38';
 
 /* ---------- adgangsnøgle: hele hoved-API'et er privat ----------
    Samme nøgle som adressebogen (localStorage kontaktNoegle) — én prompt pr. enhed.
@@ -881,7 +936,7 @@ if(!kontaktNoegle()) visLaas(false);
 const ikon=n=>'<svg class="ik" aria-hidden="true"><use href="#ik-'+n+'"/></svg>';
 const FUNK={send:'send',slaaop:'lup',koeb:'kurv',undersoeg:'kolbe',projekt:'hammer'};
 const TAGS=['#nu','#morgen','#indkøb','#slåop','#idé','#kontakt','#projekt','#kalender','#husmøde','#tvl','#master','#engang'];
-const SIDETAL={skriv:1,tags:1,datoer:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,eventops:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17,kladde:18};
+const SIDETAL={skriv:1,tags:1,datoer:1,seneste:2,aabne:3,ideer:4,rapporter:5,projekter:6,faerdige:7,adresser:8,links:9,holdmeat:10,opgaver:11,system:12,events:13,eventops:13,gaver:14,mc:15,mcvaerk:16,mcnyt:17,kladde:18,tracking:19};
 
 /* ---------- personligt præg: gemmes pr. bruger/enhed i bogIndstil ---------- */
 const INDSTILLINGER=[
@@ -921,7 +976,8 @@ const erGave=r=>/#gave2026\b/i.test((r.tags||'')+' '+(r.tekst||''));
 const erMcLog=r=>/#mclog\b/i.test((r.tags||'')+' '+(r.tekst||''));
 const erMcNyt=r=>/#mcnyt\b/i.test((r.tags||'')+' '+(r.tekst||''));
 const erEvent=r=>/#event\b/i.test((r.tags||'')+' '+(r.tekst||''));
-const erSaer=r=>erGave(r)||erMcLog(r)||erMcNyt(r)||erEvent(r); /* egne sider — holdes ude af de alm. lister */
+const erTrack=r=>/#track\b/i.test((r.tags||'')+' '+(r.tekst||''));
+const erSaer=r=>erGave(r)||erMcLog(r)||erMcNyt(r)||erEvent(r)||erTrack(r); /* egne sider — holdes ude af de alm. lister */
 /* Projekt/Rapport: pipelinens felter + routing-tags (#projekt / #slåop) så noten lander på fanen med det samme */
 const erProjekt=r=>r.funktion==='projekt'||r.kode===1||/#projekt\b/i.test((r.tags||'')+' '+(r.tekst||''));
 const erRapport=r=>!!r.rapport||(r.status!=='udfoert'&&/#sl[åa]a?op(?![\p{L}\p{N}])/iu.test((r.tags||'')+' '+(r.tekst||'')));
@@ -956,6 +1012,7 @@ function skiftSide(s){
   if(s==='events'||s==='eventops') hentEvents(); /* plakaten — egne event-noter kommer via hentNoter nedenfor */
   if(s==='tags') visTags();
   else if(s==='kladde') kladdeHoejde();
+  else if(s==='tracking'){ visTracking(); hentTrack(); }
   else if(s!=='skriv') hentNoter();
 }
 /* forside: tryk for at åbne bogen (ikke på design-panel/pynt) */
@@ -1992,11 +2049,12 @@ kladdeEl.addEventListener('input',()=>{ try{localStorage.setItem('bogKladde',kla
    Rækkefølgen af RUTE_REGLER er prioriteten: første træffer vinder, ellers 'aabne' (indbakken).
    Et #tag forrest (eller hvor som helst i teksten) der står i RUTE_ALIAS tvinger fanen: "#mc vinterdæk". */
 const RUTE_FANER={mc:'MC',opgaver:'Opgaver',rapporter:'Rapport',ideer:'Idé',gaver:'Gaver',events:'Events',
-  adresser:'Adresse',links:'Link',projekter:'Projekt',aabne:'Åbne',holdmeat:'Hold Meat'};
+  adresser:'Adresse',links:'Link',projekter:'Projekt',aabne:'Åbne',holdmeat:'Hold Meat',tracking:'Tracking'};
 /* tagget der får fanens filter til at fange noten */
 const RUTE_TAG={mc:'#mcnyt',opgaver:'#opgave',rapporter:'#slåop',ideer:'#idé',gaver:'#gave2026',events:'#event',
-  adresser:'#kontakt',links:'#link',projekter:'#projekt',aabne:'',holdmeat:'#husmøde'};
+  adresser:'#kontakt',links:'#link',projekter:'#projekt',aabne:'',holdmeat:'#husmøde',tracking:'#track'};
 const RUTE_ALIAS={
+  track:'tracking',tracking:'tracking',vane:'tracking',
   mc:'mc',motorcykel:'mc',mcnyt:'mc',mclog:'mc',værksted:'mc',vaerksted:'mc',
   opgaver:'opgaver',opgave:'opgaver',opg:'opgaver',todo:'opgaver',
   rapporter:'rapporter',rapport:'rapporter',research:'rapporter',undersøg:'rapporter',slåop:'rapporter',slaaop:'rapporter',
@@ -2025,6 +2083,7 @@ const RUTE_REGLER=[
       'olie(?:n|skift)?','hjelm(?:en|e)?','tur(?:en|e)?','rute(?:n|r)?').test(t)],
   ['opgaver',t=>ord('køb(?:e|er)?','ring(?:e)?','husk(?:e)?','bestil(?:le|ler)?','betal(?:e|er)?','send(?:e|er)?',
       'hent(?:e|er)?','aflever(?:e|er)?','book(?:e|er)?').test(t)],
+  ['tracking',t=>!!parseTrack(t)],   /* "30 armbøjninger", "juice i dag", "løb 5 km", "2 rådyr på Tisvilde Hegn", "track meditation" */
   ['rapporter',t=>ord('undersøg(?:e|er)?','research','find ud af','sammenlign(?:e|er)?','hvad er','hvordan','slå op').test(t)],
   ['ideer',t=>ord('id[ée](?:er|en|erne)?','hvad hvis','koncept(?:et|er)?','man kunne','tænk hvis').test(t)],
   ['gaver',t=>ord('\\p{L}*gave(?:n|r|rne)?','fødselsdag(?:en|e)?','jul(?:en)?','present(?:er)?','ønske(?:r|t|n|liste)?').test(t)],
@@ -2062,6 +2121,10 @@ function ruteTekst(raa){
     else if(l) note=l.navn;
   }
   else if(fane==='mc') note=tag==='#mclog'?'Værksted':'NYT til cyklen';
+  else if(fane==='tracking'){
+    const p=parseTrack(tekst+' #track');
+    if(p) note=p.vane.navn+(p.v!==null?' '+trkFmt(p.v)+(p.vane.type==='km'?' km':''):'')+(p.note?' · '+p.note:'')+(p.dato?' · '+p.dato:' · i dag');
+  }
   return {fane,tekst,tag,note,liste,override:!!o};
 }
 const harTag=(tekst,tag)=>tag&&new RegExp('(^|\\s)'+tag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=\\s|$)','iu').test(tekst);
@@ -2069,13 +2132,14 @@ const harTag=(tekst,tag)=>tag&&new RegExp('(^|\\s)'+tag.replace(/[.*+?^${}()|[\]
    præcis som skrivelinjerne på de sider gør — resten går gennem hoved-pipelinen som før. */
 async function gemRutet(r){
   let tekst=r.tekst; if(r.tag&&!harTag(tekst,r.tag)) tekst+=' '+r.tag;
-  const direkte=r.fane==='mc'||r.fane==='gaver'||r.fane==='opgaver';
+  const direkte=r.fane==='mc'||r.fane==='gaver'||r.fane==='opgaver'||r.fane==='tracking';
   const body={tekst:tekst.trim(),kilde:'bog'}; if(direkte) body.sorter=false;
   const rs=await fetch(API+'/api/hoved',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const d=await rs.json(); const e=d.entry||{}; const id=d.id||e.id;
   if(direkte&&id){
-    const ret={behandlet:1,titel:r.tekst.slice(0,60),resultat:r.fane==='opgaver'?'punkt på listen':''};
+    const ret={behandlet:1,titel:r.tekst.slice(0,60),resultat:r.fane==='opgaver'?'punkt på listen':r.fane==='tracking'?'tracking':''};
     if(r.fane==='opgaver') ret.bogliste=String(r.liste);
+    if(r.fane==='tracking') ret.status='udfoert';   /* et faktum, ikke en åben opgave */
     await fetch(API+'/api/hoved/'+id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(ret)});
   }
   return Object.assign({id},e);
@@ -2089,24 +2153,205 @@ function fanerBlink(fane){
 }
 const faneIkon=fane=>{const f=document.querySelector('.fane[data-s="'+fane+'"] .em');return f?f.innerHTML:ikon('naal')};
 
+/* ---------- 📈 TRACKING: vaner & observationer ----------
+   Data: localStorage 'bogTrack' = { vaner:[{id,navn,type,enhed}], dage:{ 'YYYY-MM-DD':{ vaneId:{v,d,n} } }, imp:[noteId], slettet:[vaneId] }
+     type: ja (gjort/ikke gjort) · antal · km · obs (antal + hvor/note)   ·   v=værdi, d=gjort, n=note
+   Noter med #track (Skriv på en anden enhed, eller morgen-checklisten på localhost:8766) hentes ind
+   med hentTrack() og lægges på den dag de gælder. Hver note importeres kun én gang (id i imp). */
+const TRK_TYPER={ja:'ja / nej',antal:'antal',km:'km',obs:'antal + hvor'};
+const TRK_STD=[
+  {id:'armboejninger',navn:'Armbøjninger',type:'antal',ord:['armbøjning(?:er|erne|en)?','push-?ups?']},
+  {id:'juice',navn:'Juice',type:'antal',enhed:'glas',ord:['juice(?:n|glas)?']},
+  {id:'loeb',navn:'Løbetur',type:'km',ord:['løb(?:et|e|etur|eturen|eture|eturene)?','løbet?ur','jogging']},
+  {id:'raavildt',navn:'Råvildt',type:'obs',ord:['rådyr(?:et|ene)?','råvildt(?:et)?','råbuk(?:ke|ken)?','rålam']},
+];
+let trk={vaner:null,dage:{},imp:[],slettet:[]};
+try{Object.assign(trk,JSON.parse(localStorage.getItem('bogTrack')||'{}'))}catch(e){}
+if(!Array.isArray(trk.vaner)) trk.vaner=TRK_STD.map(v=>({id:v.id,navn:v.navn,type:v.type,enhed:v.enhed}));
+if(!trk.dage||typeof trk.dage!=='object') trk.dage={};
+if(!Array.isArray(trk.imp)) trk.imp=[]; if(!Array.isArray(trk.slettet)) trk.slettet=[];
+const gemTrk=()=>{try{localStorage.setItem('bogTrack',JSON.stringify(trk))}catch(e){}};
+const isoDag=d=>{d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const trkSlug=s=>String(s||'').toLowerCase().trim().replace(/æ/g,'ae').replace(/ø/g,'oe').replace(/å/g,'aa').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const trkFmt=v=>(Math.round((+v||0)*10)/10).toString().replace('.',',');
+const trkVane=id=>trk.vaner.find(v=>v.id===id);
+function trkPost(dato,id){const d=trk.dage[dato]=trk.dage[dato]||{};return d[id]=d[id]||{v:0,d:false,n:''}}
+/* en vanes søgeord: de faste + vanens eget navn */
+function trkOrd(v){
+  const s=TRK_STD.find(x=>x.id===v.id);
+  return (s?s.ord:[]).concat([v.navn.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&')]);
+}
+/* "30 armbøjninger" · "juice i dag" · "løb 5 km" · "2 rådyr på Tisvilde Hegn" · "track meditation" · "pille #track 2026-11-26" · "… #fortryd"
+   → {vane, ny, v, done, note, dato} eller null hvis teksten ikke handler om en vane */
+function parseTrack(text){
+  let t=String(text||'');
+  const harTag=/#track(?![\p{L}\p{N}])/iu.test(t);
+  const fortryd=/#fortryd(?![\p{L}\p{N}])|(?<![\p{L}])fortryd(?![\p{L}])/iu.test(t);
+  const dm=t.match(/(?<!\d)(\d{4}-\d{2}-\d{2})(?!\d)/); const dato=dm?dm[1]:null;
+  t=t.replace(/#\S+/g,' ').replace(/(?<!\d)\d{4}-\d{2}-\d{2}(?!\d)/g,' ');
+  let v=null; const nm=t.match(/(?<![\d,.])(\d+(?:[.,]\d+)?)(?![\d])/);
+  if(nm){ v=parseFloat(nm[1].replace(',','.')); t=t.slice(0,nm.index)+' '+t.slice(nm.index+nm[0].length); }
+  t=t.replace(/(?<![\p{L}])(?:km|kilometer|stk|gange|i dag|idag|gjort|done|✓|✗)(?![\p{L}])/giu,' ');
+  let vane=null;
+  for(const kand of trk.vaner){
+    const re=new RegExp(B1+'(?:'+trkOrd(kand).join('|')+')'+B2,'iu');
+    const m=t.match(re); if(m){ vane=kand; t=t.slice(0,m.index)+' '+t.slice(m.index+m[0].length); break; }
+  }
+  let ny=null;
+  if(!vane){
+    const gm=t.match(new RegExp(B1+'(?:track|tracking|vane|træning|motion)'+B2,'iu'));
+    if(!gm&&!harTag) return null;
+    const gen=gm?gm[0].toLowerCase():'';
+    let navn=(gen==='træning'||gen==='motion')?gen
+      :t.replace(new RegExp(B1+'(?:track|tracking|vane)'+B2,'giu'),' ').replace(/[:\-–]/g,' ').replace(/\s{2,}/g,' ').trim();
+    if(!navn) return null;
+    navn=navn.charAt(0).toUpperCase()+navn.slice(1);
+    const id=trkSlug(navn); if(!id) return null;
+    vane=trkVane(id); if(!vane){ ny={id,navn,type:v!==null?'antal':'ja'}; vane=ny; }
+    t='';
+  }
+  const note=t.replace(/^\s*(?:på|ved|i|hos|fra|ude)\s+/iu,'').replace(/\s{2,}/g,' ').trim();
+  return {vane,ny,v,done:!fortryd,note:vane.type==='obs'?note:'',dato};
+}
+/* læg en parse-ret post på dagen (dato i teksten vinder, ellers 'dato', ellers i dag) */
+function trkAnvend(p,dato){
+  if(!p) return null;
+  if(p.ny){ if(trk.slettet.includes(p.ny.id)) return null; trk.vaner.push(p.ny); p.ny=null; }
+  const dag=p.dato||dato||isoDag();
+  const e=trkPost(dag,p.vane.id);
+  if(p.v!==null) e.v=p.v;
+  e.d=p.done&&(p.v===null||p.v>0);
+  if(!p.done&&p.v===null) e.v=0;
+  if(p.note) e.n=p.note;
+  gemTrk(); return {dag,e};
+}
+/* hent #track-noter fra bogen (andre enheder + checklisten) — hver note kun én gang */
+async function hentTrack(){
+  try{
+    const rs=await fetch(API+'/api/hoved?status=alle&limit=500&q=%23track');
+    const d=await rs.json(); const rows=(Array.isArray(d)?d:(d.rows||[])).filter(erTrack);
+    rows.sort((a,b)=>a.id-b.id);
+    let nye=0;
+    rows.forEach(r=>{
+      if(trk.imp.includes(r.id)) return;
+      trk.imp.push(r.id); nye++;
+      const opr=new Date(String(r.oprettet||'').replace(' ','T')+'Z');
+      trkAnvend(parseTrack(r.tekst||''),isNaN(opr)?isoDag():isoDag(opr));
+    });
+    if(trk.imp.length>3000) trk.imp=trk.imp.slice(-2000);
+    gemTrk(); if(nye&&aktSide()==='tracking') visTracking();
+  }catch(e){}
+}
+function trkStreak(id){
+  let n=0; const d=new Date(); d.setHours(12,0,0,0);
+  if(!((trk.dage[isoDag(d)]||{})[id]||{}).d) d.setDate(d.getDate()-1);   /* ikke gjort endnu i dag → tæl fra i går */
+  for(;n<3660;){ const e=(trk.dage[isoDag(d)]||{})[id]; if(!e||!e.d) break; n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+const TRK_DAGE=['M','T','O','T','F','L','S'];
+let trkUgeStart=null;   /* mandag i den viste uge */
+function trkMandag(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12);x.setDate(x.getDate()-(x.getDay()+6)%7);return x}
+function visTracking(){
+  const idag=isoDag();
+  document.getElementById('trkDato').textContent='vaner & observationer — '+new Date().toLocaleDateString('da-DK',{weekday:'long',day:'numeric',month:'long'});
+  /* i dag */
+  const dag=trk.dage[idag]||{};
+  document.getElementById('trkIdag').innerHTML=trk.vaner.map(v=>{
+    const e=dag[v.id]||{v:0,d:false,n:''};
+    const felt=v.type==='ja'?'':'<input type="text" inputmode="decimal" class="tv" data-v="'+v.id+'" value="'+(e.v?trkFmt(e.v):'')+'" placeholder="'+(v.type==='km'?'km':'antal')+'">'
+      +(v.type==='km'?'<span class="enh">km</span>':v.enhed?'<span class="enh">'+esc(v.enhed)+'</span>':'')
+      +(v.type==='antal'||v.type==='obs'?'<span class="plus" data-plus="'+v.id+'" title="+1">+</span>':'');
+    const note=v.type==='obs'?'<input type="text" class="tnote" data-n="'+v.id+'" value="'+atr(e.n||'')+'" placeholder="hvor / note">':'';
+    return '<div class="trk'+(e.d?' fuld':'')+'"><span class="firk'+(e.d?' fuld':'')+'" data-t="'+v.id+'"></span><span class="tn">'+esc(v.navn)+'</span>'+felt+note+'</div>';
+  }).join('')||'<div class="tom">Ingen vaner — lav en nederst</div>';
+  /* ugen */
+  const mandagNu=trkMandag(new Date());
+  if(!trkUgeStart) trkUgeStart=new Date(mandagNu);
+  const dage=[]; for(let i=0;i<7;i++){const d=new Date(trkUgeStart);d.setDate(d.getDate()+i);dage.push(d)}
+  const diff=Math.round((trkUgeStart-mandagNu)/(7*864e5));
+  document.getElementById('trkUgeNavn').textContent=diff===0?'denne uge':diff===-1?'sidste uge'
+    :dage[0].getDate()+'/'+(dage[0].getMonth()+1)+' – '+dage[6].getDate()+'/'+(dage[6].getMonth()+1);
+  let h='<tr><th></th>'+dage.map(d=>{const k=isoDag(d);return '<th'+(k===idag?' class="idag"':'')+'>'+TRK_DAGE[(d.getDay()+6)%7]+'<span class="dn">'+d.getDate()+'</span></th>'}).join('')+'</tr>';
+  h+=trk.vaner.map(v=>{
+    const st=trkStreak(v.id);
+    return '<tr><td class="navn">'+esc(v.navn)+(st>1?'<span class="streak">'+st+'×</span>':'')+'</td>'+dage.map(d=>{
+      const k=isoDag(d), e=(trk.dage[k]||{})[v.id], frem=k>idag;
+      const txt=e&&e.d&&e.v&&v.type!=='ja'?trkFmt(e.v):'';
+      return '<td'+(k===idag?' class="idag"':'')+'><span class="prik'+(e&&e.d?' fuld':'')+(frem?' frem':'')+'" data-d="'+k+'" data-v="'+v.id+'" title="'+(e&&e.n?atr(e.n):'')+'">'+txt+'</span></td>';
+    }).join('')+'</tr>';
+  }).join('');
+  document.getElementById('trkUge').innerHTML=h;
+  /* statistik: i træk · uge · måned */
+  const uge0=isoDag(mandagNu), md0=idag.slice(0,8)+'01';
+  document.getElementById('trkStat').innerHTML=trk.vaner.map(v=>{
+    let ud=0,us=0,md=0,ms=0;
+    for(const k in trk.dage){ const e=trk.dage[k][v.id]; if(!e||!e.d) continue;
+      if(k>=uge0&&k<=idag){ud++;us+=e.v||0} if(k>=md0&&k<=idag){md++;ms+=e.v||0} }
+    const sum=s=>v.type==='ja'||!s?'':' ('+trkFmt(s)+(v.type==='km'?' km':v.enhed?' '+v.enhed:'')+')';
+    const st=trkStreak(v.id);
+    return '<div class="stat"><span class="sn">'+esc(v.navn)+'</span><span class="ldr"></span><span class="sv">'
+      +(st?'<b>'+st+' i træk</b> · ':'')+'uge '+ud+'/7'+sum(us)+' · md '+md+sum(ms)+'</span>'
+      +'<button class="tagslet" data-slet="'+v.id+'" title="Fjern vanen">✕</button></div>';
+  }).join('')||'<div class="tom">Ingen vaner endnu</div>';
+  const tv=document.getElementById('trkTyper');
+  if(!tv.children.length) tv.innerHTML=Object.keys(TRK_TYPER).map(t=>'<span class="gchip'+(t==='ja'?' med':'')+'" data-type="'+t+'">'+TRK_TYPER[t]+'</span>').join('');
+}
+const trkEl=document.getElementById('s-tracking');
+trkEl.addEventListener('click',e=>{
+  const sl=e.target.closest('.tagslet[data-slet]');
+  if(sl){ const v=trkVane(sl.dataset.slet); if(!v||!confirm('Fjern '+v.navn+' fra tracking?')) return;
+    trk.vaner=trk.vaner.filter(x=>x.id!==v.id); if(!trk.slettet.includes(v.id)) trk.slettet.push(v.id); gemTrk(); visTracking(); return; }
+  const f=e.target.closest('.firk[data-t]');
+  if(f){ const p=trkPost(isoDag(),f.dataset.t); p.d=!p.d; if(!p.d) p.v=0; gemTrk(); visTracking(); return; }
+  const pl=e.target.closest('.plus[data-plus]');
+  if(pl){ const p=trkPost(isoDag(),pl.dataset.plus); p.v=(p.v||0)+1; p.d=true; gemTrk(); visTracking(); return; }
+  const pr=e.target.closest('.prik[data-d]');
+  if(pr&&!pr.classList.contains('frem')){ const p=trkPost(pr.dataset.d,pr.dataset.v); p.d=!p.d; if(!p.d) p.v=0; gemTrk(); visTracking(); return; }
+  const ty=e.target.closest('#trkTyper .gchip');
+  if(ty){ [...ty.parentElement.children].forEach(c=>c.classList.toggle('med',c===ty)); }
+});
+trkEl.addEventListener('change',e=>{
+  const tv=e.target.closest('input.tv');
+  if(tv){ const v=parseFloat(tv.value.replace(',','.')); const p=trkPost(isoDag(),tv.dataset.v); p.v=isNaN(v)?0:v; p.d=p.v>0; gemTrk(); visTracking(); return; }
+  const tn=e.target.closest('input.tnote');
+  if(tn){ const p=trkPost(isoDag(),tn.dataset.n); p.n=tn.value.trim(); if(p.n&&!p.d){ p.d=true; if(!p.v) p.v=1; } gemTrk(); visTracking(); }
+});
+trkEl.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.matches('input.tv,input.tnote')) e.target.blur(); });
+document.getElementById('trkForrige').addEventListener('click',()=>{trkUgeStart.setDate(trkUgeStart.getDate()-7);visTracking()});
+document.getElementById('trkNaeste').addEventListener('click',()=>{trkUgeStart.setDate(trkUgeStart.getDate()+7);visTracking()});
+document.getElementById('trkNyInput').addEventListener('keydown',e=>{
+  if(e.key!=='Enter') return;
+  const navn=e.target.value.trim(), id=trkSlug(navn); if(!id) return;
+  e.target.value='';
+  if(trkVane(id)) return;
+  const ty=document.querySelector('#trkTyper .gchip.med');
+  trk.vaner.push({id,navn:navn.charAt(0).toUpperCase()+navn.slice(1),type:ty?ty.dataset.type:'ja'});
+  trk.slettet=trk.slettet.filter(x=>x!==id);
+  gemTrk(); visTracking();
+});
+
 /* gem */
 const ta=document.getElementById('tekst'), gem=document.getElementById('gem'), kvit=document.getElementById('kvit');
 gem.onclick=async()=>{
-  const tags=[...document.querySelectorAll('.chip.valgt')].map(c=>c.textContent).join(' ');
+  /* kun Skriv-sidens egne chips (#chips) — Events-sidens type-chips bruger også .chip.valgt */
+  const tags=[...document.querySelectorAll('#chips .chip.valgt')].map(c=>c.textContent).join(' ');
   const raa=(ta.value.trim()+' '+tags).trim();
   if(!raa) return;
   const rute=ruteTekst(raa);
   if(!rute.tekst){ kvit.style.display='block'; kvit.innerHTML=ikon('advarsel')+' Skriv noget efter '+esc(raa.split(/\s+/)[0]); setTimeout(()=>kvit.style.display='none',4000); return; }
   gem.disabled=true; gem.textContent='Gemmer…';
+  /* tracking: skriv på dagen med det samme (lokalt), noten bagefter er synk til andre enheder */
+  const trkLokal=rute.fane==='tracking'?trkAnvend(parseTrack(rute.tekst+' #track')):null;
   try{
     const e=await gemRutet(rute);
+    if(trkLokal&&e.id){ trk.imp.push(e.id); gemTrk(); }   /* importér ikke vores egen note igen */
     kvit.style.display='block';
     kvit.innerHTML=ikon('ok')+' Gemt som <b>#'+esc(String(e.id||'?'))+'</b> → '+faneIkon(rute.fane)+' <b>'+esc(RUTE_FANER[rute.fane]||rute.fane)+'</b>'
       +(rute.note?' · '+esc(rute.note):'')+(rute.override?' · tvunget':'')
       +(e.funktion?' · '+ikon(FUNK[e.funktion]||'naal')+' '+esc(e.funktion):'')
       +(e.liste?' → '+esc(e.liste):'')+(e.projekt?' · '+esc(e.projekt):'');
     fanerBlink(rute.fane);
-    ta.value=''; document.querySelectorAll('.chip.valgt').forEach(c=>c.classList.remove('valgt'));
+    ta.value=''; document.querySelectorAll('#chips .chip.valgt').forEach(c=>c.classList.remove('valgt'));
     alleNoter=null; // genindlæs næste gang
     setTimeout(()=>kvit.style.display='none',6000);
   }catch(err){ kvit.style.display='block'; kvit.innerHTML=ikon('advarsel')+' Kunne ikke gemme — prøv igen'; }
